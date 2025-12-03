@@ -1,0 +1,72 @@
+Progetto Architetture Software A Microservizi
+A.A. 2025/2026
+Descrizione del dominio e del problema
+
+La società ACMEMobility propone ai propri clienti un servizio di noleggio a breve termine di veicoli elettrici (auto, scooter, monopattini) dislocati in varie stazioni cittadine. I clienti interagiscono con il servizio esclusivamente attraverso la sua App mobile.
+
+ACMEMobility offre due modalità di utilizzo:
+
+    Noleggio Immediato: Il cliente, tramite l'app, visualizza sulla mappa i veicoli disponibili nelle vicinanze. Recatosi fisicamente presso un veicolo, inquadra il QR code applicato su di esso per avviare immediatamente il noleggio.
+    Prenotazione Breve: Il cliente può prenotare un veicolo specifico presso una stazione, con un anticipo massimo di 30 minuti. In questo caso, il veicolo viene "bloccato" digitalmente e reso non prenotabile da altri fino al momento del ritiro.
+
+Flusso di Noleggio e Pagamento:
+
+Il pagamento è strutturato in due fasi, gestite attraverso un istituto bancario terzo:
+
+    Pre-autorizzazione (Blocco Cauzionale): All'avvio del noleggio (sia per Noleggio Immediato che al momento del ritiro per una Prenotazione Breve), ACMEMobility richiede all'istituto bancario un "blocco" sulla carta di credito del cliente di un importo fisso (€10) a titolo di cauzione. La banca risponde con un token che conferma l'avvenuto blocco.
+    Pagamento Finale: Al termine del noleggio, il veicolo deve essere riconsegnato in una stazione ACMEMobility. Una volta parcheggiato in uno stallo e confermata la riconsegna via app, il sistema calcola il costo finale in base al tempo di utilizzo effettivo e ai chilometri percorsi. Se il livello della batteria al momento della riconsegna è inferiore al 15%, al costo finale viene applicata una penale del 10%. L'importo definitivo (costo del noleggio + eventuale penale) viene quindi addebitato sulla carta, e contestualmente viene sbloccata la cauzione.
+
+Gestione Veicoli e Stazioni:
+
+ACMEMobility gestisce lo stato di ogni veicolo (disponibile, prenotato, in noleggio, in manutenzione, in ricarica) e il suo livello di batteria. È responsabilità del servizio di Logistica di ACMEMobility garantire che i veicoli siano caricati e mantenuti efficienti.
+
+Per l'interazione fisica con i veicoli, ACMEMobility si appoggia al sistema di gestione delle singole Stazioni. I comandi di sblocco (all'inizio del noleggio) e blocco (alla riconsegna) vengono inviati da ACMEMobility alla stazione specifica, che risponde con l'esito dell'operazione. Il servizio di Fleet Management di ACMEMobility traccia in tempo reale la posizione e lo stato dei veicoli durante il noleggio; riceve da ACMEMobility una notifica ogni volta che un mezzo viene sbloccato in una stazione per attivare il monitoraggio che si interrompe quando arriva la successiva notifica di blocco. Durante il percorso ACMEMobility interroga periodicamente il Fleet Management per conoscere posizione e stato dei veicoli durante il noleggio.
+
+Annullamenti:
+
+Una prenotazione può essere annullata gratuitamente fino a 5 minuti prima dell'inizio della fascia oraria prenotata. Oltre questo termine, o in caso di mancato ritiro, il blocco cauzionale di 10€ viene convertito in addebito.
+Workflow e artefatti
+
+Si modellino le comunicazioni dello scenario sopra esposto usando una coreografia, si discutano le sue proprietà di connectedness ed eventualmente si raffini la coreografia per migliorare tali proprietà. Si proietti la coreografia in un sistema di ruoli.
+
+Utilizzando uno o più diagrammi di collaborazione BPMN si modelli l’intera realtà descritta compresi i dettagli di ogni partecipante (usando il processo del ruolo corrispondente come guida). Tale modellazione ha scopo documentativo quindi il livello di dettaglio deve essere consistente con tale scopo.
+
+Si progetti una SOA per la realizzazione del sistema e la si documenti utilizzando UML (eventualmente con opportuni profili, ad esempio TinySOA).
+
+Si realizzi il sistema usando come tecnologie un BPMS (Camunda), Jolie e API Rest, coi seguenti vincoli:
+
+    Il servizio ACMEMobility deve rendere accessibili capabilities realizzate attraverso il BPMS;
+    i servizi esterni ad ACMEMobility devono essere (almeno): servizio bancario, servizio Stazioni e servizio Fleet Management;
+    i servizi di cui sopra vanno implementati (con logica elementare) come parte del progetto;
+    il servizio dell’istituto bancario deve essere realizzato in Jolie;
+    Il servizio Fleet Management deve essere realizzato come applicazione a microservizi (che includa, come minimo, un servizio responsabile del tracciamento dei veicoli e un servizio responsabile del monitoraggio dello stato della batteria) e deve esporre una API Rest.
+
+Tutti i servizi devono essere istanziati come containerized applications (usando, a scelta, almeno una tecnologia fra Docker/Podman/Compose/Kubernetes).
+I modelli di processo BPMN da utilizzare per il BPMS devono essere consistenti con la modellazione a scopo documentativo precedentemente realizzata; volendo si può anche scegliere di dettagliare compiutamente già dal primo modello le pool eseguibili. Quindi nel primo caso si avrebbe un primo modello BPMN documentativo e poi tanti modelli BPMN eseguibili quanti i partecipanti realizzati attraverso BPMS; in alternativa si avrebbe un unico modello BPMN con le pool eseguibili completamente dettagliate e gli altri partecipanti dettagliati a livello documentativo.
+
+Il dialogo fra Jolie e BPMS deve avvenire via SOAP, si veda il sito del corso alla pagina delle risorse per informazioni ulteriori.
+Note realizzative
+
+Implementare il sistema assumendo un numero ragionevole di stazioni (5-10).
+
+Il sistema prevede un monitoraggio continuo dello stato dei veicoli. Non è richiesto “simulare” ogni veicolo con un'applicazione distinta. Si può realizzare un’unica applicazione che gestisce la simulazione di tutti i mezzi. La notifica sullo stato del mezzo può avvenire facendo inviare chiamate sincrone dal “simulatore” verso il Fleet Management. Alternativamente si può decidere di utilizzare eventi asincroni attraverso un broker a scelta. Per la modellazione formale assumere comunque lo scenario con invocazioni sincrone descritto precedentemente.
+
+Per simulare gli spostamenti e generare i relativi aggiornamenti sulla posizione si può assumere che il mezzo proceda in linea retta a velocità uniforme fra due stazioni. Chi volesse può usare coordinate corrispondenti a luoghi reali integrando OpenStreetMap e software di route planning come graphhopper (https://github.com/graphhopper/graphhopper).
+Consegna e discussione
+
+Gruppi: il progetto va realizzato in gruppi di 2/3 persone.
+
+Tempi: Il progetto va consegnato prima che inizino le lezioni dell’A.A. 2026/27.
+
+Materiale da consegnare: relazione che descrive il lavoro fatto nelle varie fasi di modellazione e sviluppo, inclusi i vari diagrammi prodotti: coreografia e sistema proiettato, diagramma/i UML, diagramma/i di processo BPMN. Repository di progetto (non pubblico) su una piattaforma a scelta fra GitHub e Codeberg che contenga tutto il necessario per fare il build e il deployment della SOA.
+
+
+Modalità  di consegna: via email con riferimenti al repository.
+
+Discussione del progetto: la discussione avviene su richiesta. Alla discussione devono presenziare tutti i membri del gruppo. La valutazione è personale, il che vuol dire che i partecipanti di uno stesso gruppo possono ottenere voti differenti fra loro.
+Revisioni
+
+Queste specifiche possono essere soggette a revisioni per chiarire eventuali ambiguità e integrare possibili mancanze.
+
+V0.9 - prima versione non definitiva.
+
