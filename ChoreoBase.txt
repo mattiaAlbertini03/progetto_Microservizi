@@ -1,39 +1,27 @@
 (
-  (
-    ( vis_disp: client -> app ; list_disp: app -> client ; QR_code_noleggio: client -> app ; risp_qr: app -> client ) 
-    +
-    ( prenotare: client -> app ; blocco_v: app -> stazione ; esito: staizione -> app ; risp_pre: app -> client ; 1 ; sblocco: app -> stazione ; esito: stazione -> app )
+  (  
+    vis_disp: client -> app ; list_disp: app -> client ; QR_code_noleggio: client -> app ; risp_qr: app -> client
+  ) + ( 
+    prenotare: client -> app ; blocco_v: app -> stazione ; esito: staizione -> app ;
+    sblocco: app -> stazione ; esito: stazione -> app ;
+    ( 1 ;  annullare: cliente -> app )
   ) ;
-
-  ( blocco_cauzione: app -> banca ; token: banca -> app ; notifica: app -> Fleet ) ;
-
-  ( status: app -> Fleet ; res: Fleet -> app )* ;
-
-  ( riconsenga: client -> app ; addebito: app -> banca ; token: app -> banca ; sblocco_cauzione: app -> banca ; token: banca -> app ; notifica: app -> Fleet ) ;
-
+  (
+    1 ;
+  ) + ( 
+    blocco_cauzione: app -> banca ; token: banca -> app ;
+    (
+      addebito: app -> banca; token: banca -> app 
+    ) + (
+      notifica: app -> Fleet ;  ( status: app -> Fleet ; res: Fleet -> app )* ;
+      ( 
+        riconsenga: client -> app ; addebito: app -> banca ; token: app -> banca ; 
+        sblocco_cauzione: app -> banca ; token: banca -> app ; 
+        notifica: app -> Fleet 
+      ) ;
+    )
+  )
 )*
-
-
-
-Annullamenti:
-
-Una prenotazione può essere annullata gratuitamente fino a 5 minuti prima dell'inizio della fascia oraria prenotata. Oltre questo termine, o in caso di mancato ritiro, il blocco cauzionale di 10€ viene convertito in addebito.
-Workflow e artefatti
-
-Si modellino le comunicazioni dello scenario sopra esposto usando una coreografia, si discutano le sue proprietà di connectedness ed eventualmente si raffini la coreografia per migliorare tali proprietà. Si proietti la coreografia in un sistema di ruoli.
-
-
-
-
-Note realizzative
-
-
-Il sistema prevede un monitoraggio continuo dello stato dei veicoli. 
-La notifica sullo stato del mezzo può avvenire facendo inviare chiamate sincrone dal “simulatore” verso il Fleet Management. 
-Alternativamente si può decidere di utilizzare eventi asincroni attraverso un broker a scelta. 
-Per la modellazione formale assumere comunque lo scenario con invocazioni sincrone descritto precedentemente.
-
-
 
 
 
