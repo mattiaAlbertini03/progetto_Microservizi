@@ -1,27 +1,32 @@
 (
-  (  
-    vis_disp: client -> app ; list_disp: app -> client ; QR_code_noleggio: client -> app ; risp_qr: app -> client
-  ) + ( 
-    prenotare: client -> app ; blocco_v: app -> stazione ; esito: staizione -> app ; risp_cl: app -> client; 
-    sblocco: app -> stazione ; esito: stazione -> app ;
-    ( 1 + annullare: cliente -> app )
-  ) ;
-  (
-    1 ;
-  ) + ( 
-    blocco_cauzione: app -> banca ; token: banca -> app ;
+    list_disp_req: App -> ACME ; list_disp_res: ACME -> App ; QR_code_req: App -> ACME ; QR_code_res: ACME -> App ;
+    blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
+
+    notifica_sblocco: ACME -> Fleet ;  ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
+    notifica_blocco: ACME -> Fleet ; riconsenga: App -> ACME ; 
+    addebito: ACME -> Banca ; token: ACME -> Banca ;
+    sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+)
++
+(
+    bloccare_veicolo_req: App -> ACME ; bloccare_veicolo_ris: ACME -> App ; 
+    blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
+    ( annullare: App -> ACME )
+    +
+    ( convertire_addebito: ACME BANCA; token: Banca -> ACME )
+    +
     (
-      addebito: app -> banca; token: banca -> app 
-    ) + (
-      notifica: app -> Fleet ;  ( status: app -> Fleet ; res: Fleet -> app )* ;
-      ( 
-        riconsenga: client -> app ; addebito: app -> banca ; token: app -> banca ; 
-        sblocco_cauzione: app -> banca ; token: banca -> app ; 
-        notifica: app -> Fleet 
-      ) ;
+        sbloccare_veicolo_req: ACME -> stazione ; sbloccare_veicolo_ris: stazione -> ACME ; 
+        
+        notifica_sblocco: ACME -> Fleet ;  ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
+        notifica_blocco: ACME -> Fleet ; riconsenga: App -> ACME ; 
+        addebito: ACME -> Banca ; token: ACME -> Banca ;
+        sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+
     )
-  )
-)*
+)
+    
+
 
 
 
