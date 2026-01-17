@@ -2,9 +2,9 @@
   (  
     vis_disp: client -> app ; list_disp: app -> client ; QR_code_noleggio: client -> app ; risp_qr: app -> client
   ) + ( 
-    prenotare: client -> app ; blocco_v: app -> stazione ; esito: staizione -> app ;
+    prenotare: client -> app ; blocco_v: app -> stazione ; esito: staizione -> app ; risp_cl: app -> client; 
     sblocco: app -> stazione ; esito: stazione -> app ;
-    ( 1 ;  annullare: cliente -> app )
+    ( 1 + annullare: cliente -> app )
   ) ;
   (
     1 ;
