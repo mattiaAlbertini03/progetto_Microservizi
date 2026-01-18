@@ -12,7 +12,7 @@
     (
         bloccare_veicolo_req: App -> ACME ; bloccare_veicolo_ris: ACME -> App ; 
         blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
-        ( annullare: App -> ACME )
+        ( annullare: App -> ACME ; sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; )
         +
         ( convertire_addebito: ACME -> Banca; token: Banca -> ACME )
         +
