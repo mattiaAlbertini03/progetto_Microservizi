@@ -1,16 +1,48 @@
-(P)_ACME   |   (P)_App    |  (P)_Banca   |  (P)_Fleet
+(P-ACME)_ACME   |   (P-App)_App    |  (P-Banca)_Banca   |  (P-Fleet)_Fleet
 
-P(ACME)  ::= (
+P-ACME  ::= (
+    (
+        list_disp_req@ACME ; ~list_disp_res@ACME ; QR_code_req@ACME ; ~QR_code_res@ACME ;
+        ~blocco_cauzione@ACME ; token@ACME ;
 
-
+        ~notifica_sblocco@ACME ;  ( ~status@ACME -; res@ACME )* ;
+        riconsenga@ACME ; ~notifica_blocco@ACME ; 
+        ~addebito@ACME; token@ACME ;
+        ~sblocco_cauzione@ACME; token@ACME ; 
+    )
+    +
+    (
+        bloccare_veicolo@ACME ; 
+        ~blocco_cauzione@ACME ; token@ACME ;
+        ( annullare@ACME ; ~sblocco_cauzione@ACME; token@ACME )
+        +
+        ( ~convertire_addebito@ACME; token@ACME )
+        +
+        ( 
+            ~notifica_sblocco@ACME ; sbloccare_veicolo@ACME ; ( ~status@ACME -; res@ACME )* ;
+            riconsenga@ACME ; ~notifica_blocco@ACME ; 
+            ~addebito@ACME; token@ACME ;
+            ~sblocco_cauzione@ACME; token@ACME ; 
+        )
+    )
 )*
 
-P(App)  ::= (
-
-
+P-App  ::= (
+    (
+        ~list_disp_req@ACME ; list_disp_res@ACME ; 
+        ~QR_code_req@ACME ; QR_code_res@ACME ;
+        ~riconsenga@ACME ; 
+    )
+    +
+    (
+        ~bloccare_veicolo@ACME ; 
+        ( ~annullare@ACME  )
+        +
+        ( ~sbloccare_veicolo@ACME ; ~riconsenga@ACME ; )
+    )
 )*
 
-P(Banca)  ::= (
+P-Banca  ::= (
     blocco_cauzione@ACME ; ~token@ACME ;
     ( sblocco_cauzione@ACME ; ~token@ACME ; )
     +
@@ -19,44 +51,9 @@ P(Banca)  ::= (
     ( addebito@ACME ; ~token@ACME ; sblocco_cauzione@ACME ; ~token@ACME ; )
 )*
 
-P(Fleet)  ::= (
+P-Fleet  ::= (
     notifica_sblocco@ACME ; 
     ( status@ACME ; ~res@ACME )* ;
     notifica_blocco@ACME ;
 )*
 
-
-proj(o: a → b ,a)= ~o@b 
-proj(o: a → b ,b)= o@a 
-proj(o: a → b ,c)= 1
-
-
-
-
-    (
-        list_disp_req: App -> ACME ; list_disp_res: ACME -> App ; QR_code_req: App -> ACME ; QR_code_res: ACME -> App ;
-        blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
-
-        notifica_sblocco: ACME -> Fleet ;  ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
-        riconsenga: App -> ACME ; notifica_blocco: ACME -> Fleet ; 
-        addebito: ACME -> Banca ; token: Banca -> ACME ;
-        sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
-    )
-    +
-    (
-        bloccare_veicolo_req: App -> ACME ; bloccare_veicolo_ris: ACME -> App ; 
-        blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
-        ( annullare: App -> ACME ; sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; )
-        +
-        ( convertire_addebito: ACME -> Banca; token: Banca -> ACME )
-        +
-        (
-            sbloccare_veicolo_req: ACME -> stazione ; sbloccare_veicolo_ris: stazione -> ACME ; 
-        
-            notifica_sblocco: ACME -> Fleet ;  ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
-            riconsenga: App -> ACME ; notifica_blocco: ACME -> Fleet ; 
-            addebito: ACME -> Banca ; token: Banca -> ACME ;
-            sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
-
-        )
-    )
