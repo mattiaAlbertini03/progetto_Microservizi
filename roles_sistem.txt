@@ -11,8 +11,12 @@ P(App)  ::= (
 )*
 
 P(Banca)  ::= (
-
-
+    blocco_cauzione@ACME ; ~token@ACME ;
+    ( sblocco_cauzione@ACME ; ~token@ACME ; )
+    +
+    ( convertire_addebito@ACME; ~token@ACME )
+    +
+    ( addebito@ACME ; ~token@ACME ; sblocco_cauzione@ACME ; ~token@ACME ; )
 )*
 
 P(Fleet)  ::= (
