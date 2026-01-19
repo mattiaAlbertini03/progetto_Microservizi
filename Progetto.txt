@@ -38,35 +38,31 @@ Si realizzi il sistema usando come tecnologie un BPMS (Camunda), Jolie e API Res
     Il servizio ACMEMobility deve rendere accessibili capabilities realizzate attraverso il BPMS;
     i servizi esterni ad ACMEMobility devono essere (almeno): servizio bancario, servizio Stazioni e servizio Fleet Management;
     i servizi di cui sopra vanno implementati (con logica elementare) come parte del progetto;
-    il servizio dell’istituto bancario deve essere realizzato in Jolie;
-    Il servizio Fleet Management deve essere realizzato come applicazione a microservizi (che includa, come minimo, un servizio responsabile del tracciamento dei veicoli e un servizio responsabile del monitoraggio dello stato della batteria) e deve esporre una API Rest.
+    il servizio bancario in Jolie;
+    Il servizio Fleet deve essere realizzato come app a microservizi (che includa, come minimo, un servizio responsabile del tracciamento dei veicoli e un servizio responsabile del monitoraggio dello stato della batteria) e deve esporre una API Rest.
 
 Tutti i servizi devono essere istanziati come containerized applications (usando, a scelta, almeno una tecnologia fra Docker/Podman/Compose/Kubernetes).
 I modelli di processo BPMN da utilizzare per il BPMS devono essere consistenti con la modellazione a scopo documentativo precedentemente realizzata; volendo si può anche scegliere di dettagliare compiutamente già dal primo modello le pool eseguibili. Quindi nel primo caso si avrebbe un primo modello BPMN documentativo e poi tanti modelli BPMN eseguibili quanti i partecipanti realizzati attraverso BPMS; in alternativa si avrebbe un unico modello BPMN con le pool eseguibili completamente dettagliate e gli altri partecipanti dettagliati a livello documentativo.
 
 Il dialogo fra Jolie e BPMS deve avvenire via SOAP, si veda il sito del corso alla pagina delle risorse per informazioni ulteriori.
+
+
 Note realizzative
 
 Implementare il sistema assumendo un numero ragionevole di stazioni (5-10).
 
-Il sistema prevede un monitoraggio continuo dello stato dei veicoli. Non è richiesto “simulare” ogni veicolo con un'applicazione distinta. Si può realizzare un’unica applicazione che gestisce la simulazione di tutti i mezzi. La notifica sullo stato del mezzo può avvenire facendo inviare chiamate sincrone dal “simulatore” verso il Fleet Management. Alternativamente si può decidere di utilizzare eventi asincroni attraverso un broker a scelta. Per la modellazione formale assumere comunque lo scenario con invocazioni sincrone descritto precedentemente.
+Il sistema prevede un monitoraggio continuo dello stato dei veicoli. Un’unica app che gestisce la simulazione di tutti i mezzi. La notifica sullo stato del mezzo può avvenire facendo inviare chiamate sincrone dal “simulatore” verso il Fleet Management. Alternativamente si può decidere di utilizzare eventi asincroni attraverso un broker a scelta. Per la modellazione formale assumere comunque lo scenario con invocazioni sincrone descritto precedentemente.
 
 Per simulare gli spostamenti e generare i relativi aggiornamenti sulla posizione si può assumere che il mezzo proceda in linea retta a velocità uniforme fra due stazioni. Chi volesse può usare coordinate corrispondenti a luoghi reali integrando OpenStreetMap e software di route planning come graphhopper (https://github.com/graphhopper/graphhopper).
-Consegna e discussione
 
-Gruppi: il progetto va realizzato in gruppi di 2/3 persone.
+
+Consegna e discussione
 
 Tempi: Il progetto va consegnato prima che inizino le lezioni dell’A.A. 2026/27.
 
-Materiale da consegnare: relazione che descrive il lavoro fatto nelle varie fasi di modellazione e sviluppo, inclusi i vari diagrammi prodotti: coreografia e sistema proiettato, diagramma/i UML, diagramma/i di processo BPMN. Repository di progetto (non pubblico) su una piattaforma a scelta fra GitHub e Codeberg che contenga tutto il necessario per fare il build e il deployment della SOA.
+consegnare: relazione che descrive il lavoro fatto nelle varie fasi di modellazione e sviluppo, inclusi i vari diagrammi prodotti: coreografia e sistema proiettato, diagramma/i UML, diagramma/i di processo BPMN. Repository di progetto (non pubblico) GitHub che contenga tutto il necessario per fare il build e il deployment della SOA.
 
 
 Modalità  di consegna: via email con riferimenti al repository.
-
-Discussione del progetto: la discussione avviene su richiesta. Alla discussione devono presenziare tutti i membri del gruppo. La valutazione è personale, il che vuol dire che i partecipanti di uno stesso gruppo possono ottenere voti differenti fra loro.
-Revisioni
-
-Queste specifiche possono essere soggette a revisioni per chiarire eventuali ambiguità e integrare possibili mancanze.
-
-V0.9 - prima versione non definitiva.
+Discussione del progetto: discussione su richiesta. tutti i membri. valutazione personale.
 
