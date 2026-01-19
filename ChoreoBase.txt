@@ -1,27 +1,40 @@
 (
     (
-        list_disp_req: App -> ACME ; list_disp_res: ACME -> App ; QR_code_req: App -> ACME ; QR_code_res: ACME -> App ;
-        blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
+        mappa_req: App -> ACME ;  mappa_ris: ACME -> App ; 	 
+        QR_req: App -> ACME ;  QR_ris: ACME -> App ; 
 
-        notifica_sblocco: ACME -> Fleet ;  ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
-        riconsenga: App -> ACME ; notifica_blocco: ACME -> Fleet ; 
-        addebito: ACME -> Banca ; token: Banca -> ACME ;
-        sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+    	sblocco: ACME -> Stazione; esito: Stazione -> ACME ; 
+    	Cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+	    notifica_sblocco: ACME -> Fleet ; inizio: Fleet -> ACME;  
+    	(status_req: ACME -> Fleet; status_res: Fleet -> ACME )* ;
+	    Riconsegna: App -> ACME ; blocco: ACME -> Stazione ; esito: Stazione -> ACME ; 
+	    notifica_blocco: ACME -> Fleet ; fine: Fleet -> ACME;  
+	    /*CALCOLO*/ addebito: ACME -> Banca ; token: Banca -> ACME ; 
+	    sblocca_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
     )
     +
     (
-        bloccare_veicolo: App -> ACME ; 
-        blocco_cauzione: ACME -> Banca ; token: Banca -> ACME ;
-        ( annullare: App -> ACME ; sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; )
-        +
-        ( convertire_addebito: ACME -> Banca; token: Banca -> ACME )
-        +
+    prenotazione: App -> ACME ;  blocco_digitale: ACME -> Stazione ; 
         ( 
-            notifica_sblocco: ACME -> Fleet ;  sbloccare_veicolo: App -> ACME ; ( status: ACME -> Fleet ; res: Fleet -> ACME )* ;
-            riconsenga: App -> ACME ; notifica_blocco: ACME -> Fleet ; 
-            addebito: ACME -> Banca ; token: Banca -> ACME ;
-            sblocco_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+        Annulla: App -> ACME; 
+            (sblocca_cauzione: ACME -> Banca ; token: Banca -> ACME ; )
+            +
+		    (conversione: ACME -> Banca Banca ; token: Banca -> ACME ; )
+	    )
+	    +
+    	( /*NON RITIRATO*/ conversione: ACME -> Banca Banca ; token: Banca -> ACME ; )
+	    +
+	    (
+		    ritiro: App -> ACME; sblocco_digitale: ACME -> Stazione ; 
 
-        )
+    		sblocco: ACME -> Stazione; esito: Stazione -> ACME ; 
+	    	Cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+		    notifica_sblocco: ACME -> Fleet ; inizio: Fleet -> ACME;  
+    		(status_req: ACME -> Fleet; status_res: Fleet -> ACME )* ;
+	    	Riconsegna: App -> ACME ; blocco: ACME -> Stazione ; esito: Stazione -> ACME ; 
+		    notifica_blocco: ACME -> Fleet ; fine: Fleet -> ACME;  
+    		/*CALCOLO*/ addebito: ACME -> Banca ; token: Banca -> ACME ; 
+	    	sblocca_cauzione: ACME -> Banca ; token: Banca -> ACME ; 
+	    )
     )
 )*
