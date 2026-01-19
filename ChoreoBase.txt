@@ -19,10 +19,10 @@
         Annulla: App -> ACME; 
             (sblocca_cauzione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
             +
-		    (conversione: ACME -> Banca Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
+		    (conversione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
 	    )
 	    +
-    	( /*NON RITIRATO*/ conversione: ACME -> Banca Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
+    	( /*NON RITIRATO*/ conversione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
 	    +
 	    (
 		    ritiro: App -> ACME; sblocco_digitale: ACME -> Stazione ; 
