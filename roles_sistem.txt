@@ -7,15 +7,13 @@ Fleet-P ::= (
 )*
 
 Banca-P ::= (
-	(1 )
+	( addebbito@ACME ;   ~token@ACME ; )
 	+
-    	(addebbito@ACME ;   ~token@ACME ; )
-	+
-	 (
-	    	Cauzione@ACME ;   ~token@ACME ;  
-    		addebito@ACME ;   ~token@ACME ;  
-	    	sblocca_cauzione@ACME ;   ~token@ACME ;  
-	 )
+	(
+		Cauzione@ACME ;   ~token@ACME ;  
+    	addebito@ACME ;   ~token@ACME ;  
+	    sblocca_cauzione@ACME ;   ~token@ACME ;  
+	)
 )*
 
 Stazione-P ::= (
