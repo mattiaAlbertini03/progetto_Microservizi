@@ -16,13 +16,12 @@
     (
     prenotazione: App -> ACME ;  blocco_digitale: ACME -> Stazione ; 
         ( 
-        Annulla: App -> ACME; 
-            (sblocca_cauzione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
-            +
-		    (conversione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
+        Annulla: App -> ACME; sblocco_digitale: ACME -> Stazione ;
+		    (addebbito: ACME -> Banca ; token: Banca -> ACME ; )
+			+ (1) ;
 	    )
 	    +
-    	( /*NON RITIRATO*/ conversione: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
+    	( /*NON RITIRATO*/ addebbito: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
 	    +
 	    (
 		    ritiro: App -> ACME; sblocco_digitale: ACME -> Stazione ; 
