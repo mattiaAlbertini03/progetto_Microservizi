@@ -1,59 +1,110 @@
-(P-ACME)_ACME   |   (P-App)_App    |  (P-Banca)_Banca   |  (P-Fleet)_Fleet
+ (ACME-P)_ACME | (App-P)_App | (Stazione-P)_Stazione | (Banca-P)_Banca | (Fleet-P)_Fleet
 
-P-ACME  ::= (
-    (
-        list_disp_req@App ; ~list_disp_res@App ; QR_code_req@App ; ~QR_code_res@App ;
-        ~blocco_cauzione@Banca ; token@Banca ;
-
-        ~notifica_sblocco@Fleet ;  ( ~status@Fleet ; res@Fleet )* ;
-        riconsenga@App ; ~notifica_blocco@Fleet ; 
-        ~addebito@Banca; token@Banca ;
-        ~sblocco_cauzione@Banca; token@Banca ; 
-    )
-    +
-    (
-        bloccare_veicolo@App ; 
-        ~blocco_cauzione@Banca ; token@Banca ;
-        ( annullare@ACME ; ~sblocco_cauzione@Banca; token@Banca )
-        +
-        ( ~convertire_addebito@Banca; token@Banca )
-        +
-        ( 
-            ~notifica_sblocco@Fleet ; sbloccare_veicolo@App ;  ( ~status@Fleet ; res@Fleet )* ;
-            riconsenga@App ; ~notifica_blocco@Fleet ; 
-            ~addebito@Banca; token@Banca ;
-            ~sblocco_cauzione@Banca; token@Banca ; 
-        )
-    )
+Fleet-P ::= (
+	notifica_sblocco@ACME ; ~inizio@ACME ;  
+	( status_req@ ACME; ~status_res@ACME )* ;
+	notifica_blocco@ACME; ~fine:@ ACME;  
 )*
 
-P-App  ::= (
-    (
-        ~list_disp_req@ACME ; list_disp_res@ACME ; 
-        ~QR_code_req@ACME ; QR_code_res@ACME ;
-        ~riconsenga@ACME ; 
-    )
-    +
-    (
-        ~bloccare_veicolo@ACME ; 
-        ( ~annullare@ACME  )
-        +
-        ( ~sbloccare_veicolo@ACME ; ~riconsenga@ACME ; )
-    )
+Banca-P ::= (
+	(1 )
+	+
+    	(addebbito@ACME ;   ~token@ACME ; )
+	+
+	 (
+	    	Cauzione@ACME ;   ~token@ACME ;  
+    		addebito@ACME ;   ~token@ACME ;  
+	    	sblocca_cauzione@ACME ;   ~token@ACME ;  
+	 )
 )*
 
-P-Banca  ::= (
-    blocco_cauzione@ACME ; ~token@ACME ;
-    ( sblocco_cauzione@ACME ; ~token@ACME ; )
-    +
-    ( convertire_addebito@ACME; ~token@ACME )
-    +
-    ( addebito@ACME ; ~token@ACME ; sblocco_cauzione@ACME ; ~token@ACME ; )
+Stazione-P ::= (
+	(
+		sblocco@ACME; ~esito@ACME ; 
+		blocco@ACME; ~esito@ACME ;	
+)
+	+
+	(
+	blocco_digital@ ACME; 
+		sblocco_digitale@ACME;
+		( 1 )
+		+
+		(	 
+			sblocco@ACME; ~esito@ACME ; 
+			blocco@ACME; ~esito@ACME ;		
+		)
+	)
+
 )*
 
-P-Fleet  ::= (
-    notifica_sblocco@ACME ; 
-    ( status@ACME ; ~res@ACME )* ;
-    notifica_blocco@ACME ;
+OPPURE MA DEVO SAPERE LA VOSTRA ( IO RITENGO VADA BENE ANCHE QUESTA) 
+(
+	(	
+	blocco_digital@ ACME; 
+		sblocco_digitale@ACME;
+	)
+	+
+	(1 );
+	(
+		sblocco@ACME; ~esito@ACME ; 
+		blocco@ACME; ~esito@ACME ;	
+	)
+	+ 
+	(1) ;
 )*
 
+
+App-P ::= (
+	( 	
+		~mappa_req@ ACME;  mappa_ris@ACME ; 
+		~QR_req@ ACME;  QR_ris@ACME  ; 
+		~Riconsegna@ ACME; 
+	)
+	+
+	(	
+		~prenotazione@ ACME;  
+        		(~Anulla@ ACME; )
+		+
+		(	~ritiro@ACME; 
+			~Riconsegna@ACME ; 
+		)
+    	)	
+)*
+
+
+ACME ::= (
+	( 
+		mappa_req@App ;  ~mappa_ris@App ;  
+		QR_req@App ; ~QR_ris@App ; 
+		~sblocco@Stazione ; esito@Stazione ; 
+		~Cauzione@Banca ; token@Banca ;
+		~notifica_sblocco@Fleet ; inizio@Fleet ;  
+		(~status_req@Fleet ; status_res@Fleet ; )* ;
+		Riconsegna@App ; ~blocco@Stazione ; esito@Stazione ; 
+		~notifica_blocco@Fleet ; fine@Fleet ;  
+	    	~addebito@Banca ; token@Banca ; 
+		~sblocca_cauzione@Banca ; token@Banca ; 
+	)
+	+
+	(
+    		prenotazione@App ;  ~blocco_digitale@Stazione ; 
+		(
+			Annulla@App ; ~sblocco_digitale@Stazione ;
+		    	(~addebbito@Banca ; token@Banca ; ) + (1) ;
+		)
+	    	+
+    		( ~addebbito@Banca ; token@Banca ; ~sblocco_digitale@Stazione ;)
+	    	+
+		(
+			ritiro@App ; ~sblocco_digitale@Stazione ; 
+	    		~sblocco@Stazione ; esito@Stazione ;
+			 ~Cauzione@Banca ; token@Banca ;
+			~notifica_sblocco@Fleet ; inizio@Fleet ;  
+			(~status_req@Fleet ; status_res@Fleet ; )* ;
+			Riconsegna@App ; ~blocco@Stazione ; esito@Stazione ; 
+			~notifica_blocco@Fleet ; fine@Fleet ;  
+	    		~addebito@Banca ; token@Banca ; 
+			~sblocca_cauzione@Banca ; token@Banca ; 
+		)
+	)
+)*
