@@ -54,18 +54,14 @@ OPPURE MA DEVO SAPERE LA VOSTRA ( IO RITENGO VADA BENE ANCHE QUESTA)
 App-P ::= (
 	( 	
 		~mappa_req@ ACME;  mappa_ris@ACME ; 
-		~QR_req@ ACME;  QR_ris@ACME  ; 
-		~Riconsegna@ ACME; 
+		~QR_ritiro@ ACME; ~Riconsegna@ ACME; 
 	)
 	+
 	(	
 		~prenotazione@ ACME;  
-        (~Anulla@ ACME; )
+        ( ~Anulla@ ACME; )
 		+
-		(	
-			~ritiro@ACME; 
-			~Riconsegna@ACME ; 
-		)
+		( ~ritiro@ACME;  ~Riconsegna@ACME ; )
     )	
 )*
 
@@ -73,7 +69,7 @@ App-P ::= (
 ACME ::= (
 	( 
 		mappa_req@App ;  ~mappa_ris@App ;  
-		QR_req@App ; ~QR_ris@App ; 
+		QR_ritiro@App ;  
 		~sblocco@Stazione ; esito@Stazione ; 
 		~Cauzione@Banca ; token@Banca ;
 		~notifica_sblocco@Fleet ; inizio@Fleet ;  
