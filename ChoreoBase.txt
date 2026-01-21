@@ -1,7 +1,7 @@
 (
     (
         mappa_req: App -> ACME ;  mappa_ris: ACME -> App ; 	 
-        QR_req: App -> ACME ;  QR_ris: ACME -> App ; 
+        QR_ritiro: App -> ACME ;  
 
     	sblocco: ACME -> Stazione; esito: Stazione -> ACME ; 
     	Cauzione: ACME -> Banca ; token: Banca -> ACME ; 
