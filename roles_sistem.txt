@@ -34,23 +34,6 @@ Stazione-P ::= (
 
 )*
 
-OPPURE MA DEVO SAPERE LA VOSTRA ( IO RITENGO VADA BENE ANCHE QUESTA) 
-(
-	(	
-	blocco_digital@ ACME; 
-		sblocco_digitale@ACME;
-	)
-	+
-	(1 );
-	(
-		sblocco@ACME; ~esito@ACME ; 
-		blocco@ACME; ~esito@ACME ;	
-	)
-	+ 
-	(1) ;
-)*
-
-
 App-P ::= (
 	( 	
 		~mappa_req@ ACME;  mappa_ris@ACME ; 
