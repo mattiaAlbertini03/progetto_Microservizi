@@ -70,7 +70,7 @@ ACME ::= (
 		    	(~addebbito@Banca ; token@Banca ; ) + (1) ;
 		)
 	    +
-    	( ~addebbito@Banca ; token@Banca ; ~sblocco_digitale@Stazione ;)
+    	(~sblocco_digitale@Stazione ; ~addebbito@Banca ; token@Banca ;)
 	    +
 		(
 			ritiro@App ; ~sblocco_digitale@Stazione ; 
