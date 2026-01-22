@@ -21,7 +21,7 @@
 			+ (1) ;
 	    )
 	    +
-    	( /*NON RITIRATO*/ addebbito: ACME -> Banca ; token: Banca -> ACME ; sblocco_digitale: ACME -> Stazione ;)
+    	( /*NON RITIRATO*/ sblocco_digitale: ACME -> Stazione ; addebbito: ACME -> Banca ; token: Banca -> ACME ; )
 	    +
 	    (
 		    ritiro: App -> ACME; sblocco_digitale: ACME -> Stazione ; 
