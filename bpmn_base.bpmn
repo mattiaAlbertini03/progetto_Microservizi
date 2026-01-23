@@ -51,6 +51,14 @@
     <bpmn:association id="Association_1pizl8i" associationDirection="None" sourceRef="Participant_0cwri6u" targetRef="TextAnnotation_1hoafdg" />
     <bpmn:association id="Association_0tpb90w" associationDirection="None" sourceRef="Gateway_1vasdj8" targetRef="TextAnnotation_0rc0b4x" />
     <bpmn:association id="Association_1jbmo45" associationDirection="None" sourceRef="Activity_1kkrxu8" targetRef="TextAnnotation_1jqtl3n" />
+    <bpmn:textAnnotation id="TextAnnotation_02nit73">
+      <bpmn:text>la prenotazione deve avvenire con un anticipo di massimo 30 min.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0t8hgy5" associationDirection="None" sourceRef="Activity_1uo0omu" targetRef="TextAnnotation_02nit73" />
+    <bpmn:textAnnotation id="TextAnnotation_00w2328">
+      <bpmn:text>tiene memorai dello spostamento cosi da poter far poi i conti</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1r7nx4u" associationDirection="None" sourceRef="Activity_0ga166l" targetRef="TextAnnotation_00w2328" />
   </bpmn:collaboration>
   <bpmn:process id="Process_07bye89" isExecutable="true">
     <bpmn:laneSet id="LaneSet_01tv0gh" />
@@ -198,10 +206,6 @@
       <bpmn:incoming>Flow_1jzq5oi</bpmn:incoming>
       <bpmn:outgoing>Flow_1go85fj</bpmn:outgoing>
     </bpmn:sendTask>
-    <bpmn:sendTask id="Activity_1uo0omu" name="prenotazione">
-      <bpmn:incoming>Flow_037t7sx</bpmn:incoming>
-      <bpmn:outgoing>Flow_06ohek6</bpmn:outgoing>
-    </bpmn:sendTask>
     <bpmn:sendTask id="Activity_02wfh8m" name="ritiro del veicolo">
       <bpmn:incoming>Flow_0kcs6ht</bpmn:incoming>
       <bpmn:outgoing>Flow_0ce71c8</bpmn:outgoing>
@@ -235,6 +239,10 @@
     <bpmn:sequenceFlow id="Flow_0kcs6ht" name="ritiro" sourceRef="Gateway_03y6k6p" targetRef="Activity_02wfh8m" />
     <bpmn:sequenceFlow id="Flow_0b5dllr" name="annullamento" sourceRef="Gateway_03y6k6p" targetRef="Activity_0iml1a0" />
     <bpmn:sequenceFlow id="Flow_1s6126d" sourceRef="Activity_0iml1a0" targetRef="Event_10z1d9d" />
+    <bpmn:sendTask id="Activity_1uo0omu" name="prenotazione">
+      <bpmn:incoming>Flow_037t7sx</bpmn:incoming>
+      <bpmn:outgoing>Flow_06ohek6</bpmn:outgoing>
+    </bpmn:sendTask>
   </bpmn:process>
   <bpmn:process id="Process_0a19wj4" isExecutable="false">
     <bpmn:startEvent id="Event_0318mf8">
@@ -1199,10 +1207,6 @@
         <dc:Bounds x="2180" y="410" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0eertrj_di" bpmnElement="Activity_1uo0omu">
-        <dc:Bounds x="1750" y="630" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04m8pg7_di" bpmnElement="Activity_02wfh8m">
         <dc:Bounds x="2170" y="570" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -1222,6 +1226,10 @@
       <bpmndi:BPMNShape id="Event_10z1d9d_di" bpmnElement="Event_10z1d9d">
         <dc:Bounds x="2172" y="712" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0eertrj_di" bpmnElement="Activity_1uo0omu">
+        <dc:Bounds x="1740" y="630" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1d0tlsp_di" bpmnElement="Flow_1d0tlsp">
         <di:waypoint x="1578" y="540" />
         <di:waypoint x="1635" y="540" />
@@ -1237,9 +1245,9 @@
       <bpmndi:BPMNEdge id="Flow_037t7sx_di" bpmnElement="Flow_037t7sx">
         <di:waypoint x="1660" y="565" />
         <di:waypoint x="1660" y="670" />
-        <di:waypoint x="1750" y="670" />
+        <di:waypoint x="1740" y="670" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1668" y="636" width="64" height="27" />
+          <dc:Bounds x="1664" y="636" width="64" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0w0f2q7_di" bpmnElement="Flow_0w0f2q7">
@@ -1273,7 +1281,7 @@
         <di:waypoint x="2642" y="540" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_06ohek6_di" bpmnElement="Flow_06ohek6">
-        <di:waypoint x="1850" y="670" />
+        <di:waypoint x="1840" y="670" />
         <di:waypoint x="1895" y="670" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0kcs6ht_di" bpmnElement="Flow_0kcs6ht">
@@ -1311,6 +1319,14 @@
       <bpmndi:BPMNEdge id="Association_1pizl8i_di" bpmnElement="Association_1pizl8i">
         <di:waypoint x="2710" y="522" />
         <di:waypoint x="2855" y="501" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0t8hgy5_di" bpmnElement="Association_0t8hgy5">
+        <di:waypoint x="1740" y="702" />
+        <di:waypoint x="1687" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1r7nx4u_di" bpmnElement="Association_1r7nx4u">
+        <di:waypoint x="3140" y="2124" />
+        <di:waypoint x="3167" y="2110" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="TextAnnotation_0rc0b4x_di" bpmnElement="TextAnnotation_0rc0b4x">
         <dc:Bounds x="2960" y="2850" width="100" height="40" />
@@ -1447,8 +1463,8 @@
         <di:waypoint x="1950" y="2430" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0y4ivyv_di" bpmnElement="Flow_0y4ivyv">
-        <di:waypoint x="1800" y="710" />
-        <di:waypoint x="1800" y="970" />
+        <di:waypoint x="1790" y="710" />
+        <di:waypoint x="1790" y="970" />
         <di:waypoint x="160" y="970" />
         <di:waypoint x="160" y="2660" />
         <di:waypoint x="730" y="2660" />
@@ -1509,6 +1525,14 @@
         <di:waypoint x="1535" y="2220" />
         <di:waypoint x="1535" y="1510" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_02nit73_di" bpmnElement="TextAnnotation_02nit73">
+        <dc:Bounds x="1620" y="750" width="100.00000277937869" height="83.7887067395264" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_00w2328_di" bpmnElement="TextAnnotation_00w2328">
+        <dc:Bounds x="3165" y="2070" width="210" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
