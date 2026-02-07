@@ -9,9 +9,13 @@ type OpMessage: void{
     .value?: int
 }
 
+type Ris: void{
+    .value: bool
+}
+
 interface Bank_service {
-    RequestResponse: login(LoginRequest)(OpMessage), cauzione(OpMessage)(bool), 
-                        addebito(OpMessage)(bool), rimozione(OpMessage)(bool),
-                        logout(OpMessage)(undefined)
+    RequestResponse: login(LoginRequest)(OpMessage), cauzione(OpMessage)(Ris), 
+                        addebito(OpMessage)(Ris), rimozione(OpMessage)(Ris),
+                        logout(OpMessage)(LoginRequest)
 }
 
