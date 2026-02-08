@@ -10,41 +10,31 @@ Banca-P ::= (
 	( addebbito@ACME ;   ~token@ACME ; )
 	+
 	(
-		Cauzione@ACME ;   ~token@ACME ;  
+	Cauzione@ACME ;   ~token@ACME ;  
     	addebito@ACME ;   ~token@ACME ;  
-	    sblocca_cauzione@ACME ;   ~token@ACME ;  
+	sblocca_cauzione@ACME ;   ~token@ACME ;  
 	)
 )*
 
 Stazione-P ::= (
-	(
-		sblocco@ACME; ~esito@ACME ; 
-		blocco@ACME; ~esito@ACME ;	
-	)
-	+
-	(
-		blocco_digitale@ ACME; sblocco_digitale@ACME;
-		( 1 )
-		+
-		(	 
-			sblocco@ACME; ~esito@ACME ; 
-			blocco@ACME; ~esito@ACME ;		
-		)
-	)
-
+	sblocco@ACME; ~esito@ACME ; 
+	blocco@ACME;  ~esito@ACME ;	
 )*
 
 App-P ::= (
 	( 	
 		~mappa_req@ ACME;  mappa_ris@ACME ; 
-		~QR_ritiro@ ACME; ~Riconsegna@ ACME; 
+		~QR_ritiro@ ACME;  ris_utente@ACME;
+		~Riconsegna@ ACME; ris_finale@ACME; 
 	)
 	+
 	(	
-		~prenotazione@ ACME;  
-        ( ~Anulla@ ACME; )
-		+
-		( ~ritiro@ACME;  ~Riconsegna@ACME ; )
+	~prenotazione@ ACME; ris_pren@ACME; 
+     	( ~Anulla@ ACME; Anulla_ris@ACME )
+	+
+	(  ~QR_ritiro@ ACME;  ris_utente@ACME; ~Riconsegna@ ACME; ris_finale@ACME; )
+	+
+	( 1 )
     )	
 )*
 
@@ -55,33 +45,38 @@ ACME ::= (
 		QR_ritiro@App ;  
 		~sblocco@Stazione ; esito@Stazione ; 
 		~Cauzione@Banca ; token@Banca ;
-		~notifica_sblocco@Fleet ; inizio@Fleet ;  
+		~notifica_sblocco@Fleet ; inizio@Fleet ; 
+		~ris_utente@App; 
 		(~status_req@Fleet ; status_res@Fleet ; )* ;
 		Riconsegna@App ; ~blocco@Stazione ; esito@Stazione ; 
 		~notifica_blocco@Fleet ; fine@Fleet ;  
 	    ~addebito@Banca ; token@Banca ; 
-		~sblocca_cauzione@Banca ; token@Banca ; 
+		~sblocca_cauzione@Banca ; token@Banca ;
+		~ris_finale@App; 
 	)
 	+
 	(
-    	prenotazione@App ;  ~blocco_digitale@Stazione ; 
+    	prenotazione@App ;  ~ris_pre@App;
 		(
-				Annulla@App ; ~sblocco_digitale@Stazione ;
+			Annulla@App ; ~annulla_ris@App;
 		    	(~addebbito@Banca ; token@Banca ; ) + (1) ;
 		)
 	    +
-    	(~sblocco_digitale@Stazione ; ~addebbito@Banca ; token@Banca ;)
+    		(~addebbito@Banca ; token@Banca ;)
 	    +
 		(
-			ritiro@App ; ~sblocco_digitale@Stazione ; 
-	    	~sblocco@Stazione ; esito@Stazione ;
-			~Cauzione@Banca ; token@Banca ;
-			~notifica_sblocco@Fleet ; inizio@Fleet ;  
-			(~status_req@Fleet ; status_res@Fleet ; )* ;
-			Riconsegna@App ; ~blocco@Stazione ; esito@Stazione ; 
-			~notifica_blocco@Fleet ; fine@Fleet ;  
-	    	~addebito@Banca ; token@Banca ; 
-			~sblocca_cauzione@Banca ; token@Banca ; 
+			ritiro@App ; 
+		~sblocco@Stazione ; esito@Stazione ; 
+		~Cauzione@Banca ; token@Banca ;
+		~notifica_sblocco@Fleet ; inizio@Fleet ; 
+		~ris_utente@App; 
+		(~status_req@Fleet ; status_res@Fleet ; )* ;
+		Riconsegna@App ; ~blocco@Stazione ; esito@Stazione ; 
+		~notifica_blocco@Fleet ; fine@Fleet ;  
+	    ~addebito@Banca ; token@Banca ; 
+		~sblocca_cauzione@Banca ; token@Banca ;
+		~ris_finale@App; 
+	    	
 		)
 	)
 )*
