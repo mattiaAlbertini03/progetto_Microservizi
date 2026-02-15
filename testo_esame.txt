@@ -36,8 +36,7 @@ Si progetti una SOA per la realizzazione del sistema e la si documenti utilizzan
 Si realizzi il sistema usando come tecnologie un BPMS (Camunda), Jolie e API Rest, coi seguenti vincoli:
 
     Il servizio ACMEMobility deve rendere accessibili capabilities realizzate attraverso il BPMS;
-    i servizi esterni ad ACMEMobility devono essere (almeno): servizio bancario, servizio Stazioni e servizio Fleet Management;
-    i servizi di cui sopra vanno implementati (con logica elementare) come parte del progetto;
+    i servizi esterni devono essere (almeno): servizio bancario, servizio Stazioni e servizio Fleet Management  implementati con logica elementare;
     il servizio bancario in Jolie;
     Il servizio Fleet deve essere realizzato come app a microservizi (che includa, come minimo, un servizio responsabile del tracciamento dei veicoli e un servizio responsabile del monitoraggio dello stato della batteria) e deve esporre una API Rest.
 

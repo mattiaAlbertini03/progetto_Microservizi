@@ -1,7 +1,8 @@
 
 type LoginRequest: void{
     .name: string
-    .value: int
+    .conto: int
+    .ricarica: int
 }
 
 type OpMessage: void{

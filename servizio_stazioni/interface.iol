@@ -1,17 +1,19 @@
-
-type veicolo: void{
-    .batteria: int 
-    .status:  string( enum(["paul","homer","mark"]))
+type EmptyMessage: void{
+    x?: string
 }
 
 type OpMessage: void{
     .sid: string
-    .value?: int
+    .auto?: string
 }
 
-interface Bank_service {
-    RequestResponse: login(LoginRequest)(OpMessage), cauzione(OpMessage)(bool), 
-                        addebito(OpMessage)(bool), rimozione(OpMessage)(bool),
-                        logout(OpMessage)(undefined)
+type Ris: void{
+    .value: bool
+}
+
+interface Stazione_service {
+    RequestResponse: login(EmptyMessage)(OpMessage), 
+                        sblocco(OpMessage)(Ris), blocco(OpMessage)(Ris),
+                        logout(OpMessage)(EmptyMessage)
 }
 
