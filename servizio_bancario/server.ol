@@ -10,12 +10,14 @@ inputPort MyInput {
     Interfaces: Bank_service 
 }
 
+//definita la struttura di ricarica così da non dover essere ripetuta
 define ricarica_logic {
     while (value >= conto){
         conto += ricarica
     }
 }
 
+//definita la struttura dell'addebito così da non dover essere ripetuta
 define addebito_logic {
     value = request.value
     ricarica_logic
@@ -58,6 +60,7 @@ main{
             cauzione += value
             ris.value = true
         }] { 
+            // codice eseguito dopo aver eseguito cauzione
             println@Console("cauzione")() 
             rimozione_completata = false;
             while( !rimozione_completata ) {

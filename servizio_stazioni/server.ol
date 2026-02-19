@@ -1,7 +1,11 @@
 include "console.iol"
 include "file.iol"
 include "interface.iol"	
-	
+
+//dato che deve simulare la gestione manuale non posso generare un errore dat dai dati
+//il controllo se il veicolo si trova in stazione è fatto in ACME
+
+
 inputPort MyInput {
     Location: "socket://localhost:8001" 
     Protocol: soap {
