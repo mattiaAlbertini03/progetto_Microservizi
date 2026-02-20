@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="battery-service" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="io.helidon.Main" />
+    <module name="battery-service" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,25 @@
+kubectl -n acme-fleet port-forward svc/query-service 8080:8080
+curl http://localhost:8080/vehicles
+curl http://localhost:8080/vehicles/V-001
+curl http://localhost:8080/vehicles/V-001/tracking
+curl http://localhost:8080/vehicles/V-001/battery
+
+kubectl -n acme-fleet port-forward svc/tracking-service 8081:8080
+curl -X POST http://localhost:8081/tracking \
+  -H "Content-Type: application/json" \
+  -d '{"vehicleId":"V-001","lat":44.49,"lon":11.34,"timestampEpochMs":1771513000000}'
+  
+kubectl -n acme-fleet port-forward svc/battery-service 8082:8080
+curl -X POST http://localhost:8082/battery \
+  -H "Content-Type: application/json" \
+  -d '{"vehicleId":"V-001","batteryPct":82,"timestampEpochMs":1771513000000}'
+
+kubectl -n kafka exec -it my-cluster-dual-role-0 -- \
+  bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+kubectl -n kafka exec -it my-cluster-dual-role-0 -- \
+  bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic my-topic
+
+kubectl -n kafka exec -it my-cluster-dual-role-0 -- \
+  bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my-topic --from-beginning
+

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: battery-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: battery-service
+  template:
+    metadata:
+      labels:
+        app: battery-service
+    spec:
+      containers:
+        - name: battery-service
+          image: battery-service:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "my-cluster-kafka-bootstrap.kafka:9092"
+            - name: KAFKA_TOPIC_VEHICLE_BATTERY
+              value: "vehicle-battery"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: battery-service
+spec:
+  selector:
+    app: battery-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
