@@ -1,10 +1,10 @@
 include "console.iol"
 include "interface.iol"	
-	
+
 inputPort MyInput {
-    Location: "socket://localhost:8000" 
+    Location: "socket://localhost:8002/"
     Protocol: soap {
-        .wsdl = "./myWsdl.wsdl";
+        .wsdl = "./MyInput.wsdl";
         .wsdl.port = "MyInputServicePort"
     }
     Interfaces: Bank_service 
@@ -22,7 +22,7 @@ define addebito_logic {
     value = request.value
     ricarica_logic
     conto -= value
-    ris.value = true
+    res.value = true
 }
 
 init {
@@ -45,42 +45,42 @@ main{
         response.sid = csets.sid = new
     };
     while( isLogin ){
-        [ addebito( request )( ris ) {
+        [ addebito( request )( res ) {
             addebito_logic 
         }] { println@Console("addebito")() }
                 
-        [ rimozione( request )( ris ) {
-            ris.value = false
+        [ rimozione( request )( res ) {
+            res.value = false
         }] { println@Console("rimozionei non possibile")() }
         
-        [ cauzione( request ) ( ris ) {
+        [ cauzione( request ) ( res ) {
             value = request.value
             ricarica_logic
             conto -= value
             cauzione += value
-            ris.value = true
+            res.value = true
         }] { 
             // codice eseguito dopo aver eseguito cauzione
             println@Console("cauzione")() 
             rimozione_completata = false;
             while( !rimozione_completata ) {
-                [ addebito( request )( ris ) {
+                [ addebito( request )( res ) {
                     addebito_logic 
                 }] { println@Console("addebito")() }
 
-                [ rimozione( request )( ris ) {
+                [ rimozione( request )( res ) {
                     value = request.value
                     cauzione -= value
                     conto += value
                     rimozione_completata = true
-                    ris.value = true
+                    res.value = true
                 }] { println@Console("rimozione")() }
             }
         }
         
-        [ logout ( request )( ris ) {
-            ris.name = username
-            ris.value = int(conto)
+        [ logout ( request )( res ) {
+            res.name = username
+            res.value = int(conto)
 			println@Console( "User " + username + " logged out." ) ( )
 			isLogin = false 
         }]
