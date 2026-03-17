@@ -25,3 +25,14 @@ al massimo posso aggiungere un controllo per vedere se il veicolo è a quel veic
 
 
 
+ i comandi per generare i wsdl se non vanno per qualche motivo
+
+
+banca:
+jolie2wsdl --namespace mytest.test.com --portName MyInput --portAddr http://localhost:8002 --outputFile MyInput.wsdl server.ol
+
+stazioni:
+jolie2wsdl --namespace mytest.test.com --portName MyInput --portAddr http://localhost:8001 --outputFile MyInput.wsdl server.ol
+
+
+

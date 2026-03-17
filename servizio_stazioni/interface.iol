@@ -4,7 +4,7 @@ type EmptyMessage: void{
 
 type OpMessage: void{
     .sid: string
-    .auto?: string
+    .vehicleId?: string
 }
 
 type Ris: void{

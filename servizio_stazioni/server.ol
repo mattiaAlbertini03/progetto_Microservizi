@@ -1,15 +1,10 @@
 include "console.iol"
-include "file.iol"
 include "interface.iol"	
 
-//dato che deve simulare la gestione manuale non posso generare un errore dat dai dati
-//il controllo se il veicolo si trova in stazione è fatto in ACME
-
-
 inputPort MyInput {
-    Location: "socket://localhost:8001" 
+    Location: "socket://localhost:8001/" 
     Protocol: soap {
-        .wsdl = "./myWsdl.wsdl";
+        .wsdl = "./MyInput.wsdl";
         .wsdl.port = "MyInputServicePort"
     }
     Interfaces: Stazione_service 
@@ -29,16 +24,16 @@ main{
         response.sid = csets.sid = new
     };
     while( isLogin ){
-        [ sblocco( request ) ( ris ) {
+        [ sblocco( request ) ( res ) {
             stazione = request.sid
-            auto = request.auto
-            ris.value = true
+            auto = request.vehicleId
+            res.value = true
         }] { println@Console("sblocco")() }
         
-        [ blocco( request )( ris ) {
+        [ blocco( request )( res ) {
             stazione = request.sid
-            auto = request.auto
-            ris.value = true
+            auto = request.vehicleId
+            res.value = true
         }] { println@Console("blocco")() }
         
         [ logout ( request )( res ) {
