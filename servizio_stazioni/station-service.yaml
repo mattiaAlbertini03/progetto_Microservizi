@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: station-service
+  labels:
+    app: station-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: station-service
+  template:
+    metadata:
+      labels:
+        app: station-service
+    spec:
+      containers:
+      - name: station-service
+        image: station-service
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: IfNotPresent
