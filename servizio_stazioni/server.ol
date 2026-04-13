@@ -4,8 +4,10 @@ include "interface.iol"
 inputPort MyInput {
     Location: "socket://localhost:8001/" 
     Protocol: soap {
-        .wsdl = "./MyInput.wsdl";
-        .wsdl.port = "MyInputServicePort"
+        .wsdl = "./MyInput.wsdl",
+        .wsdl.port = "MyInputServicePort",
+        .debug = true,
+        .debug.showContent = true
     }
     Interfaces: Stazione_service 
 }
