@@ -22,19 +22,26 @@ public class SimulationService {
     @Inject
     MonitoringClient monitoringClient;
 
+    @Inject
+    GraphHopperClient graphHopperClient;
+
     public void start(StartSimulationRequest request) {
         System.out.println("Start called for " + request.vehicleId());
         stop(request.vehicleId());
 
-        SimulationState state = new SimulationState(
-                request.vehicleId(),
+        RouteData routeData = graphHopperClient.getRoute(
                 request.fromLat(),
                 request.fromLon(),
                 request.toLat(),
-                request.toLon(),
+                request.toLon());
+
+        SimulationState state = new SimulationState(
+                request.vehicleId(),
                 request.speedMetersPerSecond(),
                 request.initialBatteryPct(),
-                Instant.now());
+                Instant.now(),
+                routeData.points(),
+                routeData.distanceMeters());
 
         simulations.put(request.vehicleId(), state);
 
@@ -43,7 +50,7 @@ public class SimulationService {
                 0,
                 TICK_SECONDS,
                 TimeUnit.SECONDS);
-        
+
         System.out.println("Task scheduled for " + request.vehicleId());
         tasks.put(request.vehicleId(), future);
     }
@@ -57,6 +64,7 @@ public class SimulationService {
         }
 
         simulations.remove(vehicleId);
+        System.out.println("Task ended for " + vehicleId);
     }
 
     public boolean isActive(String vehicleId) {
@@ -75,27 +83,30 @@ public class SimulationService {
             long now = Instant.now().toEpochMilli();
             double elapsedSeconds = (now - state.startedAt().toEpochMilli()) / 1000.0;
 
-            double totalDistance = distanceMeters(state.fromLat(), state.fromLon(),
-                    state.toLat(), state.toLon());
+            double travelledMeters = elapsedSeconds * state.speedMetersPerSecond();
+            double progress = Math.min(travelledMeters / state.totalDistanceMeters(), 1.0);
 
-            double travelled = elapsedSeconds * state.speedMetersPerSecond();
-            double progress = Math.min(travelled / totalDistance, 1.0);
+            RoutePoint position = interpolateAlongRoute(state.route(), progress);
 
-            double lat = lerp(state.fromLat(), state.toLat(), progress);
-            double lon = lerp(state.fromLon(), state.toLon(), progress);
+            double travelledKm = Math.min(travelledMeters, state.totalDistanceMeters()) / 1000.0;
+            double battery = Math.max(
+                    0,
+                    state.initialBatteryPct() - travelledKm * BATTERY_CONSUMPTION_PER_KM);
 
-            double travelledKm = Math.min(travelled, totalDistance) / 1000.0;
-
-            double battery = Math.max(0,
-                    state.initialBatteryPct()
-                            - travelledKm * BATTERY_CONSUMPTION_PER_KM);
-
-            System.out.println("About to send tracking for " + state.vehicleId() + " lat=" + lat + " lon=" + lon);
+            System.out.println("About to send tracking for " + state.vehicleId()
+                    + " lat=" + position.lat() + " lon=" + position.lon());
             System.out.println("About to send battery for " + state.vehicleId() + " battery=" + battery);
 
-            VehicleTrackingEvent tracking = new VehicleTrackingEvent(state.vehicleId(), lat, lon, now);
+            VehicleTrackingEvent tracking = new VehicleTrackingEvent(
+                    state.vehicleId(),
+                    position.lat(),
+                    position.lon(),
+                    now);
 
-            VehicleBatteryEvent batteryEvent = new VehicleBatteryEvent(state.vehicleId(), battery, now);
+            VehicleBatteryEvent batteryEvent = new VehicleBatteryEvent(
+                    state.vehicleId(),
+                    battery,
+                    now);
 
             monitoringClient.sendTracking(tracking);
             monitoringClient.sendBattery(batteryEvent);
@@ -109,6 +120,53 @@ public class SimulationService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private RoutePoint interpolateAlongRoute(java.util.List<RoutePoint> route, double progress) {
+        if (route == null || route.isEmpty()) {
+            throw new IllegalStateException("Route is empty");
+        }
+        if (route.size() == 1) {
+            return route.get(0);
+        }
+        if (progress <= 0.0) {
+            return route.get(0);
+        }
+        if (progress >= 1.0) {
+            return route.get(route.size() - 1);
+        }
+
+        double total = totalRouteDistance(route);
+        double target = total * progress;
+        double covered = 0.0;
+
+        for (int i = 0; i < route.size() - 1; i++) {
+            RoutePoint a = route.get(i);
+            RoutePoint b = route.get(i + 1);
+
+            double segment = distanceMeters(a.lat(), a.lon(), b.lat(), b.lon());
+
+            if (covered + segment >= target) {
+                double localT = (target - covered) / segment;
+                double lat = lerp(a.lat(), b.lat(), localT);
+                double lon = lerp(a.lon(), b.lon(), localT);
+                return new RoutePoint(lat, lon);
+            }
+
+            covered += segment;
+        }
+
+        return route.get(route.size() - 1);
+    }
+
+    private double totalRouteDistance(java.util.List<RoutePoint> route) {
+        double total = 0.0;
+        for (int i = 0; i < route.size() - 1; i++) {
+            RoutePoint a = route.get(i);
+            RoutePoint b = route.get(i + 1);
+            total += distanceMeters(a.lat(), a.lon(), b.lat(), b.lon());
+        }
+        return total;
     }
 
     private double lerp(double a, double b, double t) {

@@ -5,6 +5,6 @@ public record VehicleSnapshot(
     Double lat,
     Double lon,
     Long trackingTimestampEpochMs,
-    Integer batteryPercent,
+    Double batteryPercent,
     Long batteryTimestampEpochMs
 ) {}

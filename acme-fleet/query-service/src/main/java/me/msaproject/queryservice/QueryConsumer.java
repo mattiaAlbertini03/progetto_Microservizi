@@ -113,8 +113,7 @@ public class QueryConsumer {
         String json = r.value();
 
         var node = MAPPER.readTree(json);
-        // nel tuo topic hai visto anche 82.0 -> asInt() va bene (tronca), ma lo rendiamo esplicito
-        int batteryPct = (int) Math.round(node.get("batteryPct").asDouble());
+        double batteryPct = node.get("batteryPct").asDouble();
         long ts = node.get("timestampEpochMs").asLong();
 
         if (vehicleId == null || vehicleId.isBlank()) {

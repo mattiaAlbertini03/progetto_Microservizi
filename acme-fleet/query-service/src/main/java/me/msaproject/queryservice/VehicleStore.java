@@ -21,7 +21,7 @@ public class VehicleStore {
         ));
     }
 
-    public void upsertBattery(String vehicleId, int batteryPercent, long ts) {
+    public void upsertBattery(String vehicleId, Double batteryPercent, long ts) {
         map.compute(vehicleId, (k, old) -> new VehicleSnapshot(
             vehicleId,
             old != null ? old.lat() : null,
