@@ -25,6 +25,10 @@
     </bpmn:textAnnotation>
     <bpmn:association id="Association_03c5hav" associationDirection="None" sourceRef="Activity_0zivodl" targetRef="TextAnnotation_141y926" />
     <bpmn:association id="Association_0w45yzj" associationDirection="None" sourceRef="Event_1d60fvu" targetRef="TextAnnotation_03b13ud" />
+    <bpmn:textAnnotation id="TextAnnotation_0mgiw6x">
+      <bpmn:text>la stazione deve essere null nell veicolo?</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0hxabdz" associationDirection="None" sourceRef="Activity_0zivodl" targetRef="TextAnnotation_0mgiw6x" />
   </bpmn:collaboration>
   <bpmn:process id="Process_1v9lizm" isExecutable="true">
     <bpmn:sequenceFlow id="Flow_1su1jtx" sourceRef="Event_1d60fvu" targetRef="Activity_16xxqc2" />
@@ -103,7 +107,7 @@
           <zeebe:input source="none" target="header.type" />
           <zeebe:input source="template" target="body.type" />
           <zeebe:input source="&#60;xsd:sblocco xmlns:xsd=&#34;mytest.test.com.xsd&#34;&#62;&#10;   &#60;xsd:vehicleId&#62;{{veicleId}}&#60;/xsd:vehicleId&#62;&#10;   &#60;xsd:sid&#62;{{stazioneId}}&#60;/xsd:sid&#62;&#10;&#60;/xsd:sblocco&#62;" target="body.template" />
-          <zeebe:input source="={stazioneId :stazioneId,&#10;veicleId: veicleId}" target="body.context" />
+          <zeebe:input source="={stazioneId :stazioneId,&#10;vehicleId: vehicleId}" target="body.context" />
           <zeebe:input source="=mytest.test.com.xsd" target="namespaces" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
         </zeebe:ioMapping>
@@ -138,6 +142,12 @@
       <bpmn:outgoing>Flow_0t70jee</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0zivodl" name="aggiornare stato veicolo">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="aggiorna-veicolo" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="stato" value="&#34;nollegio&#34;" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1c00p9k</bpmn:incoming>
       <bpmn:incoming>Flow_1o0ef5a</bpmn:incoming>
       <bpmn:outgoing>Flow_04c4mms</bpmn:outgoing>
@@ -245,7 +255,7 @@
           <zeebe:input source="none" target="header.type" />
           <zeebe:input source="template" target="body.type" />
           <zeebe:input source="&#60;xsd:blocco xmlns:xsd=&#34;mytest.test.com.xsd&#34;&#62;&#10;   &#60;xsd:vehicleId&#62;{{veicleId}}&#60;/xsd:vehicleId&#62;&#10;   &#60;xsd:sid&#62;{{stazioneId}}&#60;/xsd:sid&#62;&#10;&#60;/xsd:blocco&#62;" target="body.template" />
-          <zeebe:input source="={stazioneId :stazioneId,&#10;veicleId: newVeicleId}" target="body.context" />
+          <zeebe:input source="={stazioneId :newStazioneId,&#10;vehicleId: vehicleId}" target="body.context" />
           <zeebe:input source="=mytest.test.com.xsd" target="namespaces" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
         </zeebe:ioMapping>
@@ -330,6 +340,12 @@
       <bpmn:outgoing>Flow_07izkf5</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_09gon2l" name="aggiorna stato della macchina">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="aggiorna-veicolo" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="stato" value="&#34;disponibile&#34;" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0bwa3xb</bpmn:incoming>
       <bpmn:outgoing>Flow_082f4t5</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -339,6 +355,9 @@
       <bpmn:incoming>Flow_07izkf5</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:serviceTask id="Activity_1c9kepo" name="calcolo del pagamento">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="calcolo-addebito" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_14xjude</bpmn:incoming>
       <bpmn:outgoing>Flow_0jg31j9</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -412,7 +431,10 @@
     </bpmn:eventBasedGateway>
     <bpmn:serviceTask id="Activity_16xxqc2" name="blocca veicolo">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition />
+        <zeebe:taskDefinition type="aggiorna-veicolo" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="stato" value="&#34;prenotato&#34;" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1su1jtx</bpmn:incoming>
       <bpmn:outgoing>Flow_079to6j</bpmn:outgoing>
@@ -510,7 +532,10 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0urlzjn" name="sblocca veicolo">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition />
+        <zeebe:taskDefinition type="aggiorna-veicolo" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="stato" value="&#34;disponibile&#34;" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0jelzs5</bpmn:incoming>
       <bpmn:incoming>Flow_109hqqi</bpmn:incoming>
@@ -701,10 +726,6 @@
           <dc:Bounds x="1008" y="715" width="64" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Association_0t149rc_di" bpmnElement="Association_0t149rc">
-        <di:waypoint x="282" y="472" />
-        <di:waypoint x="297" y="370" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1su1jtx_di" bpmnElement="Flow_1su1jtx">
         <di:waypoint x="728" y="560" />
         <di:waypoint x="780" y="560" />
@@ -751,10 +772,6 @@
       <bpmndi:BPMNEdge id="Flow_109hqqi_di" bpmnElement="Flow_109hqqi">
         <di:waypoint x="1058" y="690" />
         <di:waypoint x="1240" y="690" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0uz9bt9_di" bpmnElement="Flow_0uz9bt9">
-        <di:waypoint x="975" y="560" />
-        <di:waypoint x="1022" y="560" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qdhwy4_di" bpmnElement="Flow_1qdhwy4">
         <di:waypoint x="1340" y="690" />
@@ -825,6 +842,10 @@
         <di:waypoint x="3460" y="400" />
         <di:waypoint x="3550" y="400" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uz9bt9_di" bpmnElement="Flow_0uz9bt9">
+        <di:waypoint x="975" y="560" />
+        <di:waypoint x="1022" y="560" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1o0ef5a_di" bpmnElement="Flow_1o0ef5a">
         <di:waypoint x="1040" y="542" />
         <di:waypoint x="1040" y="400" />
@@ -844,12 +865,20 @@
         <di:waypoint x="1170" y="690" />
         <di:waypoint x="1240" y="690" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Association_0w45yzj_di" bpmnElement="Association_0w45yzj">
-        <di:waypoint x="708" y="578" />
-        <di:waypoint x="702" y="630" />
+      <bpmndi:BPMNEdge id="Association_0t149rc_di" bpmnElement="Association_0t149rc">
+        <di:waypoint x="282" y="472" />
+        <di:waypoint x="297" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0hxabdz_di" bpmnElement="Association_0hxabdz">
+        <di:waypoint x="1284" y="360" />
+        <di:waypoint x="1356" y="242" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="TextAnnotation_1okm0q5_di" bpmnElement="TextAnnotation_1okm0q5">
         <dc:Bounds x="250" y="320" width="100" height="50" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_03b13ud_di" bpmnElement="TextAnnotation_03b13ud">
+        <dc:Bounds x="650" y="630" width="99.99274099883856" height="54.587688734030195" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="TextAnnotation_1a2246y_di" bpmnElement="TextAnnotation_1a2246y">
@@ -884,8 +913,12 @@
         <di:waypoint x="1298" y="360" />
         <di:waypoint x="1346" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="TextAnnotation_03b13ud_di" bpmnElement="TextAnnotation_03b13ud">
-        <dc:Bounds x="650" y="630" width="99.99274099883856" height="54.587688734030195" />
+      <bpmndi:BPMNEdge id="Association_0w45yzj_di" bpmnElement="Association_0w45yzj">
+        <di:waypoint x="708" y="578" />
+        <di:waypoint x="702" y="630" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_0mgiw6x_di" bpmnElement="TextAnnotation_0mgiw6x">
+        <dc:Bounds x="1310" y="220" width="276" height="22" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
