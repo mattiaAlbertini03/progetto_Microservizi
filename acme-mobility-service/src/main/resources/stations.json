@@ -1,0 +1,37 @@
+[
+  {
+    "id": "station-1",
+    "name": "Stazione Centrale",
+    "lat": 44.5055,
+    "lon": 11.3415,
+    "capacity": 12
+  },
+  {
+    "id": "station-2",
+    "name": "Università",
+    "lat": 44.4966,
+    "lon": 11.3541,
+    "capacity": 10
+  },
+  {
+    "id": "station-3",
+    "name": "Piazza Maggiore",
+    "lat": 44.4938,
+    "lon": 11.3430,
+    "capacity": 8
+  },
+  {
+    "id": "station-4",
+    "name": "Giardini Margherita",
+    "lat": 44.4826,
+    "lon": 11.3548,
+    "capacity": 6
+  },
+  {
+    "id": "station-5",
+    "name": "Fiera",
+    "lat": 44.5092,
+    "lon": 11.3636,
+    "capacity": 9
+  }
+]

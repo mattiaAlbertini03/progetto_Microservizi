@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_13whvpp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.45.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:collaboration id="Collaboration_0o8vhb5">
+    <bpmn:participant id="Participant_1h15n58" name="ACME" processRef="reservation-process" />
+  </bpmn:collaboration>
+  <bpmn:process id="reservation-process" isExecutable="true">
+    <bpmn:startEvent id="Event_17xd4br" name="Reservation request">
+      <bpmn:outgoing>Flow_02d2qvk</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_02d2qvk" sourceRef="Event_17xd4br" targetRef="Activity_1lf2g48" />
+    <bpmn:serviceTask id="Activity_1lf2g48" name="Check vehicle availability">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="check-vehicle-availability" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_02d2qvk</bpmn:incoming>
+      <bpmn:outgoing>Flow_036tseu</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0h3h9mj" name="Is vehicle available?">
+      <bpmn:incoming>Flow_036tseu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uun180</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0au5gp5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_036tseu" sourceRef="Activity_1lf2g48" targetRef="Gateway_0h3h9mj" />
+    <bpmn:endEvent id="Event_1i3bxg3" name="Reservation rejected">
+      <bpmn:incoming>Flow_1uun180</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1uun180" name="No" sourceRef="Gateway_0h3h9mj" targetRef="Event_1i3bxg3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=available = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_05waqsm" name="Reserve vehicle (Block)">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="reserve-vehicle-worker" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0au5gp5</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0au5gp5" name="Yes" sourceRef="Gateway_0h3h9mj" targetRef="Activity_05waqsm">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=available</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0o8vhb5">
+      <bpmndi:BPMNShape id="Participant_1h15n58_di" bpmnElement="Participant_1h15n58" isHorizontal="true">
+        <dc:Bounds x="132" y="110" width="600" height="330" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_17xd4br_di" bpmnElement="Event_17xd4br">
+        <dc:Bounds x="192" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="181" y="255" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1h9v4ii_di" bpmnElement="Activity_1lf2g48">
+        <dc:Bounds x="280" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0h3h9mj_di" bpmnElement="Gateway_0h3h9mj" isMarkerVisible="true">
+        <dc:Bounds x="435" y="205" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="435" y="167.5" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1i3bxg3_di" bpmnElement="Event_1i3bxg3">
+        <dc:Bounds x="542" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="531" y="255" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05waqsm_di" bpmnElement="Activity_05waqsm">
+        <dc:Bounds x="550" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_02d2qvk_di" bpmnElement="Flow_02d2qvk">
+        <di:waypoint x="228" y="230" />
+        <di:waypoint x="280" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_036tseu_di" bpmnElement="Flow_036tseu">
+        <di:waypoint x="380" y="230" />
+        <di:waypoint x="435" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uun180_di" bpmnElement="Flow_1uun180">
+        <di:waypoint x="485" y="230" />
+        <di:waypoint x="542" y="230" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="506" y="212" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0au5gp5_di" bpmnElement="Flow_0au5gp5">
+        <di:waypoint x="460" y="255" />
+        <di:waypoint x="460" y="340" />
+        <di:waypoint x="550" y="340" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="491" y="323" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
