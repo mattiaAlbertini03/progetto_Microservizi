@@ -1,4 +1,4 @@
-package me.msaproject.acmeworkerservice.vehicle;
+package me.msaproject.acmemobilityservice.vehicle;
 
 public record Vehicle(
         String id,

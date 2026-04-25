@@ -31,9 +31,9 @@ FROM container-registry.oracle.com/java/jdk-no-fee-term:21
 WORKDIR /helidon
 
 # Copy the binary built in the 1st stage
-COPY --from=build /helidon/target/acme-worker-service.jar ./
+COPY --from=build /helidon/target/acme-worker-service.jar ./app.jar
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-jar", "acme-worker-service.jar"]
+CMD ["java", "-cp", "app.jar:libs/*", "me.msaproject.acmeworkerservice.Main"]
 
 EXPOSE 8080

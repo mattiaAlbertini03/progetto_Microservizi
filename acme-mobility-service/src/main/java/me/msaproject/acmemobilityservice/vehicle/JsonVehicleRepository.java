@@ -1,4 +1,4 @@
-package me.msaproject.acmeworkerservice.vehicle;
+package me.msaproject.acmemobilityservice.vehicle;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

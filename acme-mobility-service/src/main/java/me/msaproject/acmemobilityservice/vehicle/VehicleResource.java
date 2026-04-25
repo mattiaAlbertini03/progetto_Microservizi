@@ -1,4 +1,6 @@
-package me.msaproject.acmeworkerservice.vehicle;
+package me.msaproject.acmemobilityservice.vehicle;
+
+import java.util.Map;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -38,5 +40,15 @@ public class VehicleResource {
         return vehicleService.getVehicleByQrCode(qrCode)
                 .map(vehicle -> Response.ok(vehicle).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @POST
+    @Path("/{vehicleId}/reserve")
+    public Response reserveVehicle(@PathParam("vehicleId") String vehicleId) {
+        System.out.println("Reserve vehicle requested: " + vehicleId);
+
+        return Response.accepted(Map.of(
+                "vehicleId", vehicleId,
+                "status", "RESERVED")).build();
     }
 }

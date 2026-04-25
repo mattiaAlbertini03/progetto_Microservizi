@@ -1,7 +1,6 @@
-package me.msaproject.acmeworkerservice;
+package me.msaproject.acmeworkerservice.camunda;
 
 import io.camunda.client.CamundaClient;
-import me.msaproject.acmeworkerservice.camunda.CamundaClientFactory;
 import me.msaproject.acmeworkerservice.camunda.workers.CheckVehicleAvailabilityWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReleaseVehicleWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReserveVehicleWorker;

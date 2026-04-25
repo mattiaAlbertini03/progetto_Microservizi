@@ -1,4 +1,4 @@
-package me.msaproject.acmeworkerservice.vehicle;
+package me.msaproject.acmemobilityservice.vehicle;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

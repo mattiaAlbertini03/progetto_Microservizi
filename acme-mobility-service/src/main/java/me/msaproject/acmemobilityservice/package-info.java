@@ -1,2 +1,2 @@
 
-package me.msaproject.acmeworkerservice;
+package me.msaproject.acmemobilityservice;

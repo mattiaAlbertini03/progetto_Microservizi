@@ -1,4 +1,4 @@
-package me.msaproject.acmeworkerservice.station;
+package me.msaproject.acmemobilityservice.station;
 
 public record Station(
         String id,

@@ -88,7 +88,43 @@ export default function Map() {
                 throw new Error(`Errore HTTP ${res.status}`);
             }
 
-            alert(`Prenotazione richiesta per ${vehicle.id}`);
+            const data = await res.json();
+            const reservationId = data.reservationId;
+
+            const source = new EventSource(
+                `${ACME_API_URL}/reservations/${reservationId}/events`
+            );
+
+            source.addEventListener("reservation-update", (event) => {
+                const update = JSON.parse(event.data);
+
+                console.log("Reservation update:", update);
+
+                alert(update.message);
+
+                if (update.status === "RESERVED") {
+                    setVehiclesByStation((prev) => ({
+                        ...prev,
+                        [vehicle.stationId]: prev[vehicle.stationId].map((v) =>
+                            v.id === vehicle.id
+                                ? { ...v, status: "RESERVED" }
+                                : v
+                        ),
+                    }));
+
+                    source.close();
+                }
+
+                if (update.status === "FAILED") {
+                    source.close();
+                }
+            });
+
+            source.onerror = (err) => {
+                console.error("SSE error:", err);
+                source.close();
+            };
+
         } catch (err) {
             console.error(err);
             alert("Errore durante la prenotazione");

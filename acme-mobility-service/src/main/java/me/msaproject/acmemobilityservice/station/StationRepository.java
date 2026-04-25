@@ -1,4 +1,4 @@
-package me.msaproject.acmeworkerservice.station;
+package me.msaproject.acmemobilityservice.station;
 
 import java.util.List;
 import java.util.Optional;

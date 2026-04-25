@@ -22,6 +22,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_036tseu" sourceRef="Activity_1lf2g48" targetRef="Gateway_0h3h9mj" />
     <bpmn:endEvent id="Event_1i3bxg3" name="Reservation rejected">
+      <bpmn:extensionElements />
       <bpmn:incoming>Flow_1uun180</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1uun180" name="No" sourceRef="Gateway_0h3h9mj" targetRef="Event_1i3bxg3">
@@ -29,18 +30,32 @@
     </bpmn:sequenceFlow>
     <bpmn:serviceTask id="Activity_05waqsm" name="Reserve vehicle (Block)">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="reserve-vehicle-worker" />
+        <zeebe:taskDefinition type="reserve-vehicle" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0au5gp5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0kn6il5</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0au5gp5" name="Yes" sourceRef="Gateway_0h3h9mj" targetRef="Activity_05waqsm">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=available</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_1kf4q74" name="Reservation accepted">
+      <bpmn:incoming>Flow_0kn6il5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0kn6il5" sourceRef="Activity_05waqsm" targetRef="Event_1kf4q74" />
+    <bpmn:boundaryEvent id="VEHICLE_RESERVATION_FAILED" attachedToRef="Activity_05waqsm">
+      <bpmn:outgoing>Flow_185ba1n</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1bdota7" errorRef="Error_1ekw6va" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="Event_133e1bp" name="Reservation failed">
+      <bpmn:incoming>Flow_185ba1n</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_185ba1n" sourceRef="VEHICLE_RESERVATION_FAILED" targetRef="Event_133e1bp" />
   </bpmn:process>
+  <bpmn:error id="Error_1ekw6va" name="Vehicle Reservation Failed" errorCode="VEHICLE_RESERVATION_FAILED" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0o8vhb5">
       <bpmndi:BPMNShape id="Participant_1h15n58_di" bpmnElement="Participant_1h15n58" isHorizontal="true">
-        <dc:Bounds x="132" y="110" width="600" height="330" />
+        <dc:Bounds x="132" y="110" width="726" height="428" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_17xd4br_di" bpmnElement="Event_17xd4br">
@@ -69,6 +84,24 @@
         <dc:Bounds x="550" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1kf4q74_di" bpmnElement="Event_1kf4q74">
+        <dc:Bounds x="722" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="711" y="365" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_133e1bp_di" bpmnElement="Event_133e1bp">
+        <dc:Bounds x="672" y="442" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="646" y="485" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dsshlf_di" bpmnElement="VEHICLE_RESERVATION_FAILED">
+        <dc:Bounds x="582" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="597" y="405" width="7" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_02d2qvk_di" bpmnElement="Flow_02d2qvk">
         <di:waypoint x="228" y="230" />
         <di:waypoint x="280" y="230" />
@@ -91,6 +124,15 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="491" y="323" width="18" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kn6il5_di" bpmnElement="Flow_0kn6il5">
+        <di:waypoint x="650" y="340" />
+        <di:waypoint x="722" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_185ba1n_di" bpmnElement="Flow_185ba1n">
+        <di:waypoint x="600" y="398" />
+        <di:waypoint x="600" y="460" />
+        <di:waypoint x="672" y="460" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
