@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: station-service
+  namespace: acme
+  labels:
+    app: station-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: station-service
+  template:
+    metadata:
+      labels:
+        app: station-service
+    spec:
+      containers:
+        - name: station-service
+          image: station-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: station-service
+  namespace: acme
+  labels:
+    app: station-service
+spec:
+  selector:
+    app: station-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

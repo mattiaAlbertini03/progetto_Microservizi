@@ -1,36 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: battery-service
+  name: query-service
+  namespace: acme
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: battery-service
+      app: query-service
   template:
     metadata:
       labels:
-        app: battery-service
+        app: query-service
     spec:
       containers:
-        - name: battery-service
-          image: battery-service:1.0
-          imagePullPolicy: IfNotPresent
+        - name: query-service
+          image: query-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "my-cluster-kafka-bootstrap.kafka:9092"
+            - name: KAFKA_TOPIC_VEHICLE_TRACKING
+              value: "vehicle-tracking"
             - name: KAFKA_TOPIC_VEHICLE_BATTERY
               value: "vehicle-battery"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: battery-service
+  name: query-service
+  namespace: acme
 spec:
+  type: NodePort
   selector:
-    app: battery-service
+    app: query-service
   ports:
     - name: http
       port: 8080

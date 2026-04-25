@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: simulation-visualizer
-  namespace: acme-fleet
+  namespace: simulation
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
       containers:
         - name: simulation-visualizer
           image: simulation-visualizer:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 80
 ---
@@ -24,7 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: simulation-visualizer
-  namespace: acme-fleet
+  namespace: simulation
 spec:
   selector:
     app: simulation-visualizer
