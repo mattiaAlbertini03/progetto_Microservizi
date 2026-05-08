@@ -1,5 +1,6 @@
 package me.msaproject.acmemobilityservice.reservation;
 
+import io.camunda.client.CamundaClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -21,6 +22,9 @@ public class ReservationResource {
     @Inject
     ReservationEventService reservationEventService;
 
+    @Inject
+    CamundaClient camundaClient;
+
     @Context
     Sse sse;
 
@@ -28,9 +32,22 @@ public class ReservationResource {
     public Response createReservation(ReservationRequest request) {
         String reservationId = reservationService.createReservation(request);
 
+        camundaClient
+                .newPublishMessageCommand()
+                .messageName("ONLINE_RESERVATION_REQUEST")
+                .correlationKey(request.userId())
+                .variables(Map.of(
+                        "reservationId", reservationId,
+                        "vehicleId", request.vehicleId(),
+                        "userId", request.userId()
+                ))
+                .send()
+                .join();
+
         return Response.accepted(Map.of(
                 "reservationId", reservationId,
-                "status", "PENDING")).build();
+                "status", "PENDING"
+        )).build();
     }
 
     @GET
@@ -50,6 +67,7 @@ public class ReservationResource {
         reservationEventService.publish(reservationId, event, sse);
 
         return Response.accepted(Map.of(
-                "status", "EVENT_PUBLISHED")).build();
+                "status", "EVENT_PUBLISHED"
+        )).build();
     }
 }

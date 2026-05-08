@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { ACME_API_URL } from '../App'
 
 type User = {
     id: string;
@@ -20,15 +21,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return saved ? JSON.parse(saved) : null;
     });
 
-    function login() {
-        const demoUser = {
-            id: "user-1",
-            name: "Mario Rossi",
-            email: "mario.rossi@example.com",
-        };
+    async function login() {
+        try {
+            const response = await fetch(`${ACME_API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: "demo",
+                    password: "demo",
+                }),
+            });
 
-        localStorage.setItem("acme-user", JSON.stringify(demoUser));
-        setUser(demoUser);
+            if (!response.ok) {
+                throw new Error("Login failed");
+            }
+
+            const data = await response.json();
+
+            const user: User = {
+                id: data.userId,
+                name: data.username,
+                email: data.email ?? "demo@acme.local",
+            };
+
+            localStorage.setItem("acme-user", JSON.stringify(user));
+            setUser(user);
+        } catch (error) {
+            console.error("Login error:", error);
+        }
     }
 
     function logout() {
@@ -41,6 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
+
+
 }
 
 export function useAuth() {

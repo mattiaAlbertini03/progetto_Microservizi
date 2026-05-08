@@ -4,6 +4,7 @@ import { useAuth } from "./AuthContext";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Vehicle from "./Vehicle";
+import { ACME_API_URL } from '../App'
 
 const defaultIcon = L.icon({
     iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -12,8 +13,6 @@ const defaultIcon = L.icon({
     iconSize: [25, 41],
     iconAnchor: [12, 41],
 });
-
-const ACME_API_URL = "http://192.168.49.2:30080";
 
 export default function Map() {
     const [stations, setStations] = useState([]);

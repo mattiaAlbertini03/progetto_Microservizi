@@ -1,0 +1,27 @@
+helm install camunda camunda/camunda-platform \
+  --set orchestration.exporters.rdbms.enabled=true \
+  --set-string orchestration.clusterSize='1' \
+  --set-string orchestration.partitionCount='1' \
+  --set-string orchestration.replicationFactor='1' \
+  --set-string 'orchestration.env[0].name=CAMUNDA_PERSISTENT_SESSIONS_ENABLED' \
+  --set-string 'orchestration.env[0].value=false' \
+  -n orchestration
+  
+  helm upgrade camunda-platform camunda/camunda-platform \
+  --version 14.0.1 \
+  -n orchestration \
+  -f override.yaml
+  
+kubectl port-forward svc/camunda-zeebe-gateway 26500:26500 8080:8080 -n orchestration
+
+  eval $(minikube docker-env)
+  docker build -t acme-mobility-service:latest .
+  kubectl rollout restart deployment/acme-worker-service -n acme
+  kubectl rollout status deployment/acme-mobility-service -n acme
+
+  kubectl logs deployment/acme-worker-service -n acme
+  
+    kubectl delete deployment acme-mobility-service -n acme
+
+  curl http://192.168.49.2:30080/stations
+

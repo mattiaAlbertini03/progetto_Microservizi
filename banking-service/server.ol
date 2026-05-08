@@ -2,7 +2,7 @@ include "console.iol"
 include "interface.iol"	
 
 inputPort MyInput {
-    Location: "socket://localhost:8002/"
+    Location: "socket://0.0.0.0:8080/"
     Protocol: soap {
         .wsdl = "./MyInput.wsdl";
         .wsdl.port = "MyInputServicePort"
@@ -39,7 +39,7 @@ cset {  sid: OpMessage.sid }
 main{
     login( request )( response ){
         username = request.name
-        conto = request.value
+        conto = request.conto
         ricarica = request.ricarica
         isLogin = true
         response.sid = csets.sid = new

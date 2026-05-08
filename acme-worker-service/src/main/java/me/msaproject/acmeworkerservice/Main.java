@@ -1,6 +1,7 @@
-package me.msaproject.acmeworkerservice.camunda;
+package me.msaproject.acmeworkerservice;
 
 import io.camunda.client.CamundaClient;
+import me.msaproject.acmeworkerservice.camunda.CamundaClientFactory;
 import me.msaproject.acmeworkerservice.camunda.workers.CheckVehicleAvailabilityWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReleaseVehicleWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReserveVehicleWorker;
@@ -17,7 +18,7 @@ public final class Main {
         CamundaClient client = CamundaClientFactory.create();
 
         client.newDeployResourceCommand()
-                .addResourceFromClasspath("reservation-process.bpmn")
+                .addResourceFromClasspath("process.bpmn")
                 .execute();
 
         LOG.info("Deployed BPMN.");

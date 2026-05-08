@@ -33,7 +33,7 @@ spec:
   selector:
     app: banking-service
   ports:
-    - name: http
+    - name: soap
       port: 8080
       targetPort: 8080
   type: ClusterIP
