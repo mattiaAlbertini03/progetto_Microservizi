@@ -2,7 +2,7 @@ include "console.iol"
 include "interface.iol"	
 
 inputPort MyInput {
-    Location: "socket://localhost:8001/" 
+    Location: "socket://0.0.0.0:8080/" 
     Protocol: soap {
         .wsdl = "./MyInput.wsdl",
         .wsdl.port = "MyInputServicePort",
