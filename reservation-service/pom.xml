@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemareservation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.helidon.applications</groupId>
+    <artifactId>helidon-mp</artifactId>
+    <version>4.3.4</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>me.msa-project</groupId>
+  <artifactId>reservation-service</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <dependencies>
+    <!-- Helidon MP -->
+    <dependency>
+      <groupId>io.helidon.microprofile.bundles</groupId>
+      <artifactId>helidon-microprofile-core</artifactId>
+    </dependency>
+
+    <dependency>
+    <groupId>io.camunda</groupId>
+    <artifactId>camunda-client-java</artifactId>
+    <version>8.8.0</version>
+</dependency>
+
+    <dependency>
+      <groupId>io.helidon.microprofile.openapi</groupId>
+      <artifactId>helidon-microprofile-openapi</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.helidon.microprofile.health</groupId>
+      <artifactId>helidon-microprofile-health</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.helidon.microprofile.metrics</groupId>
+      <artifactId>helidon-microprofile-metrics</artifactId>
+    </dependency>
+
+    <!-- JSON (Jersey + Jackson) -->
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+
+    <dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-sse</artifactId>
+</dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>io.helidon.logging</groupId>
+      <artifactId>helidon-logging-jul</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Reactive Messaging + Kafka (Helidon way) -->
+    <dependency>
+      <groupId>io.helidon.microprofile.messaging</groupId>
+      <artifactId>helidon-microprofile-messaging</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.helidon.messaging.kafka</groupId>
+      <artifactId>helidon-messaging-kafka</artifactId>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>io.helidon.microprofile.testing</groupId>
+      <artifactId>helidon-microprofile-testing-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>make-index</id>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-dependency-plugin</artifactId>
+  <executions>
+    <execution>
+      <id>copy-libs</id>
+      <phase>package</phase>
+      <goals>
+        <goal>copy-dependencies</goal>
+      </goals>
+      <configuration>
+        <outputDirectory>${project.build.directory}/libs</outputDirectory>
+        <includeScope>runtime</includeScope>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+    </plugins>
+  </build>
+</project>

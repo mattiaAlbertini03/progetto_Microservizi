@@ -1,0 +1,33 @@
+# 1st stage: build
+FROM container-registry.oracle.com/java/jdk-no-fee-term:21 AS build
+
+WORKDIR /usr/share
+RUN set -eux; \
+    curl -fsSLO https://archive.apache.org/dist/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz; \
+    tar -xzf apache-maven-3.8.4-bin.tar.gz; \
+    rm apache-maven-3.8.4-bin.tar.gz; \
+    mv apache-maven-3.8.4 maven; \
+    ln -s /usr/share/maven/bin/mvn /bin/mvn
+
+WORKDIR /helidon
+
+# cache deps
+COPY pom.xml .
+RUN mvn -q -DskipTests package
+
+# build app
+COPY src ./src
+RUN mvn -q -DskipTests package
+
+# 2nd stage: runtime
+FROM container-registry.oracle.com/java/jdk-no-fee-term:21
+WORKDIR /helidon
+
+# copia jar + libs
+COPY --from=build /helidon/target/reservation-service.jar ./
+COPY --from=build /helidon/target/libs ./libs
+
+EXPOSE 8080
+
+# AVVIO CORRETTO: classpath + Main Helidon MP (così CDI + SmallRye vengono caricati)
+CMD ["java", "-cp", "reservation-service.jar:libs/*", "io.helidon.microprofile.cdi.Main"]

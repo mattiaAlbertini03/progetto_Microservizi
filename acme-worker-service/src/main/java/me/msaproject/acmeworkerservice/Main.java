@@ -2,7 +2,6 @@ package me.msaproject.acmeworkerservice;
 
 import io.camunda.client.CamundaClient;
 import me.msaproject.acmeworkerservice.camunda.CamundaClientFactory;
-import me.msaproject.acmeworkerservice.camunda.workers.CheckVehicleAvailabilityWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReleaseVehicleWorker;
 import me.msaproject.acmeworkerservice.camunda.workers.ReserveVehicleWorker;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ public final class Main {
         client.newTopologyRequest().execute();
         LOG.info("Connected to Camunda");
 
-        new CheckVehicleAvailabilityWorker(client).open();
         new ReserveVehicleWorker(client).open();
         new ReleaseVehicleWorker(client).open();
 

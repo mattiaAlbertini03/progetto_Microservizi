@@ -187,3 +187,140 @@ export default function Map() {
         </div>
     );
 }
+
+/* const source = new EventSource(
+  `/reservation-events/${reservationId}`
+);
+
+source.addEventListener("reservation-update", (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.status === "RESERVED") {
+    console.log("Prenotazione confermata");
+    source.close();
+  }
+
+  if (data.status === "FAILED") {
+    console.error(data.message);
+    source.close();
+  }
+});
+
+async function createReservation({ userId, vehicleId, stationId, token }) {
+  const response = await fetch("/reservations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      userId,
+      vehicleId,
+      stationId
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Errore durante la richiesta di prenotazione");
+  }
+
+  return await response.json();
+}
+
+function listenReservationRequest(requestId, {
+  onReserved,
+  onFailed
+}) {
+  const source = new EventSource(
+    `/reservation-requests/${requestId}/events`
+  );
+
+  source.addEventListener("reservation-update", (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.status === "RESERVED") {
+      source.close();
+
+      onReserved({
+        requestId: data.requestId,
+        reservationId: data.reservationId,
+        message: data.message
+      });
+    }
+
+    if (data.status === "FAILED") {
+      source.close();
+
+      onFailed({
+        requestId: data.requestId,
+        message: data.message
+      });
+    }
+  });
+
+  source.onerror = () => {
+    source.close();
+
+    onFailed({
+      requestId,
+      message: "Connessione SSE interrotta"
+    });
+  };
+
+  return source;
+}
+
+async function reserveVehicle({ userId, vehicleId, stationId, token }) {
+  const result = await createReservation({
+    userId,
+    vehicleId,
+    stationId,
+    token
+  });
+
+  const requestId = result.requestId;
+
+  listenReservationRequest(requestId, {
+    onReserved: ({ reservationId, message }) => {
+      console.log("Prenotazione confermata:", reservationId);
+      console.log(message);
+
+      // Da qui in poi usi reservationId
+      // per pickup/cancel.
+    },
+
+    onFailed: ({ message }) => {
+      console.error("Prenotazione fallita:", message);
+    }
+  });
+}
+
+async function pickupReservation({ reservationId, token }) {
+  const response = await fetch(`/reservations/${reservationId}/pickup`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Errore durante il pickup della prenotazione");
+  }
+
+  return await response.json();
+}
+
+async function cancelReservation({ reservationId, token }) {
+  const response = await fetch(`/reservations/${reservationId}/cancel`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Errore durante l'annullamento della prenotazione");
+  }
+
+  return await response.json();
+} */

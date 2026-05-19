@@ -1,0 +1,9 @@
+package me.msaproject.reservationservice.dto;
+
+public record ReservationResponse(
+        String reservationId,
+        String userId,
+        String vehicleId,
+        String stationId,
+        String status
+) {}

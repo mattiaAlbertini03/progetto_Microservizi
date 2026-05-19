@@ -8,17 +8,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class ReserveVehicleWorker implements AcmeWorker {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(ReserveVehicleWorker.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ReserveVehicleWorker.class);
 
-    private static final String ACME_BASE_URL =
-            "http://acme-mobility-service.acme:8080";
+    private static final String ACME_BASE_URL = "http://acme-mobility-service.acme:8080";
 
-    private static final String ERROR_CODE =
-            "VEHICLE_RESERVATION_FAILED";
+    private static final String ERROR_CODE = "VEHICLE_RESERVATION_FAILED";
 
     private final CamundaClient client;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -34,36 +32,23 @@ public class ReserveVehicleWorker implements AcmeWorker {
         client.newWorker()
                 .jobType("reserve-vehicle")
                 .handler((jobClient, job) -> {
-                    String reservationId = String.valueOf(
-                            job.getVariablesAsMap().get("reservationId")
-                    );
-                    String vehicleId = String.valueOf(
-                            job.getVariablesAsMap().get("vehicleId")
-                    );
+                    Map<String, Object> variables = job.getVariablesAsMap();
+
+                    String reservationId = String.valueOf(variables.get("reservationId"));
 
                     try {
-                        LOG.info("Reserving vehicle: reservationId={}, vehicleId={}",
-                                reservationId, vehicleId);
+                        LOG.info("Confirming reservation: reservationId={}", reservationId);
 
-                        reserveVehicle(vehicleId);
-                        publishReservationEvent(
-                                reservationId,
-                                "RESERVED",
-                                "Veicolo prenotato con successo"
-                        );
+                        reserveVehicle(reservationId);
 
                         jobClient.newCompleteCommand(job.getKey())
                                 .send()
                                 .join();
 
-                        LOG.info("Vehicle reserved: reservationId={}, vehicleId={}",
-                                reservationId, vehicleId);
+                        LOG.info("Reservation confirmed: reservationId={}", reservationId);
 
                     } catch (Exception e) {
-                        LOG.error("Vehicle reservation failed: reservationId={}, vehicleId={}",
-                                reservationId, vehicleId, e);
-
-                        publishFailureEventSafely(reservationId, e.getMessage());
+                        LOG.error("Vehicle reservation failed: reservationId={}", reservationId, e);
 
                         jobClient.newThrowErrorCommand(job.getKey())
                                 .errorCode(ERROR_CODE)
@@ -75,9 +60,9 @@ public class ReserveVehicleWorker implements AcmeWorker {
                 .open();
     }
 
-    private void reserveVehicle(String vehicleId) throws Exception {
+    private void reserveVehicle(String reservationId) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(ACME_BASE_URL + "/vehicles/" + vehicleId + "/reserve"))
+                .uri(URI.create(ACME_BASE_URL + "/reservations"))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
 
@@ -86,64 +71,14 @@ public class ReserveVehicleWorker implements AcmeWorker {
                 HttpResponse.BodyHandlers.ofString()
         );
 
-        LOG.info("Reserve vehicle response: statusCode={}, body={}",
+        LOG.info("Reserve reservation response: statusCode={}, body={}",
                 response.statusCode(), response.body());
 
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new IllegalStateException(
-                    "Failed to reserve vehicle " + vehicleId +
+                    "Failed to reserve vehicle for reservation " + reservationId +
                             ": HTTP " + response.statusCode()
             );
-        }
-    }
-
-    private void publishReservationEvent(
-            String reservationId,
-            String status,
-            String message
-    ) throws Exception {
-        String json = """
-                {
-                  "reservationId": "%s",
-                  "status": "%s",
-                  "message": "%s"
-                }
-                """.formatted(reservationId, status, message);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(
-                        ACME_BASE_URL + "/reservations/" + reservationId + "/events"
-                ))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-        );
-
-        LOG.info("Reservation event response: statusCode={}, body={}",
-                response.statusCode(), response.body());
-
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException(
-                    "Failed to publish reservation event " + reservationId +
-                            ": HTTP " + response.statusCode()
-            );
-        }
-    }
-
-    private void publishFailureEventSafely(String reservationId, String errorMessage) {
-        try {
-            publishReservationEvent(
-                    reservationId,
-                    "FAILED",
-                    "Prenotazione fallita: " + errorMessage
-            );
-        } catch (Exception eventException) {
-            LOG.warn("Could not publish failure event for reservationId={}",
-                    reservationId, eventException);
         }
     }
 }
