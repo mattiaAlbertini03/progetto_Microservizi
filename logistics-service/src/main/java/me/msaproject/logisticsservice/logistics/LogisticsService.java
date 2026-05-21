@@ -36,8 +36,7 @@ public class LogisticsService {
 
         if (vehicle.status() != VehicleStatus.AVAILABLE) {
             throw new IllegalStateException(
-                    "Vehicle is not available: " + vehicleId
-            );
+                    "Vehicle is not available: " + vehicleId);
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.ON_HOLD);
@@ -50,8 +49,7 @@ public class LogisticsService {
 
         if (vehicle.status() != VehicleStatus.ON_HOLD) {
             throw new IllegalStateException(
-                    "Vehicle cannot be picked up from status: " + vehicle.status()
-            );
+                    "Vehicle cannot be picked up from status: " + vehicle.status());
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.IN_USE);
@@ -67,14 +65,27 @@ public class LogisticsService {
         return toStatusResponse(updated);
     }
 
+    public VehicleStatusResponse returnVehicle(String vehicleId) {
+        Vehicle vehicle = findVehicleOrThrow(vehicleId);
+
+        if (vehicle.status() == VehicleStatus.IN_USE) {
+            throw new IllegalStateException(
+                    "Vehicle cannot be returned from status: " + vehicle.status());
+        }
+
+        Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
+
+        return toStatusResponse(updated);
+
+    }
+
     public VehicleStatusResponse startCharging(String vehicleId) {
         Vehicle vehicle = findVehicleOrThrow(vehicleId);
 
         if (vehicle.status() == VehicleStatus.IN_USE ||
                 vehicle.status() == VehicleStatus.ON_HOLD) {
             throw new IllegalStateException(
-                    "Vehicle cannot be charged while status is: " + vehicle.status()
-            );
+                    "Vehicle cannot be charged while status is: " + vehicle.status());
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.CHARGING);
@@ -87,8 +98,7 @@ public class LogisticsService {
 
         if (vehicle.status() != VehicleStatus.CHARGING) {
             throw new IllegalStateException(
-                    "Vehicle is not charging: " + vehicleId
-            );
+                    "Vehicle is not charging: " + vehicleId);
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
@@ -108,8 +118,7 @@ public class LogisticsService {
                 vehicle.lon(),
                 vehicle.status(),
                 newBatteryPct,
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
 
         vehicleRepository.getVehicles().put(vehicleId, updated);
         vehicleRepository.sync();
@@ -150,8 +159,7 @@ public class LogisticsService {
                 vehicle.lon(),
                 status,
                 vehicle.batteryPct(),
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
 
         vehicleRepository.getVehicles().put(vehicle.id(), updated);
         vehicleRepository.sync();
@@ -167,15 +175,13 @@ public class LogisticsService {
                 vehicle.lon(),
                 vehicle.status(),
                 vehicle.batteryPct(),
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
     }
 
     private VehicleStatusResponse toStatusResponse(Vehicle vehicle) {
         return new VehicleStatusResponse(
                 vehicle.id(),
                 vehicle.status(),
-                vehicle.batteryPct()
-        );
+                vehicle.batteryPct());
     }
 }

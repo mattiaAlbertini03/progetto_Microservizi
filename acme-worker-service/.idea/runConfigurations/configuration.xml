@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="acme-worker-service" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="io.helidon.Main" />
-    <module name="acme-worker-service" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
-  </configuration>
-</component>

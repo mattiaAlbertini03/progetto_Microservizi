@@ -2,12 +2,7 @@ package me.msaproject.acmemobilityservice;
 
 import io.camunda.client.CamundaClient;
 import me.msaproject.acmemobilityservice.camunda.CamundaClientFactory;
-import me.msaproject.acmemobilityservice.client.ReservationClient;
 import me.msaproject.acmemobilityservice.workers.CalculateChargeWorker;
-import me.msaproject.acmemobilityservice.workers.CancelReservationWorker;
-import me.msaproject.acmemobilityservice.workers.CreateReservationWorker;
-import me.msaproject.acmemobilityservice.workers.HoldReservationWorker;
-import me.msaproject.acmemobilityservice.workers.PickupReservationWorker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +15,6 @@ public final class Main {
         LOG.info("Starting acme-worker-service...");
 
         CamundaClient camundaClient = CamundaClientFactory.create();
-        ReservationClient reservationClient = new ReservationClient();
 
         camundaClient.newDeployResourceCommand()
                 .addResourceFromClasspath("process.bpmn")
@@ -31,10 +25,6 @@ public final class Main {
         camundaClient.newTopologyRequest().execute();
         LOG.info("Connected to Camunda");
 
-        new CreateReservationWorker(camundaClient, reservationClient).open();
-        new HoldReservationWorker(camundaClient, reservationClient).open();
-        new CancelReservationWorker(camundaClient, reservationClient).open();
-        new PickupReservationWorker(camundaClient, reservationClient).open();
         new CalculateChargeWorker(camundaClient).open();
 
         LOG.info("All workers started");
