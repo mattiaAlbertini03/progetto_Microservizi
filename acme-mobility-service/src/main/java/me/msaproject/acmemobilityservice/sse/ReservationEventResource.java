@@ -57,4 +57,25 @@ public class ReservationEventResource {
 
         return Response.ok().build();
     }
+
+    @GET
+    @Path("/reservations/{reservationId}/return/events")
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    public void listenReservationReturnEvents(
+            @PathParam("reservationId") String reservationId,
+            @Context SseEventSink eventSink) {
+
+        reservationEventService.subscribe("return-" + reservationId, eventSink);
+    }
+
+    @POST
+    @Path("/reservations/{reservationId}/return/events")
+    public Response publishReservationReturnEvent(
+            @PathParam("reservationId") String reservationId,
+            ReservationEvent event) {
+
+        reservationEventService.publish("return-" + reservationId, event);
+
+        return Response.ok().build();
+    }
 }

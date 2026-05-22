@@ -182,14 +182,6 @@ public class ReservationsApi {
                                         Response.Status.CONFLICT);
                 }
 
-                boolean vehicleAtDestination = fleetClient.isVehicleAtDestination(reservationId);
-
-                if (!vehicleAtDestination) {
-                        throw new WebApplicationException(
-                                        "Vehicle has not reached the destination station yet",
-                                        Response.Status.CONFLICT);
-                }
-
                 ReservationRequest returnRequest = new ReservationRequest(
                                 reservationId,
                                 userId,
@@ -204,9 +196,7 @@ public class ReservationsApi {
                                 .send()
                                 .join();
 
-                return Response.accepted(new ReservationStatusResponse(
-                                reservationId,
-                                "RETURN_PENDING")).build();
+                return Response.accepted().build();
         }
 
         @GET

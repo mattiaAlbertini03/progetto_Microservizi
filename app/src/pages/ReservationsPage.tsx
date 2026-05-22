@@ -48,6 +48,42 @@ export default function ReservationsPage() {
         }
     }
 
+    function listenReturnEvents(reservationId: string) {
+        const eventSource = new EventSource(
+            `${ACME_API_URL}/reservations/${reservationId}/return/events`
+        );
+
+        eventSource.addEventListener("reservation-update", async (event) => {
+            const data = JSON.parse((event as MessageEvent).data);
+
+            console.log("Return event:", data);
+
+            switch (data.status) {
+                case "VEHICLE_NOT_AT_DESTINATION":
+                    alert("Il veicolo non è ancora arrivato alla stazione.");
+                    break;
+
+                case "RETURN_CONFIRMED":
+                    alert("Veicolo riconsegnato correttamente.");
+                    await loadReservations();
+                    eventSource.close();
+                    break;
+
+                case "RETURN_FAILED":
+                    alert("Errore durante la riconsegna.");
+                    eventSource.close();
+                    break;
+            }
+        });
+
+        eventSource.onerror = () => {
+            console.error("Errore SSE return");
+            eventSource.close();
+        };
+
+        return eventSource;
+    }
+
     async function pickupReservation(reservation: ReservationData) {
         await sendReservationAction(
             reservation,
@@ -65,11 +101,18 @@ export default function ReservationsPage() {
     }
 
     async function returnReservation(reservation: ReservationData) {
-        await sendReservationAction(
-            reservation,
-            "return",
-            "Riconsegna richiesta"
-        );
+        const eventSource = listenReturnEvents(reservation.id);
+
+        try {
+            await sendReservationAction(
+                reservation,
+                "return",
+                "Richiesta di riconsegna inviata"
+            );
+        } catch (err) {
+            eventSource.close();
+            throw err;
+        }
     }
 
     async function sendReservationAction(
@@ -93,19 +136,12 @@ export default function ReservationsPage() {
             );
 
             if (!response.ok) {
-                if (response.status === 409) {
-                    if (action === "return") {
-                        alert("Il veicolo non è ancora arrivato alla stazione di destinazione.");
-                    } else {
-                        alert("Operazione non consentita nello stato attuale della prenotazione.");
-                    }
-
-                    return;
+                if (response.status === 403) {
+                    throw new Error("FORBIDDEN");
                 }
 
-                if (response.status === 403) {
-                    alert("Non sei autorizzato a modificare questa prenotazione.");
-                    return;
+                if (response.status === 409) {
+                    throw new Error("CONFLICT");
                 }
 
                 throw new Error(`HTTP ${response.status}`);
@@ -113,10 +149,25 @@ export default function ReservationsPage() {
 
             alert(successMessage);
 
-            await loadReservations();
+            if (action !== "return") {
+                await loadReservations();
+            }
         } catch (err) {
             console.error(err);
+
+            if (err instanceof Error && err.message === "FORBIDDEN") {
+                alert("Non sei autorizzato a modificare questa prenotazione.");
+                return;
+            }
+
+            if (err instanceof Error && err.message === "CONFLICT") {
+                alert("Operazione non consentita nello stato attuale della prenotazione.");
+                return;
+            }
+
             alert("Errore durante l'operazione");
+
+            throw err;
         }
     }
 

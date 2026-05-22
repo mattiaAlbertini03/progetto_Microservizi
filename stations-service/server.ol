@@ -18,44 +18,63 @@ service StazioneService {
         Interfaces: Stazione_service 
     }
 
+    inputPort Web {
+        location: "socket://0.0.0.0:8000/"
+        protocol: http {
+            format = "json"
+            osc << {
+                listStations << {
+                    template = "/stations"
+                    method = "get"
+                }
+            }
+            default = "default"
+        }
+        interfaces: RESTInterface
+    }
+
     init {
         isLogin = false
     }
 
     execution { concurrent }
 
-cset {  sid: OpMessage.sid }
+    cset {  sid: OpMessage.sid }
     
-main {
+    main {
         [ stations( req )( res ) {
             readFile@FileService( {
-                filename = "./stations.json"
-            } )( fileContent );
-            res.value = fileContent
+                filename = "./stations.json",
+               format = "json"
+            } )( data );
+          res.stations << data
         }]
 
         [ login( req )( response ) {
             isLogin = true;
-            response.sid = csed.new = new // 'new' creates a new correlation ID
+            response.sid = cset.new = new // 'new' creates a new correlation ID
         }]
-	[ sblocco( request ) ( res ) {
-		if(isLogin){
-			stazione = request.sid
-			auto = request.vehicleId
-			res.value = true
-		}
-	}]
-	[ blocco( request )( res ) {
-		if(isLogin){
-			stazione = request.sid
-			auto = request.vehicleId
-			res.value = true
-		}
-	}] 
-	[ logout ( request )( res ) {
-		if(isLogin){
-			isLogin = false
-		}
-	}]
+
+	    [ sblocco( request ) ( res ) {
+		    if(isLogin){
+			    stazione = request.sid
+		    	auto = request.vehicleId
+			    res.value = true
+		    }
+	    }]
+
+	    [ blocco( request )( res ) {
+		    if(isLogin){
+			    stazione = request.sid
+			    auto = request.vehicleId
+			    res.value = true
+		    }
+	    }]
+
+	    [ logout ( request )( res ) {
+		    if(isLogin){
+			    isLogin = false
+		    }
+	    }]
     }
 }
