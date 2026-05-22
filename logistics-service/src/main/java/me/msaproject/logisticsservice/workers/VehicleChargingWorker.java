@@ -12,6 +12,9 @@ public class VehicleChargingWorker implements Runnable {
     private static final Logger LOG =
             LoggerFactory.getLogger(VehicleChargingWorker.class);
 
+    private static final int CHARGE_INCREMENT = 2;
+    private static final long CHARGE_INTERVAL_MS = 30000;
+
     private final LogisticsService logisticsService;
 
     public VehicleChargingWorker(LogisticsService logisticsService) {
@@ -20,33 +23,49 @@ public class VehicleChargingWorker implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 List<Vehicle> chargingVehicles =
                         logisticsService.getChargingVehicles();
 
                 for (Vehicle vehicle : chargingVehicles) {
-                    logisticsService.increaseBattery(vehicle.id(), 5);
-
-                    LOG.info("Charging vehicle: vehicleId={}, batteryPct={}",
-                            vehicle.id(),
-                            Math.min(100, vehicle.batteryPct() + 5)
+                    int nextBatteryPct = Math.min(
+                            100,
+                            vehicle.batteryPct() + CHARGE_INCREMENT
                     );
 
-                    if (vehicle.batteryPct() + 5 >= 100) {
+                    logisticsService.increaseBattery(
+                            vehicle.id(),
+                            CHARGE_INCREMENT
+                    );
+
+                    LOG.info(
+                            "Charging vehicle: vehicleId={}, batteryPct={}",
+                            vehicle.id(),
+                            nextBatteryPct
+                    );
+
+                    if (nextBatteryPct >= 100) {
                         logisticsService.stopCharging(vehicle.id());
 
-                        LOG.info("Vehicle fully charged: vehicleId={}", vehicle.id());
+                        LOG.info(
+                                "Vehicle fully charged: vehicleId={}",
+                                vehicle.id()
+                        );
                     }
                 }
 
-                Thread.sleep(10_000);
+                Thread.sleep(CHARGE_INTERVAL_MS);
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
 
             } catch (Exception e) {
                 LOG.error("Vehicle charging worker failed", e);
 
                 try {
-                    Thread.sleep(10_000);
+                    Thread.sleep(CHARGE_INTERVAL_MS);
                 } catch (InterruptedException interruptedException) {
                     Thread.currentThread().interrupt();
                     return;

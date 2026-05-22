@@ -1,18 +1,11 @@
-import Vehicle, { type VehicleData } from "./Vehicle";
-
-export type StationData = {
-    id: string;
-    name: string;
-    lat: number;
-    lon: number;
-    capacity: number;
-};
+import Vehicle from "./Vehicle";
+import type { StationData, VehicleData } from "../types/domain";
 
 type StationProps = {
     station: StationData;
     vehicles?: VehicleData[];
     loading?: boolean;
-    onReserve?: (vehicle: VehicleData) => void | Promise<void>;
+    onReserve?: (station: StationData, vehicle: VehicleData) => void | Promise<void>;
 };
 
 export default function Station({
@@ -36,7 +29,7 @@ export default function Station({
             {loading && <p>Caricamento veicoli...</p>}
 
             {!loading && vehicles?.length === 0 && (
-                <p>Nessun veicolo presente.</p>
+                <p>Nessun veicolo disponibile.</p>
             )}
 
             {!loading &&
@@ -44,7 +37,11 @@ export default function Station({
                     <Vehicle
                         key={vehicle.id}
                         vehicle={vehicle}
-                        onReserve={onReserve}
+                        onReserve={
+                            onReserve
+                                ? () => onReserve(station, vehicle)
+                                : undefined
+                        }
                     />
                 ))}
         </div>

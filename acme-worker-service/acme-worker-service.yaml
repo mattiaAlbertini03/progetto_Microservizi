@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acme-worker-service
+  namespace: acme
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acme-worker-service
+  template:
+    metadata:
+      labels:
+        app: acme-worker-service
+    spec:
+      containers:
+        - name: acme-worker-service
+          image: acme-worker-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acme-worker-service
+  namespace: acme
+spec:
+  type: ClusterIP
+  selector:
+    app: acme-worker-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

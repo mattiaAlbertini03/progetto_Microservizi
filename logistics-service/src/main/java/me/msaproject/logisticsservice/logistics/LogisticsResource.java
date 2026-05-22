@@ -14,7 +14,13 @@ public class LogisticsResource {
         LogisticsService logisticsService;
 
         @GET
-        public Response getVehicles() {
+        public Response getVehicles(
+                        @QueryParam("lat") Double lat,
+                        @QueryParam("lon") Double lon) {
+                if (lat != null && lon != null) {
+                        return Response.ok(logisticsService.getVehiclesByPosition(lat, lon)).build();
+                }
+
                 return Response.ok(logisticsService.getVehicles()).build();
         }
 

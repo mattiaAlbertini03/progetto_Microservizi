@@ -27,6 +27,10 @@ service StazioneService {
                     template = "/stations"
                     method = "get"
                 }
+                getStation << {
+                    template = "/stations/{id}"
+                    method = "get"
+                }
             }
             default = "default"
         }
@@ -42,12 +46,39 @@ service StazioneService {
     cset {  sid: OpMessage.sid }
     
     main {
-        [ stations( req )( res ) {
+        [ listStations( req )( res ) {
             readFile@FileService( {
                 filename = "./stations.json",
-               format = "json"
+                format = "json"
             } )( data );
-          res.stations << data
+
+            for( i = 0, i < #data._, i++ ) {
+                res.stations[i].id = data._[i].id
+                res.stations[i].name = data._[i].name
+                res.stations[i].lat = data._[i].lat
+                res.stations[i].lon = data._[i].lon
+                res.stations[i].capacity = data._[i].capacity
+            }
+        }]
+
+        [ getStation( req )( res ) {
+            readFile@FileService( {
+                filename = "./stations.json",
+                format = "json"
+            } )( data );
+
+            found = false;
+
+            for( i = 0, i < #data._, i++ ) {
+                if( data._[i].id == req.id ) {
+                    res.id = data._[i].id;
+                    res.name = data._[i].name;
+                    res.lat = data._[i].lat;
+                    res.lon = data._[i].lon;
+                    res.capacity = data._[i].capacity;
+                    found = true
+                }
+            }
         }]
 
         [ login( req )( response ) {

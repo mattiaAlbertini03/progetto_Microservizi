@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 
 import { ACME_API_URL } from "../App";
 import { useAuth } from "../components/AuthContext";
-import ReservationCard, {
-    type ReservationData,
-} from "../components/ReservationCard";
+import ReservationCard from "../components/ReservationCard";
+import {
+    getReservations,
+    sendReservationAction,
+} from "../api/acmeApi";
+import type { ReservationData } from "../types/domain";
 
 export default function ReservationsPage() {
     const { user } = useAuth();
@@ -15,30 +18,17 @@ export default function ReservationsPage() {
 
     useEffect(() => {
         loadReservations();
-    }, []);
+    }, [user]);
 
     async function loadReservations() {
         if (!user) {
+            setLoading(false);
             return;
         }
 
         try {
             setLoading(true);
-
-            const response = await fetch(
-                `${ACME_API_URL}/reservations?userId=${user.id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${user.id}`,
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data: ReservationData[] = await response.json();
+            const data = await getReservations(user.id);
             setReservations(data);
         } catch (err) {
             console.error(err);
@@ -55,8 +45,6 @@ export default function ReservationsPage() {
 
         eventSource.addEventListener("reservation-update", async (event) => {
             const data = JSON.parse((event as MessageEvent).data);
-
-            console.log("Return event:", data);
 
             switch (data.status) {
                 case "VEHICLE_NOT_AT_DESTINATION":
@@ -85,7 +73,7 @@ export default function ReservationsPage() {
     }
 
     async function pickupReservation(reservation: ReservationData) {
-        await sendReservationAction(
+        await executeReservationAction(
             reservation,
             "pickup",
             "Pickup richiesto"
@@ -93,7 +81,7 @@ export default function ReservationsPage() {
     }
 
     async function cancelReservation(reservation: ReservationData) {
-        await sendReservationAction(
+        await executeReservationAction(
             reservation,
             "cancel",
             "Annullamento richiesto"
@@ -104,7 +92,7 @@ export default function ReservationsPage() {
         const eventSource = listenReturnEvents(reservation.id);
 
         try {
-            await sendReservationAction(
+            await executeReservationAction(
                 reservation,
                 "return",
                 "Richiesta di riconsegna inviata"
@@ -115,7 +103,7 @@ export default function ReservationsPage() {
         }
     }
 
-    async function sendReservationAction(
+    async function executeReservationAction(
         reservation: ReservationData,
         action: "pickup" | "cancel" | "return",
         successMessage: string
@@ -125,27 +113,7 @@ export default function ReservationsPage() {
         }
 
         try {
-            const response = await fetch(
-                `${ACME_API_URL}/reservations/${reservation.id}/${action}`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${user.id}`,
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error("FORBIDDEN");
-                }
-
-                if (response.status === 409) {
-                    throw new Error("CONFLICT");
-                }
-
-                throw new Error(`HTTP ${response.status}`);
-            }
+            await sendReservationAction(user.id, reservation.id, action);
 
             alert(successMessage);
 
@@ -166,7 +134,6 @@ export default function ReservationsPage() {
             }
 
             alert("Errore durante l'operazione");
-
             throw err;
         }
     }

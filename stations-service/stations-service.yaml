@@ -21,11 +21,9 @@ spec:
           imagePullPolicy: Never
           ports:
             - name: soap
-              port: 8080
-              targetPort: 8080
+              containerPort: 8080
             - name: rest
-              port: 8000
-              targetPort: 8000
+              containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
@@ -39,7 +37,9 @@ spec:
     app: stations-service
   ports:
     - name: soap
-      containerPort: 8080
+      port: 8080
+      targetPort: 8080
     - name: rest
-      containerPort: 8000
+      port: 8000
+      targetPort: 8000
   type: ClusterIP

@@ -1,214 +1,181 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import Station, { type StationData } from "../components/Station";
+import Station from "../components/Station";
 import { useAuth } from "../components/AuthContext";
-import { type VehicleData } from "../components/Vehicle";
 import { ACME_API_URL } from "../App";
+import { useVehicleEvents } from "../hooks/useVehicleEvents";
+import {
+    createReservation,
+    getStations,
+    getVehiclesByStation,
+} from "../api/acmeApi";
+import type { StationData, VehicleData } from "../types/domain";
 
 const defaultIcon = L.icon({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+    iconRetinaUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
 });
 
 export default function MapPage() {
-  const [stations, setStations] = useState<StationData[]>([]);
-  const [vehiclesByStation, setVehiclesByStation] = useState<
-    Record<string, VehicleData[]>
-  >({});
-  const [loadingStationId, setLoadingStationId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+    const { user } = useAuth();
 
+    const [stations, setStations] = useState<StationData[]>([]);
+    const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
+    const [vehiclesByStation, setVehiclesByStation] = useState<
+        Record<string, VehicleData[]>
+    >({});
+    const [loadingStationId, setLoadingStationId] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadStations();
-  }, []);
+    useEffect(() => {
+        loadStations();
+    }, []);
 
-
-  async function reserveVehicle(vehicle: VehicleData) {
-    if (!user) {
-      return;
+    async function loadStations() {
+        try {
+            const data = await getStations();
+            setStations(data);
+        } catch (err) {
+            console.error(err);
+            setError("Impossibile caricare le stazioni");
+        }
     }
 
-    try {
-      const response = await fetch(`${ACME_API_URL}/reservations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.id}`,
+    const refreshVehicles = useCallback(async (stationId: string) => {
+        try {
+            setLoadingStationId(stationId);
+
+            const vehicles = await getVehiclesByStation(stationId);
+
+            setVehiclesByStation((prev) => ({
+                ...prev,
+                [stationId]: vehicles,
+            }));
+        } catch (err) {
+            console.error(err);
+            setError("Impossibile caricare i veicoli della stazione");
+        } finally {
+            setLoadingStationId(null);
+        }
+    }, []);
+
+    const loadVehicles = useCallback(
+        async (stationId: string) => {
+            setSelectedStationId(stationId);
+
+            if (vehiclesByStation[stationId]) {
+                return;
+            }
+
+            await refreshVehicles(stationId);
         },
-        body: JSON.stringify({
-          userId: user.id,
-          vehicleId: vehicle.id,
-          stationId: vehicle.stationId,
-        }),
-      });
+        [vehiclesByStation, refreshVehicles]
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+    const refreshSelectedStationVehicles = useCallback(() => {
+        if (selectedStationId) {
+            refreshVehicles(selectedStationId);
+        }
+    }, [selectedStationId, refreshVehicles]);
 
-      const data = await response.json();
-      const requestId = data.requestId;
+    useVehicleEvents(selectedStationId, refreshSelectedStationVehicles);
 
-      const source = new EventSource(
-        `${ACME_API_URL}/reservations/${requestId}/events`
-      );
-
-      source.addEventListener("reservation-update", async (event) => {
-        const update = JSON.parse(event.data);
-
-        console.log("Reservation update:", update);
-
-        if (update.status === "RESERVED") {
-          source.close();
-
-          await refreshVehicles(vehicle.stationId);
-
-          alert("Prenotazione confermata");
+    async function reserveVehicle(station: StationData, vehicle: VehicleData) {
+        if (!user) {
+            return;
         }
 
-        if (update.status === "FAILED") {
-          source.close();
+        try {
+            const data = await createReservation(user.id, vehicle.id, station.id);
+            const requestId = data.requestId;
 
-          alert(update.message ?? "Prenotazione fallita");
+            const source = new EventSource(
+                `${ACME_API_URL}/reservations/${requestId}/events`
+            );
+
+            source.addEventListener("reservation-update", async (event) => {
+                const update = JSON.parse((event as MessageEvent).data);
+
+                if (update.status === "RESERVED") {
+                    source.close();
+                    await refreshVehicles(station.id);
+                    alert("Prenotazione confermata");
+                }
+
+                if (update.status === "FAILED") {
+                    source.close();
+                    alert(update.message ?? "Prenotazione fallita");
+                }
+            });
+
+            source.onerror = (err) => {
+                console.error("Reservation SSE error:", err);
+            };
+        } catch (err) {
+            console.error(err);
+            alert("Errore durante la prenotazione");
         }
-      });
-
-      source.onerror = (err) => {
-        console.error("SSE error:", err);
-        source.close();
-      };
-    } catch (err) {
-      console.error(err);
-      alert("Errore durante la prenotazione");
-    }
-  }
-
-  async function refreshVehicles(stationId: string) {
-    try {
-      const response = await fetch(
-        `${ACME_API_URL}/vehicles?stationId=${stationId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const vehicles: VehicleData[] = await response.json();
-
-      setVehiclesByStation((prev) => ({
-        ...prev,
-        [stationId]: vehicles,
-      }));
-    } catch (err) {
-      console.error(err);
-      setError("Impossibile aggiornare i veicoli della stazione");
-    }
-  }
-
-  async function loadStations() {
-    try {
-      const response = await fetch(`${ACME_API_URL}/stations`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data: StationData[] = await response.json();
-      setStations(data);
-    } catch (err) {
-      console.error(err);
-      setError("Impossibile caricare le stazioni");
-    }
-  }
-
-  async function loadVehicles(stationId: string) {
-    if (vehiclesByStation[stationId]) {
-      return;
     }
 
-    try {
-      setLoadingStationId(stationId);
+    return (
+        <div style={{ height: "100vh", width: "100%" }}>
+            {error && (
+                <div
+                    style={{
+                        position: "absolute",
+                        top: "72px",
+                        left: "1rem",
+                        zIndex: 1000,
+                        padding: "0.75rem 1rem",
+                        background: "white",
+                        color: "red",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    }}
+                >
+                    {error}
+                </div>
+            )}
 
-      const response = await fetch(
-        `${ACME_API_URL}/vehicles?stationId=${stationId}`
-      );
+            <MapContainer
+                center={[44.4949, 11.3426]}
+                zoom={14}
+                style={{ height: "100%", width: "100%" }}
+            >
+                <TileLayer
+                    attribution="&copy; OpenStreetMap contributors"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const vehicles: VehicleData[] = await response.json();
-
-      setVehiclesByStation((prev) => ({
-        ...prev,
-        [stationId]: vehicles,
-      }));
-    } catch (err) {
-      console.error(err);
-      setError("Impossibile caricare i veicoli della stazione");
-    } finally {
-      setLoadingStationId(null);
-    }
-  }
-
-  return (
-    <div style={{ height: "100vh", width: "100%" }}>
-      {error && (
-        <div
-          style={{
-            position: "absolute",
-            top: "72px",
-            left: "1rem",
-            zIndex: 1000,
-            padding: "0.75rem 1rem",
-            background: "white",
-            color: "red",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          }}
-        >
-          {error}
+                {stations.map((station) => (
+                    <Marker
+                        key={station.id}
+                        position={[station.lat, station.lon]}
+                        icon={defaultIcon}
+                        eventHandlers={{
+                            click: () => loadVehicles(station.id),
+                        }}
+                    >
+                        <Popup minWidth={300}>
+                            <Station
+                                station={station}
+                                vehicles={vehiclesByStation[station.id]}
+                                loading={loadingStationId === station.id}
+                                onReserve={user ? reserveVehicle : undefined}
+                            />
+                        </Popup>
+                    </Marker>
+                ))}
+            </MapContainer>
         </div>
-      )}
-
-      <MapContainer
-        center={[44.4949, 11.3426]}
-        zoom={14}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        {stations.map((station) => (
-          <Marker
-            key={station.id}
-            position={[station.lat, station.lon]}
-            icon={defaultIcon}
-            eventHandlers={{
-              click: () => loadVehicles(station.id),
-            }}
-          >
-            <Popup minWidth={300}>
-              <Station
-                station={station}
-                vehicles={vehiclesByStation[station.id]}
-                loading={loadingStationId === station.id}
-                onReserve={user ? reserveVehicle : undefined}
-              />
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
+    );
 }

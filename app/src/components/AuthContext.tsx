@@ -5,18 +5,8 @@ import {
     type ReactNode,
 } from "react";
 
-import { ACME_API_URL } from "../App";
-
-type User = {
-    id: string;
-    name: string;
-    email: string;
-};
-
-type LoginCredentials = {
-    username: string;
-    password: string;
-};
+import { loginUser } from "../api/acmeApi";
+import type { LoginCredentials, User } from "../types/domain";
 
 type AuthContextType = {
     user: User | null;
@@ -38,25 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoginOpen, setIsLoginOpen] = useState(false);
 
     async function login(credentials: LoginCredentials) {
-        const response = await fetch(`${ACME_API_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(credentials),
-        });
-
-        if (!response.ok) {
-            throw new Error("Login failed");
-        }
-
-        const data = await response.json();
-
-        const loggedUser: User = {
-            id: data.userId,
-            name: data.username,
-            email: data.email ?? `${data.username}@acme.local`,
-        };
+        const loggedUser = await loginUser(credentials);
 
         localStorage.setItem("acme-user", JSON.stringify(loggedUser));
         setUser(loggedUser);
@@ -68,14 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
     }
 
-    function openLogin() {
-        setIsLoginOpen(true);
-    }
-
-    function closeLogin() {
-        setIsLoginOpen(false);
-    }
-
     return (
         <AuthContext.Provider
             value={{
@@ -83,8 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoginOpen,
                 login,
                 logout,
-                openLogin,
-                closeLogin,
+                openLogin: () => setIsLoginOpen(true),
+                closeLogin: () => setIsLoginOpen(false),
             }}
         >
             {children}

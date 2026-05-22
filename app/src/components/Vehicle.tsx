@@ -1,16 +1,14 @@
-export type VehicleData = {
-    id: string;
-    type: "CAR" | "SCOOTER" | "KICKSCOOTER" | string;
-    stationId: string;
-    status: string;
-    batteryPct: number;
-    qrCode?: string;
-};
+import type { VehicleData } from "../types/domain";
 
 type VehicleProps = {
     vehicle: VehicleData;
     onReserve?: (vehicle: VehicleData) => void | Promise<void>;
 };
+
+function canReserveVehicle(vehicle: VehicleData) {
+    return vehicle.status === "AVAILABLE"
+        || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80);
+}
 
 export default function Vehicle({ vehicle, onReserve }: VehicleProps) {
     const iconByType: Record<string, string> = {
@@ -19,7 +17,7 @@ export default function Vehicle({ vehicle, onReserve }: VehicleProps) {
         KICKSCOOTER: "🛴",
     };
 
-    const canReserve = vehicle.status === "AVAILABLE" && !!onReserve;
+    const canReserve = !!onReserve && canReserveVehicle(vehicle);
 
     return (
         <div

@@ -27,6 +27,10 @@ export default function ProfilePage() {
                 </p>
 
                 <p>
+                    <strong>Email:</strong> {user.email}
+                </p>
+
+                <p>
                     <strong>Stato:</strong> autenticato
                 </p>
 

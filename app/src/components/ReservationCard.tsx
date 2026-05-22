@@ -1,10 +1,4 @@
-export type ReservationData = {
-    id: string;
-    userId: string;
-    vehicleId: string;
-    stationId: string;
-    status: string;
-};
+import type { ReservationData } from "../types/domain";
 
 type Props = {
     reservation: ReservationData;

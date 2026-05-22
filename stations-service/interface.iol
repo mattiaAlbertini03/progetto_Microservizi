@@ -11,6 +11,18 @@ type Ris: void{
     .value: bool
 }
 
+type GetStationRequest: void {
+    .id: string
+}
+
+type Station: void {
+    .id: string
+    .name: string
+    .lat: double
+    .lon: double
+    .capacity: int
+}
+
 type StationsResponse: void {
     .stations*: void {
         .id: string
@@ -29,5 +41,6 @@ interface Stazione_service {
 }
 
 interface RESTInterface {
-    RequestResponse: stations(EmptyMessage)(StationsResponse)
+    RequestResponse: listStations(EmptyMessage)(StationsResponse), 
+                    getStation( GetStationRequest )( Station )
 }
