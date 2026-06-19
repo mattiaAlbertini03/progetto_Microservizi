@@ -6,7 +6,9 @@ import me.msaproject.reservationservice.client.LogisticsClient;
 import me.msaproject.reservationservice.db.ReservationRepository;
 import me.msaproject.reservationservice.dto.ReservationEvent;
 import me.msaproject.reservationservice.dto.ReservationRequest;
+import me.msaproject.reservationservice.dto.ReservationResponse;
 
+import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -31,8 +33,7 @@ public class ReservationService {
                 request.userId(),
                 request.vehicleId(),
                 request.stationId(),
-                "PENDING"
-        );
+                "PENDING");
 
         reservationRepository.getReservations().put(reservationId, reservation);
         reservationRepository.sync();
@@ -45,8 +46,7 @@ public class ReservationService {
 
         if (!"PENDING".equals(reservation.status())) {
             throw new IllegalStateException(
-                    "Reservation cannot be held from status: " + reservation.status()
-            );
+                    "Reservation cannot be held from status: " + reservation.status());
         }
 
         logisticsClient.holdVehicle(reservation.vehicleId());
@@ -56,8 +56,7 @@ public class ReservationService {
         return new ReservationEvent(
                 reservationId,
                 "RESERVED",
-                "Veicolo bloccato per la prenotazione"
-        );
+                "Veicolo bloccato per la prenotazione");
     }
 
     public ReservationEvent pickupReservation(String reservationId) {
@@ -65,8 +64,7 @@ public class ReservationService {
 
         if (!"RESERVED".equals(reservation.status())) {
             throw new IllegalStateException(
-                    "Reservation cannot be picked up from status: " + reservation.status()
-            );
+                    "Reservation cannot be picked up from status: " + reservation.status());
         }
 
         logisticsClient.pickupVehicle(reservation.vehicleId());
@@ -76,8 +74,7 @@ public class ReservationService {
         return new ReservationEvent(
                 reservationId,
                 "PICKED_UP",
-                "Veicolo ritirato con successo"
-        );
+                "Veicolo ritirato con successo");
     }
 
     public ReservationEvent cancelReservation(String reservationId) {
@@ -86,8 +83,7 @@ public class ReservationService {
         if (!"PENDING".equals(reservation.status()) &&
                 !"RESERVED".equals(reservation.status())) {
             throw new IllegalStateException(
-                    "Reservation cannot be cancelled from status: " + reservation.status()
-            );
+                    "Reservation cannot be cancelled from status: " + reservation.status());
         }
 
         logisticsClient.releaseVehicle(reservation.vehicleId());
@@ -97,8 +93,26 @@ public class ReservationService {
         return new ReservationEvent(
                 reservationId,
                 "CANCELLED",
-                "Prenotazione annullata"
-        );
+                "Prenotazione annullata");
+    }
+
+    public ReservationEvent endReservation(String reservationId) {
+
+        Reservation reservation = findReservationOrThrow(reservationId);
+
+        if (!"ACTIVE".equals(reservation.status())) {
+            throw new IllegalStateException(
+                    "Reservation cannot be ended from status: " + reservation.status());
+        }
+
+        logisticsClient.returnVehicle(reservation.vehicleId());
+
+        updateReservationStatus(reservation, "COMPLETED");
+
+        return new ReservationEvent(
+                reservationId,
+                "COMPLETED",
+                "Noleggio terminato");
     }
 
     public Reservation getReservation(String reservationId) {
@@ -123,10 +137,24 @@ public class ReservationService {
                 old.userId(),
                 old.vehicleId(),
                 old.stationId(),
-                status
-        );
+                status);
 
         reservationRepository.getReservations().put(old.id(), updated);
         reservationRepository.sync();
+    }
+
+    public List<ReservationResponse> getReservationsByUserId(String userId) {
+
+        return reservationRepository.getReservations()
+                .values()
+                .stream()
+                .filter(reservation -> reservation.userId().equals(userId))
+                .map(reservation -> new ReservationResponse(
+                        reservation.id(),
+                        reservation.userId(),
+                        reservation.vehicleId(),
+                        reservation.stationId(),
+                        reservation.status()))
+                .toList();
     }
 }

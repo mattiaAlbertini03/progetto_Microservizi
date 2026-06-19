@@ -34,6 +34,6 @@ WORKDIR /helidon
 COPY --from=build /helidon/target/acme-mobility-service.jar ./
 COPY --from=build /helidon/target/libs ./libs
 
-CMD ["java", "-cp", "app.jar:libs/*", "me.msaproject.acmemobilityservice.Main"]
+CMD ["java", "-cp", "acme-mobility-service.jar:libs/*", "io.helidon.microprofile.cdi.Main"]
 
 EXPOSE 8080

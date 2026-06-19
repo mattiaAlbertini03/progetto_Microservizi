@@ -30,4 +30,4 @@ COPY --from=build /helidon/target/libs ./libs
 EXPOSE 8080
 
 # AVVIO CORRETTO: classpath + Main Helidon MP (così CDI + SmallRye vengono caricati)
-CMD ["java", "-cp", "logistics-service.jar:libs/*", "io.helidon.microprofile.cdi.Main"]
+CMD ["java", "-jar", "logistics-service.jar"]

@@ -1,20 +1,23 @@
 package me.msaproject.acmemobilityservice.client;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.acmemobilityservice.dto.logistics.VehicleResponse;
+import me.msaproject.acmemobilityservice.dto.station.StationResponse;
 
 import java.util.List;
 
 @ApplicationScoped
 public class LogisticsClient {
+    @Inject
+    StationsClient stationsClient;
 
-    private static final String LOGISTICS_SERVICE_BASE_URL =
-            "http://logistics-service.acme:8080";
+    private static final String LOGISTICS_SERVICE_BASE_URL = "http://logistics-service:8080";
 
     private final Client client = ClientBuilder.newClient();
 
@@ -27,20 +30,21 @@ public class LogisticsClient {
 
         checkResponse(response, "Failed to get vehicles");
 
-        return response.readEntity(new GenericType<List<VehicleResponse>>() {});
+        return response.readEntity(new GenericType<List<VehicleResponse>>() {
+        });
     }
 
     public List<VehicleResponse> getVehiclesByStation(String stationId) {
-        Response response = client
+        StationResponse station = stationsClient.getStation(stationId);
+
+        return client
                 .target(LOGISTICS_SERVICE_BASE_URL)
                 .path("/vehicles")
-                .queryParam("stationId", stationId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        checkResponse(response, "Failed to get vehicles by station " + stationId);
-
-        return response.readEntity(new GenericType<List<VehicleResponse>>() {});
+                .queryParam("lat", station.lat())
+                .queryParam("lon", station.lon())
+                .request()
+                .get(new GenericType<List<VehicleResponse>>() {
+                });
     }
 
     public VehicleResponse getVehicle(String vehicleId) {
@@ -69,8 +73,7 @@ public class LogisticsClient {
                             ". Status: " + response.getStatus() +
                             (errorBody != null && !errorBody.isBlank()
                                     ? ". Body: " + errorBody
-                                    : "")
-            );
+                                    : ""));
         }
     }
 }

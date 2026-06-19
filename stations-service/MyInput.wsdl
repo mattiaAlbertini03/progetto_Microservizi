@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="mytest.test.com.wsdl" xmlns:xsd1="mytest.test.com.xsd" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="mytest.test.com.wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xs:schema targetNamespace="mytest.test.com.xsd" xmlns:sch="mytest.test.com.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="sblocco"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="vehicleId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="sid" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="sbloccoResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="logout"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="vehicleId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="sid" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="logoutResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="x" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="blocco"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="vehicleId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="sid" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="bloccoResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="stations"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="x" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="stationsResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="login"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="x" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="loginResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="0" name="vehicleId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="sid" type="xs:string"/></xs:sequence></xs:complexType></xs:element></xs:schema>
+  </wsdl:types>
+  <wsdl:message name="returnFile">
+    <wsdl:part name="body" element="xsd1:stationsResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="OpMessage">
+    <wsdl:part name="body" element="xsd1:loginResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="Ris">
+    <wsdl:part name="body" element="xsd1:bloccoResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="EmptyMessage">
+    <wsdl:part name="body" element="xsd1:login">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="MyInput">
+    <wsdl:operation name="sblocco">
+      <wsdl:input message="tns:OpMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:Ris">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="logout">
+      <wsdl:input message="tns:OpMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:EmptyMessage">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="blocco">
+      <wsdl:input message="tns:OpMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:Ris">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="stations">
+      <wsdl:input message="tns:EmptyMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:returnFile">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="login">
+      <wsdl:input message="tns:EmptyMessage">
+    </wsdl:input>
+      <wsdl:output message="tns:OpMessage">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="MyInputSOAPBinding" type="tns:MyInput">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="sblocco">
+      <soap:operation soapAction="sblocco" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="logout">
+      <soap:operation soapAction="logout" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="blocco">
+      <soap:operation soapAction="blocco" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="login">
+      <soap:operation soapAction="login" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MyInputService">
+    <wsdl:port name="MyInputServicePort" binding="tns:MyInputSOAPBinding">
+      <soap:address location="http://stations-service.acme:8080"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

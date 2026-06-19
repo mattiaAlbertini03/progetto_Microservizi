@@ -26,6 +26,7 @@ metadata:
   name: acme-worker-service
   namespace: acme
 spec:
+  type: ClusterIP
   selector:
     app: acme-worker-service
   ports:

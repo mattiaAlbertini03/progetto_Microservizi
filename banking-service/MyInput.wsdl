@@ -97,7 +97,7 @@
   </wsdl:binding>
   <wsdl:service name="MyInputService">
     <wsdl:port name="MyInputServicePort" binding="tns:MyInputSOAPBinding">
-      <soap:address location="http://localhost:8002"/>
+      <soap:address location="http://banking-service.acme:8080"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

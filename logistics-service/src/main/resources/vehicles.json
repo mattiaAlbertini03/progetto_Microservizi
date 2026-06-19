@@ -2,31 +2,35 @@
   {
     "id": "vehicle-1",
     "type": "CAR",
-    "stationId": "station-1",
+    "lat": 44.5055,
+    "lon": 11.3415,
     "status": "AVAILABLE",
-    "batteryPct": 87,
+    "batteryPct": 96,
     "qrCode": "ACME-QR-vehicle-1"
   },
   {
     "id": "vehicle-2",
     "type": "SCOOTER",
-    "stationId": "station-1",
+    "lat": 44.5055,
+    "lon": 11.3415,
     "status": "AVAILABLE",
-    "batteryPct": 64,
+    "batteryPct": 88,
     "qrCode": "ACME-QR-vehicle-2"
   },
   {
     "id": "vehicle-3",
     "type": "KICKSCOOTER",
-    "stationId": "station-2",
+    "lat": 44.4966,
+    "lon": 11.3541,
     "status": "AVAILABLE",
-    "batteryPct": 72,
+    "batteryPct": 92,
     "qrCode": "ACME-QR-vehicle-3"
   },
   {
     "id": "vehicle-4",
     "type": "CAR",
-    "stationId": "station-2",
+    "lat": 44.4938,
+    "lon": 11.343,
     "status": "ON_HOLD",
     "batteryPct": 91,
     "qrCode": "ACME-QR-vehicle-4"
@@ -34,15 +38,17 @@
   {
     "id": "vehicle-5",
     "type": "SCOOTER",
-    "stationId": "station-3",
+    "lat": 44.4826,
+    "lon": 11.3548,
     "status": "AVAILABLE",
-    "batteryPct": 56,
+    "batteryPct": 84,
     "qrCode": "ACME-QR-vehicle-5"
   },
   {
     "id": "vehicle-6",
     "type": "KICKSCOOTER",
-    "stationId": "station-4",
+    "lat": 44.5092,
+    "lon": 11.3636,
     "status": "MAINTENANCE",
     "batteryPct": 22,
     "qrCode": "ACME-QR-vehicle-6"
@@ -50,17 +56,55 @@
   {
     "id": "vehicle-7",
     "type": "CAR",
-    "stationId": "station-5",
+    "lat": 44.5092,
+    "lon": 11.3636,
     "status": "AVAILABLE",
-    "batteryPct": 78,
+    "batteryPct": 97,
     "qrCode": "ACME-QR-vehicle-7"
   },
   {
     "id": "vehicle-8",
     "type": "SCOOTER",
-    "stationId": "station-5",
+    "lat": 44.5055,
+    "lon": 11.3415,
     "status": "CHARGING",
     "batteryPct": 14,
     "qrCode": "ACME-QR-vehicle-8"
+  },
+  {
+    "id": "vehicle-9",
+    "type": "CAR",
+    "lat": 44.4966,
+    "lon": 11.3541,
+    "status": "AVAILABLE",
+    "batteryPct": 89,
+    "qrCode": "ACME-QR-vehicle-9"
+  },
+  {
+    "id": "vehicle-10",
+    "type": "SCOOTER",
+    "lat": 44.4938,
+    "lon": 11.343,
+    "status": "AVAILABLE",
+    "batteryPct": 93,
+    "qrCode": "ACME-QR-vehicle-10"
+  },
+  {
+    "id": "vehicle-11",
+    "type": "KICKSCOOTER",
+    "lat": 44.4826,
+    "lon": 11.3548,
+    "status": "AVAILABLE",
+    "batteryPct": 86,
+    "qrCode": "ACME-QR-vehicle-11"
+  },
+  {
+    "id": "vehicle-12",
+    "type": "CAR",
+    "lat": 44.5092,
+    "lon": 11.3636,
+    "status": "AVAILABLE",
+    "batteryPct": 94,
+    "qrCode": "ACME-QR-vehicle-12"
   }
 ]

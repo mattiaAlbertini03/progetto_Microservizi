@@ -2,10 +2,12 @@ package me.msaproject.logisticsservice.logistics;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import me.msaproject.logisticsservice.client.StationsClient;
+import me.msaproject.logisticsservice.client.VehicleEventClient;
 import me.msaproject.logisticsservice.db.VehicleRepository;
-import me.msaproject.logisticsservice.dto.VehicleResponse;
-import me.msaproject.logisticsservice.dto.VehicleStatus;
-import me.msaproject.logisticsservice.dto.VehicleStatusResponse;
+import me.msaproject.logisticsservice.dto.logistics.VehicleResponse;
+import me.msaproject.logisticsservice.dto.logistics.VehicleStatus;
+import me.msaproject.logisticsservice.dto.logistics.VehicleStatusResponse;
 
 import java.util.List;
 
@@ -19,12 +21,45 @@ public class LogisticsService {
         this.vehicleRepository = vehicleRepository;
     }
 
+    @Inject
+    VehicleEventClient vehicleEventClient;
+
+    @Inject
+    StationsClient stationsClient;
+
     public List<VehicleResponse> getVehicles() {
         return vehicleRepository.getVehicles()
                 .values()
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    private boolean canBeRented(Vehicle vehicle) {
+        return vehicle.status() == VehicleStatus.AVAILABLE
+                || (vehicle.status() == VehicleStatus.CHARGING
+                        && vehicle.batteryPct() >= 80);
+    }
+
+    public List<VehicleResponse> getVehiclesByPosition(double lat, double lon) {
+        return vehicleRepository.getVehicles()
+                .values()
+                .stream()
+                .filter(vehicle -> canBeRented(vehicle))
+                .filter(vehicle -> isAtPosition(vehicle, lat, lon))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private boolean isAtPosition(Vehicle vehicle, double lat, double lon) {
+        if (vehicle.lat() == null || vehicle.lon() == null) {
+            return false;
+        }
+
+        double tolerance = 0.0001;
+
+        return Math.abs(vehicle.lat() - lat) <= tolerance
+                && Math.abs(vehicle.lon() - lon) <= tolerance;
     }
 
     public VehicleResponse getVehicle(String vehicleId) {
@@ -34,10 +69,9 @@ public class LogisticsService {
     public VehicleStatusResponse holdVehicle(String vehicleId) {
         Vehicle vehicle = findVehicleOrThrow(vehicleId);
 
-        if (vehicle.status() != VehicleStatus.AVAILABLE) {
+        if (!canBeRented(vehicle)) {
             throw new IllegalStateException(
-                    "Vehicle is not available: " + vehicleId
-            );
+                    "Vehicle is not available: " + vehicleId);
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.ON_HOLD);
@@ -50,8 +84,7 @@ public class LogisticsService {
 
         if (vehicle.status() != VehicleStatus.ON_HOLD) {
             throw new IllegalStateException(
-                    "Vehicle cannot be picked up from status: " + vehicle.status()
-            );
+                    "Vehicle cannot be picked up from status: " + vehicle.status());
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.IN_USE);
@@ -61,6 +94,24 @@ public class LogisticsService {
 
     public VehicleStatusResponse releaseVehicle(String vehicleId) {
         Vehicle vehicle = findVehicleOrThrow(vehicleId);
+
+        if (vehicle.status() != VehicleStatus.ON_HOLD) {
+            throw new IllegalStateException(
+                    "Vehicle cannot be released from status: " + vehicle.status());
+        }
+
+        Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
+
+        return toStatusResponse(updated);
+    }
+
+    public VehicleStatusResponse returnVehicle(String vehicleId) {
+        Vehicle vehicle = findVehicleOrThrow(vehicleId);
+
+        if (vehicle.status() != VehicleStatus.IN_USE) {
+            throw new IllegalStateException(
+                    "Vehicle cannot be returned from status: " + vehicle.status());
+        }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
 
@@ -73,8 +124,7 @@ public class LogisticsService {
         if (vehicle.status() == VehicleStatus.IN_USE ||
                 vehicle.status() == VehicleStatus.ON_HOLD) {
             throw new IllegalStateException(
-                    "Vehicle cannot be charged while status is: " + vehicle.status()
-            );
+                    "Vehicle cannot be charged while status is: " + vehicle.status());
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.CHARGING);
@@ -87,8 +137,7 @@ public class LogisticsService {
 
         if (vehicle.status() != VehicleStatus.CHARGING) {
             throw new IllegalStateException(
-                    "Vehicle is not charging: " + vehicleId
-            );
+                    "Vehicle is not charging: " + vehicleId);
         }
 
         Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
@@ -108,18 +157,20 @@ public class LogisticsService {
                 vehicle.lon(),
                 vehicle.status(),
                 newBatteryPct,
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
 
         vehicleRepository.getVehicles().put(vehicleId, updated);
         vehicleRepository.sync();
+
+        stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
+                .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
     }
 
     public List<Vehicle> getVehiclesNeedingCharge() {
         return vehicleRepository.getVehicles()
                 .values()
                 .stream()
-                .filter(vehicle -> vehicle.batteryPct() < 20)
+                .filter(vehicle -> vehicle.batteryPct() < 100)
                 .filter(vehicle -> vehicle.status() == VehicleStatus.AVAILABLE)
                 .toList();
     }
@@ -150,11 +201,13 @@ public class LogisticsService {
                 vehicle.lon(),
                 status,
                 vehicle.batteryPct(),
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
 
         vehicleRepository.getVehicles().put(vehicle.id(), updated);
         vehicleRepository.sync();
+
+        stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
+                .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
 
         return updated;
     }
@@ -167,15 +220,13 @@ public class LogisticsService {
                 vehicle.lon(),
                 vehicle.status(),
                 vehicle.batteryPct(),
-                vehicle.qrCode()
-        );
+                vehicle.qrCode());
     }
 
     private VehicleStatusResponse toStatusResponse(Vehicle vehicle) {
         return new VehicleStatusResponse(
                 vehicle.id(),
                 vehicle.status(),
-                vehicle.batteryPct()
-        );
+                vehicle.batteryPct());
     }
 }

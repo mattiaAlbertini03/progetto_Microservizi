@@ -10,71 +10,79 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class LogisticsResource {
 
-    @Inject
-    LogisticsService logisticsService;
+        @Inject
+        LogisticsService logisticsService;
 
-    @GET
-    public Response getVehicles() {
-        return Response.ok(logisticsService.getVehicles()).build();
-    }
+        @GET
+        public Response getVehicles(
+                        @QueryParam("lat") Double lat,
+                        @QueryParam("lon") Double lon) {
+                if (lat != null && lon != null) {
+                        return Response.ok(logisticsService.getVehiclesByPosition(lat, lon)).build();
+                }
 
-    @GET
-    @Path("/{vehicleId}")
-    public Response getVehicle(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(logisticsService.getVehicles()).build();
+        }
 
-        return Response.ok(
-                logisticsService.getVehicle(vehicleId)
-        ).build();
-    }
+        @GET
+        @Path("/{vehicleId}")
+        public Response getVehicle(
+                        @PathParam("vehicleId") String vehicleId) {
 
-    @POST
-    @Path("/{vehicleId}/hold")
-    public Response holdVehicle(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(
+                                logisticsService.getVehicle(vehicleId)).build();
+        }
 
-        return Response.ok(
-                logisticsService.holdVehicle(vehicleId)
-        ).build();
-    }
+        @POST
+        @Path("/{vehicleId}/hold")
+        public Response holdVehicle(
+                        @PathParam("vehicleId") String vehicleId) {
 
-    @POST
-    @Path("/{vehicleId}/pickup")
-    public Response pickupVehicle(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(
+                                logisticsService.holdVehicle(vehicleId)).build();
+        }
 
-        return Response.ok(
-                logisticsService.pickupVehicle(vehicleId)
-        ).build();
-    }
+        @POST
+        @Path("/{vehicleId}/pickup")
+        public Response pickupVehicle(
+                        @PathParam("vehicleId") String vehicleId) {
 
-    @POST
-    @Path("/{vehicleId}/release")
-    public Response releaseVehicle(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(
+                                logisticsService.pickupVehicle(vehicleId)).build();
+        }
 
-        return Response.ok(
-                logisticsService.releaseVehicle(vehicleId)
-        ).build();
-    }
+        @POST
+        @Path("/{vehicleId}/release")
+        public Response releaseVehicle(
+                        @PathParam("vehicleId") String vehicleId) {
 
-    @POST
-    @Path("/{vehicleId}/start-charging")
-    public Response startCharging(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(
+                                logisticsService.releaseVehicle(vehicleId)).build();
+        }
 
-        return Response.ok(
-                logisticsService.startCharging(vehicleId)
-        ).build();
-    }
+        @POST
+        @Path("/{vehicleId}/return")
+        public Response returnVehicle(
+                        @PathParam("vehicleId") String vehicleId) {
 
-    @POST
-    @Path("/{vehicleId}/stop-charging")
-    public Response stopCharging(
-            @PathParam("vehicleId") String vehicleId) {
+                return Response.ok(logisticsService.returnVehicle(vehicleId)).build();
+        }
 
-        return Response.ok(
-                logisticsService.stopCharging(vehicleId)
-        ).build();
-    }
+        @POST
+        @Path("/{vehicleId}/start-charging")
+        public Response startCharging(
+                        @PathParam("vehicleId") String vehicleId) {
+
+                return Response.ok(
+                                logisticsService.startCharging(vehicleId)).build();
+        }
+
+        @POST
+        @Path("/{vehicleId}/stop-charging")
+        public Response stopCharging(
+                        @PathParam("vehicleId") String vehicleId) {
+
+                return Response.ok(
+                                logisticsService.stopCharging(vehicleId)).build();
+        }
 }

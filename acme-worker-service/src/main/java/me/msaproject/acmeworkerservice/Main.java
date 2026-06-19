@@ -2,8 +2,8 @@ package me.msaproject.acmeworkerservice;
 
 import io.camunda.client.CamundaClient;
 import me.msaproject.acmeworkerservice.camunda.CamundaClientFactory;
-import me.msaproject.acmeworkerservice.camunda.workers.ReleaseVehicleWorker;
-import me.msaproject.acmeworkerservice.camunda.workers.ReserveVehicleWorker;
+import me.msaproject.acmeworkerservice.workers.CalculateChargeWorker;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,25 +14,24 @@ public final class Main {
     public static void main(String[] args) throws InterruptedException {
         LOG.info("Starting acme-worker-service...");
 
-        CamundaClient client = CamundaClientFactory.create();
+        CamundaClient camundaClient = CamundaClientFactory.create();
 
-        client.newDeployResourceCommand()
+        camundaClient.newDeployResourceCommand()
                 .addResourceFromClasspath("process.bpmn")
                 .execute();
 
         LOG.info("Deployed BPMN.");
 
-        client.newTopologyRequest().execute();
+        camundaClient.newTopologyRequest().execute();
         LOG.info("Connected to Camunda");
 
-        new ReserveVehicleWorker(client).open();
-        new ReleaseVehicleWorker(client).open();
+        new CalculateChargeWorker(camundaClient).open();
 
         LOG.info("All workers started");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOG.info("Closing Camunda client...");
-            client.close();
+            camundaClient.close();
         }));
 
         Thread.currentThread().join();

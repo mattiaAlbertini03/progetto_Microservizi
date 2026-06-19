@@ -9,8 +9,7 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class LogisticsClient {
 
-    private static final String LOGISTICS_BASE_URL =
-            "http://logistics-service.acme:8080";
+    private static final String LOGISTICS_BASE_URL = "http://logistics-service.acme:8080";
 
     private final Client client = ClientBuilder.newClient();
 
@@ -44,6 +43,17 @@ public class LogisticsClient {
         checkResponse(response, "Failed to release vehicle " + vehicleId);
     }
 
+    public void returnVehicle(String vehicleId) {
+
+        Response response = client
+                .target(LOGISTICS_BASE_URL)
+                .path("/vehicles/" + vehicleId + "/return")
+                .request()
+                .post(Entity.json(null));
+
+        checkResponse(response, "Failed to return vehicle " + vehicleId);
+    }
+
     private void checkResponse(Response response, String message) {
         if (response.getStatus() < 200 || response.getStatus() >= 300) {
             String responseBody = "";
@@ -58,8 +68,7 @@ public class LogisticsClient {
                             " | HTTP " + response.getStatus() +
                             (responseBody.isBlank()
                                     ? ""
-                                    : " | Body: " + responseBody)
-            );
+                                    : " | Body: " + responseBody));
         }
     }
 }
