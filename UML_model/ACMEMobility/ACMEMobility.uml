@@ -5,18 +5,6 @@
       <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
     </packageImport>
     <packagedElement xmi:type="uml:Package" xmi:id="_dDUvUDP2EfGqxb1hcs_CXg" name="ACME">
-      <packagedElement xmi:type="uml:Package" xmi:id="_dwn6MDP2EfGqxb1hcs_CXg" name="ACME_Task">
-        <packagedElement xmi:type="uml:Interface" xmi:id="_egqQADP2EfGqxb1hcs_CXg" name="ACME_Task_I"/>
-        <packagedElement xmi:type="uml:Class" xmi:id="_fWWh4DP2EfGqxb1hcs_CXg" name="ACME_Task_C"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_C-DksDP4EfGqxb1hcs_CXg" client="_egqQADP2EfGqxb1hcs_CXg" supplier="_fWWh4DP2EfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_UhMYYDQFEfGqxb1hcs_CXg" client="_egqQADP2EfGqxb1hcs_CXg" supplier="_BIoesDP5EfGqxb1hcs_CXg"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_mysiMDP3EfGqxb1hcs_CXg" name="ACME_Utility">
-        <packagedElement xmi:type="uml:Interface" xmi:id="_pCD8wDP3EfGqxb1hcs_CXg" name="ACME_Entity_I"/>
-        <packagedElement xmi:type="uml:Class" xmi:id="_tD4MYDP3EfGqxb1hcs_CXg" name="ACME_Entity_C"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_6FwuUDP3EfGqxb1hcs_CXg" client="_fWWh4DP2EfGqxb1hcs_CXg" supplier="_pCD8wDP3EfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_HaxAkDP4EfGqxb1hcs_CXg" client="_pCD8wDP3EfGqxb1hcs_CXg" supplier="_tD4MYDP3EfGqxb1hcs_CXg"/>
-      </packagedElement>
       <packagedElement xmi:type="uml:Interface" xmi:id="_BIoesDP5EfGqxb1hcs_CXg" name="ACME_I"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_FeqDwDP5EfGqxb1hcs_CXg" name="ACME_C"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_NR3hYDP5EfGqxb1hcs_CXg" client="_BIoesDP5EfGqxb1hcs_CXg" supplier="_FeqDwDP5EfGqxb1hcs_CXg"/>
@@ -27,118 +15,61 @@
       <packagedElement xmi:type="uml:Dependency" xmi:id="_7UEhEGwJEfGPQ9rTkf8qTA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_JJ5J8DP6EfGqxb1hcs_CXg" name="App">
-      <packagedElement xmi:type="uml:Package" xmi:id="_KhjgcDP6EfGqxb1hcs_CXg" name="App_Task">
-        <packagedElement xmi:type="uml:Class" xmi:id="_l0YtkDP8EfGqxb1hcs_CXg" name="App_Task_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_2jg9UDP8EfGqxb1hcs_CXg" name="App_Task_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_FmDIYDP9EfGqxb1hcs_CXg" client="_2jg9UDP8EfGqxb1hcs_CXg" supplier="_l0YtkDP8EfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_7ws6QDQEEfGqxb1hcs_CXg" client="_2jg9UDP8EfGqxb1hcs_CXg" supplier="_aol1cDP6EfGqxb1hcs_CXg"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_L_8xEDP6EfGqxb1hcs_CXg" name="App_Utility">
-        <packagedElement xmi:type="uml:Class" xmi:id="_vLMr8DP8EfGqxb1hcs_CXg" name="App_Utility_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_9NjMYDP8EfGqxb1hcs_CXg" name="App_Utility_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_gsWAQDP9EfGqxb1hcs_CXg" client="_9NjMYDP8EfGqxb1hcs_CXg" supplier="_vLMr8DP8EfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_IQwLMGwQEfGPQ9rTkf8qTA" client="_l0YtkDP8EfGqxb1hcs_CXg" supplier="_9NjMYDP8EfGqxb1hcs_CXg"/>
-      </packagedElement>
       <packagedElement xmi:type="uml:Interface" xmi:id="_aol1cDP6EfGqxb1hcs_CXg" name="App_I"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_bY_XoDP6EfGqxb1hcs_CXg" name="App_C"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_nDhsIDP6EfGqxb1hcs_CXg" client="_aol1cDP6EfGqxb1hcs_CXg" supplier="_bY_XoDP6EfGqxb1hcs_CXg"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_kjDVoDQJEfGqxb1hcs_CXg" name="Banca">
-      <packagedElement xmi:type="uml:Package" xmi:id="_J5g1wDQKEfGqxb1hcs_CXg" name="Banca_Utility">
-        <packagedElement xmi:type="uml:Interface" xmi:id="_afuooGwGEfGPQ9rTkf8qTA" name="Banca_Utility_I"/>
-        <packagedElement xmi:type="uml:Class" xmi:id="_bFkgoGwGEfGPQ9rTkf8qTA" name="Banca_Utility_C"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_jf0JEGwGEfGPQ9rTkf8qTA" client="_afuooGwGEfGPQ9rTkf8qTA" supplier="_bFkgoGwGEfGPQ9rTkf8qTA"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_Lkd7sDQKEfGqxb1hcs_CXg" name="Banca_Task">
-        <packagedElement xmi:type="uml:Class" xmi:id="_ZJVdcGwGEfGPQ9rTkf8qTA" name="Banca_Task_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_Z-SIcGwGEfGPQ9rTkf8qTA" name="Banca_Task_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_ktxJ8GwGEfGPQ9rTkf8qTA" client="_Z-SIcGwGEfGPQ9rTkf8qTA" supplier="_ZJVdcGwGEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_llSn0GwGEfGPQ9rTkf8qTA" client="_ZJVdcGwGEfGPQ9rTkf8qTA" supplier="_afuooGwGEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_rEn-UGwGEfGPQ9rTkf8qTA" client="_Z-SIcGwGEfGPQ9rTkf8qTA" supplier="_Rat9YDQKEfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Package" xmi:id="_LqBjMGwHEfGPQ9rTkf8qTA" name="Package2">
-          <packagedElement xmi:type="uml:Interface" xmi:id="_LqBjMWwHEfGPQ9rTkf8qTA" name="Interface1"/>
-          <packagedElement xmi:type="uml:Class" xmi:id="_LqBjMmwHEfGPQ9rTkf8qTA" name="Class2"/>
-          <packagedElement xmi:type="uml:Dependency" xmi:id="_LqBjM2wHEfGPQ9rTkf8qTA" client="_LqBjMWwHEfGPQ9rTkf8qTA" supplier="_LqBjMmwHEfGPQ9rTkf8qTA"/>
-        </packagedElement>
-        <packagedElement xmi:type="uml:Package" xmi:id="_MElYQGwHEfGPQ9rTkf8qTA" name="CopyOf_Package2_6">
-          <packagedElement xmi:type="uml:Interface" xmi:id="_MElYQWwHEfGPQ9rTkf8qTA" name="Interface1"/>
-          <packagedElement xmi:type="uml:Class" xmi:id="_MElYQmwHEfGPQ9rTkf8qTA" name="Class2"/>
-          <packagedElement xmi:type="uml:Dependency" xmi:id="_MElYQ2wHEfGPQ9rTkf8qTA" client="_MElYQWwHEfGPQ9rTkf8qTA" supplier="_MElYQmwHEfGPQ9rTkf8qTA"/>
-        </packagedElement>
-      </packagedElement>
       <packagedElement xmi:type="uml:Interface" xmi:id="_Rat9YDQKEfGqxb1hcs_CXg" name="Banca_I"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_SDYf4DQKEfGqxb1hcs_CXg" name="Banca_C"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_Pi_OQGwGEfGPQ9rTkf8qTA" client="_Rat9YDQKEfGqxb1hcs_CXg" supplier="_SDYf4DQKEfGqxb1hcs_CXg"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_oUbVgDQJEfGqxb1hcs_CXg" name="Stazioni">
-      <packagedElement xmi:type="uml:Package" xmi:id="_1vYewDQJEfGqxb1hcs_CXg" name="Stazioni_Utility">
-        <packagedElement xmi:type="uml:Class" xmi:id="_yGDwYDa2EfGDT8n9MqUMuQ" name="Stazioni_Utility_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_y-iQgDa2EfGDT8n9MqUMuQ" name="Stazioni_Utility_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="__wLYcGvnEfG4M4oaVIz4Iw" client="_y-iQgDa2EfGDT8n9MqUMuQ" supplier="_yGDwYDa2EfGDT8n9MqUMuQ"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_4Pz0IDQJEfGqxb1hcs_CXg" name="Stazioni_Task">
-        <packagedElement xmi:type="uml:Class" xmi:id="_xEAdgDa2EfGDT8n9MqUMuQ" name="Stazioni_Task_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_0Uv1gDa2EfGDT8n9MqUMuQ" name="Stazioni_Task_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_WihXAGtoEfGvOsAdpr7dWw" client="_0Uv1gDa2EfGDT8n9MqUMuQ" supplier="_xEAdgDa2EfGDT8n9MqUMuQ"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_JSQysGvoEfG4M4oaVIz4Iw" client="_xEAdgDa2EfGDT8n9MqUMuQ" supplier="_y-iQgDa2EfGDT8n9MqUMuQ"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_O1ET8GvoEfG4M4oaVIz4Iw" client="_0Uv1gDa2EfGDT8n9MqUMuQ" supplier="_75l-QDQJEfGqxb1hcs_CXg"/>
-      </packagedElement>
       <packagedElement xmi:type="uml:Interface" xmi:id="_75l-QDQJEfGqxb1hcs_CXg" name="Stazioni_I"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_8nFWYDQJEfGqxb1hcs_CXg" name="Stazioni_C"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_XzWRkDa2EfGDT8n9MqUMuQ" client="_75l-QDQJEfGqxb1hcs_CXg" supplier="_8nFWYDQJEfGqxb1hcs_CXg"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_dvfhsDQKEfGqxb1hcs_CXg" name="Fleet">
-      <packagedElement xmi:type="uml:Package" xmi:id="_hO3LkDQKEfGqxb1hcs_CXg" name="Fleet_Utility">
-        <packagedElement xmi:type="uml:Class" xmi:id="_lwlcYGwHEfGPQ9rTkf8qTA" name="Fleet_Utility_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_mCoOoGwHEfGPQ9rTkf8qTA" name="Fleet_Utility_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_t1GFYGwHEfGPQ9rTkf8qTA" client="_mCoOoGwHEfGPQ9rTkf8qTA" supplier="_lwlcYGwHEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_y9woUGwHEfGPQ9rTkf8qTA" client="_laXUwGwHEfGPQ9rTkf8qTA" supplier="_mCoOoGwHEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Package" xmi:id="_YkNFMGwIEfGPQ9rTkf8qTA" name="Package2">
-          <packagedElement xmi:type="uml:Interface" xmi:id="_YkNFMWwIEfGPQ9rTkf8qTA" name="Interface1"/>
-          <packagedElement xmi:type="uml:Class" xmi:id="_YkNFMmwIEfGPQ9rTkf8qTA" name="Class2"/>
-          <packagedElement xmi:type="uml:Dependency" xmi:id="_YkNFM2wIEfGPQ9rTkf8qTA" client="_YkNFMWwIEfGPQ9rTkf8qTA" supplier="_YkNFMmwIEfGPQ9rTkf8qTA"/>
-        </packagedElement>
-        <packagedElement xmi:type="uml:Package" xmi:id="_ZJEFwGwIEfGPQ9rTkf8qTA" name="CopyOf_Package2_5">
-          <packagedElement xmi:type="uml:Interface" xmi:id="_ZJEFwWwIEfGPQ9rTkf8qTA" name="Interface1"/>
-          <packagedElement xmi:type="uml:Class" xmi:id="_ZJEFwmwIEfGPQ9rTkf8qTA" name="Class2"/>
-          <packagedElement xmi:type="uml:Dependency" xmi:id="_ZJEFw2wIEfGPQ9rTkf8qTA" client="_ZJEFwWwIEfGPQ9rTkf8qTA" supplier="_ZJEFwmwIEfGPQ9rTkf8qTA"/>
-        </packagedElement>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_kN0QADQKEfGqxb1hcs_CXg" name="Fleet_Task">
-        <packagedElement xmi:type="uml:Class" xmi:id="_laXUwGwHEfGPQ9rTkf8qTA" name="Fleet_Task_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_nkRnkGwHEfGPQ9rTkf8qTA" name="Fleet_Task_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_vkpXcGwHEfGPQ9rTkf8qTA" client="_nkRnkGwHEfGPQ9rTkf8qTA" supplier="_laXUwGwHEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_1JNzQGwHEfGPQ9rTkf8qTA" client="_nkRnkGwHEfGPQ9rTkf8qTA" supplier="_otrGgDQKEfGqxb1hcs_CXg"/>
-        <packagedElement xmi:type="uml:Package" xmi:id="_e52YoGwIEfGPQ9rTkf8qTA" name="Package2">
-          <packagedElement xmi:type="uml:Interface" xmi:id="_e52YoWwIEfGPQ9rTkf8qTA" name="Interface1"/>
-          <packagedElement xmi:type="uml:Class" xmi:id="_e52YomwIEfGPQ9rTkf8qTA" name="Class2"/>
-          <packagedElement xmi:type="uml:Dependency" xmi:id="_e52Yo2wIEfGPQ9rTkf8qTA" client="_e52YoWwIEfGPQ9rTkf8qTA" supplier="_e52YomwIEfGPQ9rTkf8qTA"/>
-        </packagedElement>
-      </packagedElement>
       <packagedElement xmi:type="uml:Class" xmi:id="_mO5W8DQKEfGqxb1hcs_CXg" name="Fleet_C"/>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_otrGgDQKEfGqxb1hcs_CXg" name="Fleet_I"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_otrGgDQKEfGqxb1hcs_CXg" name="query"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_3zPwkGwHEfGPQ9rTkf8qTA" client="_otrGgDQKEfGqxb1hcs_CXg" supplier="_mO5W8DQKEfGqxb1hcs_CXg"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_0jvGYG8iEfGICvqO2RVgqQ" name="Class4"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_BtZj8G8mEfGICvqO2RVgqQ" name="Interface6"/>
+      <packagedElement xmi:type="uml:Package" xmi:id="_-ojdcG8mEfGICvqO2RVgqQ" name="Package8">
+        <packagedElement xmi:type="uml:Class" xmi:id="_1UlUgG8iEfGICvqO2RVgqQ" name="Class5"/>
+        <packagedElement xmi:type="uml:Interface" xmi:id="_CSVdAG8mEfGICvqO2RVgqQ" name="Interface7"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Package" xmi:id="_LV8WEG8nEfGICvqO2RVgqQ" name="Package7"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_VSUBMGwJEfGPQ9rTkf8qTA" name="Logistica">
-      <packagedElement xmi:type="uml:Package" xmi:id="_Xm4E0GwJEfGPQ9rTkf8qTA" name="Logistica_Utility">
-        <packagedElement xmi:type="uml:Class" xmi:id="_b1k54GwJEfGPQ9rTkf8qTA" name="Logistica_Utility_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_cN_Z4GwJEfGPQ9rTkf8qTA" name="Logistica_Utility_I">
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_uCaoUGwKEfGPQ9rTkf8qTA" name="Class3"/>
-        </packagedElement>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_l0uDkGwJEfGPQ9rTkf8qTA" client="_cN_Z4GwJEfGPQ9rTkf8qTA" supplier="_b1k54GwJEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Class" xmi:id="_kyjmgGwKEfGPQ9rTkf8qTA" name="Class3"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_aKX8UGwJEfGPQ9rTkf8qTA" name="Logistica_Task">
-        <packagedElement xmi:type="uml:Class" xmi:id="_bYk00GwJEfGPQ9rTkf8qTA" name="Logistica_Task_C"/>
-        <packagedElement xmi:type="uml:Interface" xmi:id="_cwbYkGwJEfGPQ9rTkf8qTA" name="Logistica_Task_I"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_lITpgGwJEfGPQ9rTkf8qTA" client="_bYk00GwJEfGPQ9rTkf8qTA" supplier="_cN_Z4GwJEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Dependency" xmi:id="_rhW2QGwJEfGPQ9rTkf8qTA" client="_cwbYkGwJEfGPQ9rTkf8qTA" supplier="_bYk00GwJEfGPQ9rTkf8qTA"/>
-        <packagedElement xmi:type="uml:Realization" xmi:id="_4OqPUGwJEfGPQ9rTkf8qTA" client="_cwbYkGwJEfGPQ9rTkf8qTA" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
-      </packagedElement>
       <packagedElement xmi:type="uml:Class" xmi:id="_bCZJcGwJEfGPQ9rTkf8qTA" name="Logistica_C"/>
       <packagedElement xmi:type="uml:Interface" xmi:id="_dMfpgGwJEfGPQ9rTkf8qTA" name="Logistica_I"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_1AqCQGwJEfGPQ9rTkf8qTA" client="_dMfpgGwJEfGPQ9rTkf8qTA" supplier="_bCZJcGwJEfGPQ9rTkf8qTA"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_Q5i-AG8mEfGICvqO2RVgqQ" client="_bCZJcGwJEfGPQ9rTkf8qTA" supplier="_75l-QDQJEfGqxb1hcs_CXg"/>
     </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_8sv04G8iEfGICvqO2RVgqQ" name="Package9">
+      <packagedElement xmi:type="uml:Interface" xmi:id="__XMo8G8iEfGICvqO2RVgqQ" name="Interface1"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_AmcDQG8jEfGICvqO2RVgqQ" name="Class2"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_NrVc8G8jEfGICvqO2RVgqQ" name="Package10">
+      <packagedElement xmi:type="uml:Class" xmi:id="_Rctc0G8jEfGICvqO2RVgqQ" name="Class1"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_Sg-9QG8jEfGICvqO2RVgqQ" name="Interface2"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_43JKYG8kEfGICvqO2RVgqQ" name="reservation">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_YZVwYG8mEfGICvqO2RVgqQ" name="Interface1"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_t4ahEG8mEfGICvqO2RVgqQ" name="Class2"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_xzM7oG8mEfGICvqO2RVgqQ" client="_t4ahEG8mEfGICvqO2RVgqQ" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_KjnMIG8lEfGICvqO2RVgqQ" name="authentication">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_X-OhsG8mEfGICvqO2RVgqQ" name="Interface1"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_aF-RUG8mEfGICvqO2RVgqQ" name="Class2"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_YeS-UG8lEfGICvqO2RVgqQ" name="graphhopper">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_XlKhcG8mEfGICvqO2RVgqQ" name="Interface1"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_ZZNR8G8mEfGICvqO2RVgqQ" name="Class2"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:AssociationClass" xmi:id="_MwCVgG8nEfGICvqO2RVgqQ"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="_M-bW0G8nEfGICvqO2RVgqQ" name="Class15"/>
     <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_2Yr24DFKEfGIpamFaYrQyg">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_YEA3IDFNEfGIpamFaYrQyg" source="PapyrusVersion">
         <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_YEA3ITFNEfGIpamFaYrQyg" key="Version" value="2.0.0"/>
@@ -153,67 +84,33 @@
       <appliedProfile xmi:type="uml:Profile" href="tiny.profile.uml#__qIfcMpEEfCzdMqoAvZnSA"/>
     </profileApplication>
   </uml:Model>
-  <tiny:Capability xmi:id="_wbh6IDP2EfGqxb1hcs_CXg" base_Class="_fWWh4DP2EfGqxb1hcs_CXg"/>
-  <tiny:ServiceInterface xmi:id="_x4UBMDP2EfGqxb1hcs_CXg" base_Interface="_egqQADP2EfGqxb1hcs_CXg"/>
-  <tiny:Tasks xmi:id="_2L1r4DP2EfGqxb1hcs_CXg" base_Package="_dwn6MDP2EfGqxb1hcs_CXg"/>
-  <tiny:ServiceInterface xmi:id="_pCMfoDP3EfGqxb1hcs_CXg" base_Interface="_pCD8wDP3EfGqxb1hcs_CXg"/>
-  <tiny:Capability xmi:id="_tD_hIDP3EfGqxb1hcs_CXg" base_Class="_tD4MYDP3EfGqxb1hcs_CXg"/>
-  <tiny:Expose xmi:id="_EpDt8DP4EfGqxb1hcs_CXg" base_Dependency="_C-DksDP4EfGqxb1hcs_CXg"/>
-  <tiny:Expose xmi:id="_JXw4wDP4EfGqxb1hcs_CXg" base_Dependency="_HaxAkDP4EfGqxb1hcs_CXg"/>
-  <tiny:Entities xmi:id="_gPv9IDP4EfGqxb1hcs_CXg" base_Package="_mysiMDP3EfGqxb1hcs_CXg"/>
   <tiny:ServiceInterface xmi:id="_BIvMYDP5EfGqxb1hcs_CXg" base_Interface="_BIoesDP5EfGqxb1hcs_CXg"/>
   <tiny:Capability xmi:id="_Feu8QDP5EfGqxb1hcs_CXg" base_Class="_FeqDwDP5EfGqxb1hcs_CXg"/>
   <tiny:Expose xmi:id="_OSIEgDP5EfGqxb1hcs_CXg" base_Dependency="_NR3hYDP5EfGqxb1hcs_CXg"/>
-  <tiny:Tasks xmi:id="_KhqOIDP6EfGqxb1hcs_CXg" base_Package="_KhjgcDP6EfGqxb1hcs_CXg"/>
-  <tiny:Utilities xmi:id="_MAMBoDP6EfGqxb1hcs_CXg" base_Package="_L_8xEDP6EfGqxb1hcs_CXg"/>
   <tiny:ServiceInterface xmi:id="_aoqt8DP6EfGqxb1hcs_CXg" base_Interface="_aol1cDP6EfGqxb1hcs_CXg"/>
   <tiny:Capability xmi:id="_bZE3MDP6EfGqxb1hcs_CXg" base_Class="_bY_XoDP6EfGqxb1hcs_CXg"/>
   <tiny:Expose xmi:id="_oS4bMDP6EfGqxb1hcs_CXg" base_Dependency="_nDhsIDP6EfGqxb1hcs_CXg"/>
-  <tiny:Capability xmi:id="_oQ060DP8EfGqxb1hcs_CXg" base_Class="_l0YtkDP8EfGqxb1hcs_CXg"/>
-  <tiny:Capability xmi:id="_v__l8DP8EfGqxb1hcs_CXg" base_Class="_vLMr8DP8EfGqxb1hcs_CXg"/>
-  <tiny:ServiceInterface xmi:id="_APwZIDP9EfGqxb1hcs_CXg" base_Interface="_9NjMYDP8EfGqxb1hcs_CXg"/>
-  <tiny:ServiceInterface xmi:id="_D4nWMDP9EfGqxb1hcs_CXg" base_Interface="_2jg9UDP8EfGqxb1hcs_CXg"/>
-  <tiny:Expose xmi:id="_Gcm88DP9EfGqxb1hcs_CXg" base_Dependency="_FmDIYDP9EfGqxb1hcs_CXg"/>
-  <tiny:Expose xmi:id="_iCPcMDP9EfGqxb1hcs_CXg" base_Dependency="_gsWAQDP9EfGqxb1hcs_CXg"/>
   <tiny:ServiceInterface xmi:id="_DPXQIDa2EfGDT8n9MqUMuQ" base_Interface="_75l-QDQJEfGqxb1hcs_CXg"/>
   <tiny:Capability xmi:id="_uOx80Da2EfGDT8n9MqUMuQ" base_Class="_8nFWYDQJEfGqxb1hcs_CXg"/>
   <tiny:Expose xmi:id="_7Imu8Da2EfGDT8n9MqUMuQ" base_Dependency="_XzWRkDa2EfGDT8n9MqUMuQ"/>
-  <tiny:Expose xmi:id="_Y6psAGtoEfGvOsAdpr7dWw" base_Dependency="_WihXAGtoEfGvOsAdpr7dWw"/>
-  <tiny:Expose xmi:id="_Eu-0wGvoEfG4M4oaVIz4Iw" base_Dependency="__wLYcGvnEfG4M4oaVIz4Iw"/>
-  <tiny:ServiceInterface xmi:id="_Rd_eAGvoEfG4M4oaVIz4Iw" base_Interface="_0Uv1gDa2EfGDT8n9MqUMuQ"/>
-  <tiny:Capability xmi:id="_SIU0cGvoEfG4M4oaVIz4Iw" base_Class="_xEAdgDa2EfGDT8n9MqUMuQ"/>
-  <tiny:Capability xmi:id="_SudnYGvoEfG4M4oaVIz4Iw" base_Class="_yGDwYDa2EfGDT8n9MqUMuQ"/>
-  <tiny:ServiceInterface xmi:id="_TWR1UGvoEfG4M4oaVIz4Iw" base_Interface="_y-iQgDa2EfGDT8n9MqUMuQ"/>
   <tiny:ServiceInterface xmi:id="_MfPwcGwGEfGPQ9rTkf8qTA" base_Interface="_Rat9YDQKEfGqxb1hcs_CXg"/>
   <tiny:Capability xmi:id="_NooaYGwGEfGPQ9rTkf8qTA" base_Class="_SDYf4DQKEfGqxb1hcs_CXg"/>
   <tiny:Expose xmi:id="_Qm1Q4GwGEfGPQ9rTkf8qTA" base_Dependency="_Pi_OQGwGEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_oBztkGwGEfGPQ9rTkf8qTA" base_Dependency="_jf0JEGwGEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_o9n1kGwGEfGPQ9rTkf8qTA" base_Dependency="_ktxJ8GwGEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_w1E6AGwGEfGPQ9rTkf8qTA" base_Interface="_afuooGwGEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_Km1n4GwHEfGPQ9rTkf8qTA" base_Class="_bFkgoGwGEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_LqD_cGwHEfGPQ9rTkf8qTA" base_Dependency="_LqBjM2wHEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_MEnNcGwHEfGPQ9rTkf8qTA" base_Dependency="_MElYQ2wHEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_PZ35EGwHEfGPQ9rTkf8qTA" base_Class="_ZJVdcGwGEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_Q9TasGwHEfGPQ9rTkf8qTA" base_Interface="_Z-SIcGwGEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_us4B8GwHEfGPQ9rTkf8qTA" base_Dependency="_t1GFYGwHEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_xLPh0GwHEfGPQ9rTkf8qTA" base_Dependency="_vkpXcGwHEfGPQ9rTkf8qTA"/>
   <tiny:Expose xmi:id="_4u_nIGwHEfGPQ9rTkf8qTA" base_Dependency="_3zPwkGwHEfGPQ9rTkf8qTA"/>
   <tiny:Capability xmi:id="_MtnRsGwIEfGPQ9rTkf8qTA" base_Class="_mO5W8DQKEfGqxb1hcs_CXg"/>
   <tiny:ServiceInterface xmi:id="_XZMDkGwIEfGPQ9rTkf8qTA" base_Interface="_otrGgDQKEfGqxb1hcs_CXg"/>
-  <tiny:Expose xmi:id="_YkQIgGwIEfGPQ9rTkf8qTA" base_Dependency="_YkNFM2wIEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_ZJI-QGwIEfGPQ9rTkf8qTA" base_Dependency="_ZJEFw2wIEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_caGYsGwIEfGPQ9rTkf8qTA" base_Class="_lwlcYGwHEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_dtwY8GwIEfGPQ9rTkf8qTA" base_Interface="_mCoOoGwHEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_e54N0GwIEfGPQ9rTkf8qTA" base_Dependency="_e52Yo2wIEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_h6A-AGwIEfGPQ9rTkf8qTA" base_Class="_laXUwGwHEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_jIzFUGwIEfGPQ9rTkf8qTA" base_Interface="_nkRnkGwHEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_oCKLgGwJEfGPQ9rTkf8qTA" base_Dependency="_l0uDkGwJEfGPQ9rTkf8qTA"/>
-  <tiny:Expose xmi:id="_sWOBsGwJEfGPQ9rTkf8qTA" base_Dependency="_rhW2QGwJEfGPQ9rTkf8qTA"/>
   <tiny:Expose xmi:id="_12MjIGwJEfGPQ9rTkf8qTA" base_Dependency="_1AqCQGwJEfGPQ9rTkf8qTA"/>
   <tiny:Capability xmi:id="_Z1tecGwKEfGPQ9rTkf8qTA" base_Class="_bCZJcGwJEfGPQ9rTkf8qTA"/>
   <tiny:ServiceInterface xmi:id="_dVsMUGwKEfGPQ9rTkf8qTA" base_Interface="_dMfpgGwJEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_tmC1YGwKEfGPQ9rTkf8qTA" base_Class="_b1k54GwJEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_vVq_8GwKEfGPQ9rTkf8qTA" base_Interface="_cN_Z4GwJEfGPQ9rTkf8qTA"/>
-  <tiny:Capability xmi:id="_zJAusGwKEfGPQ9rTkf8qTA" base_Class="_bYk00GwJEfGPQ9rTkf8qTA"/>
-  <tiny:ServiceInterface xmi:id="_0oHxAGwKEfGPQ9rTkf8qTA" base_Interface="_cwbYkGwJEfGPQ9rTkf8qTA"/>
+  <tiny:Utilities xmi:id="_YRmRAG8jEfGICvqO2RVgqQ" base_Package="_NrVc8G8jEfGICvqO2RVgqQ"/>
+  <tiny:Tasks xmi:id="_DxgboG8kEfGICvqO2RVgqQ" base_Package="_8sv04G8iEfGICvqO2RVgqQ"/>
+  <tiny:Entities xmi:id="_GTVfMG8kEfGICvqO2RVgqQ" base_Package="_VSUBMGwJEfGPQ9rTkf8qTA"/>
+  <tiny:Tasks xmi:id="_IXP3sG8kEfGICvqO2RVgqQ" base_Package="_dvfhsDQKEfGqxb1hcs_CXg"/>
+  <tiny:Entities xmi:id="_KNOh4G8kEfGICvqO2RVgqQ" base_Package="_oUbVgDQJEfGqxb1hcs_CXg"/>
+  <tiny:Tasks xmi:id="_PQCUcG8kEfGICvqO2RVgqQ" base_Package="_dDUvUDP2EfGqxb1hcs_CXg"/>
+  <tiny:Tasks xmi:id="_gua24G8kEfGICvqO2RVgqQ" base_Package="_kjDVoDQJEfGqxb1hcs_CXg"/>
+  <tiny:Tasks xmi:id="_kMAYEG8kEfGICvqO2RVgqQ" base_Package="_JJ5J8DP6EfGqxb1hcs_CXg"/>
+  <tiny:Entities xmi:id="_8RACIG8kEfGICvqO2RVgqQ" base_Package="_43JKYG8kEfGICvqO2RVgqQ"/>
+  <tiny:Entities xmi:id="_MiLxoG8lEfGICvqO2RVgqQ" base_Package="_KjnMIG8lEfGICvqO2RVgqQ"/>
+  <tiny:Utilities xmi:id="_idDtgG8lEfGICvqO2RVgqQ" base_Package="_YeS-UG8lEfGICvqO2RVgqQ"/>
 </xmi:XMI>
