@@ -13,63 +13,168 @@
       <packagedElement xmi:type="uml:Dependency" xmi:id="_TwCO8DQKEfGqxb1hcs_CXg" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_Rat9YDQKEfGqxb1hcs_CXg"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_qoOusDQKEfGqxb1hcs_CXg" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_otrGgDQKEfGqxb1hcs_CXg"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_7UEhEGwJEfGPQ9rTkf8qTA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_8JjmcG9dEfGmxpKA3ARReA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_YZVwYG8mEfGICvqO2RVgqQ"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_IrbR8G9mEfGmxpKA3ARReA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_X-OhsG8mEfGICvqO2RVgqQ"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_JJ5J8DP6EfGqxb1hcs_CXg" name="App">
       <packagedElement xmi:type="uml:Interface" xmi:id="_aol1cDP6EfGqxb1hcs_CXg" name="App_I"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_bY_XoDP6EfGqxb1hcs_CXg" name="App_C"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_nDhsIDP6EfGqxb1hcs_CXg" client="_aol1cDP6EfGqxb1hcs_CXg" supplier="_bY_XoDP6EfGqxb1hcs_CXg"/>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_kjDVoDQJEfGqxb1hcs_CXg" name="Banca">
-      <packagedElement xmi:type="uml:Interface" xmi:id="_Rat9YDQKEfGqxb1hcs_CXg" name="Banca_I"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_SDYf4DQKEfGqxb1hcs_CXg" name="Banca_C"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_kjDVoDQJEfGqxb1hcs_CXg" name="banking-service">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_Rat9YDQKEfGqxb1hcs_CXg" name="Bank_service">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="__T2wgG9jEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_AgGhMG9kEfGmxpKA3ARReA" name="logout"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_AlmsQG9kEfGmxpKA3ARReA" name="cauzione"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_Aq2YoG9kEfGmxpKA3ARReA" name="addebito"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_Av_XUG9kEfGmxpKA3ARReA" name="rimozione"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_SDYf4DQKEfGqxb1hcs_CXg" name="banking">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ITVM8G9kEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ITXpMG9kEfGmxpKA3ARReA" name="logout"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ITaFcG9kEfGmxpKA3ARReA" name="cauzione"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ITb6oG9kEfGmxpKA3ARReA" name="addebito"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ITdv0G9kEfGmxpKA3ARReA" name="rimozione"/>
+      </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_Pi_OQGwGEfGPQ9rTkf8qTA" client="_Rat9YDQKEfGqxb1hcs_CXg" supplier="_SDYf4DQKEfGqxb1hcs_CXg"/>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_oUbVgDQJEfGqxb1hcs_CXg" name="Stazioni">
-      <packagedElement xmi:type="uml:Interface" xmi:id="_75l-QDQJEfGqxb1hcs_CXg" name="Stazioni_I"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_8nFWYDQJEfGqxb1hcs_CXg" name="Stazioni_C"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_oUbVgDQJEfGqxb1hcs_CXg" name="stations-service">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_75l-QDQJEfGqxb1hcs_CXg" name="Stazione_service">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_FWoAsG9jEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_N8x-MG9jEfGmxpKA3ARReA" name="logout"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OnWlMG9jEfGmxpKA3ARReA" name="sblocco"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OvZt8G9jEfGmxpKA3ARReA" name="blocco"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_8nFWYDQJEfGqxb1hcs_CXg" name="stations">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_boECcG9jEfGmxpKA3ARReA" name="listStations"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_boHs0G9jEfGmxpKA3ARReA" name="getStation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_dddd0G9jEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ddfTAG9jEfGmxpKA3ARReA" name="logout"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ddhvQG9jEfGmxpKA3ARReA" name="sblocco"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ddkLgG9jEfGmxpKA3ARReA" name="blocco"/>
+      </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_XzWRkDa2EfGDT8n9MqUMuQ" client="_75l-QDQJEfGqxb1hcs_CXg" supplier="_8nFWYDQJEfGqxb1hcs_CXg"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_uNeT0G9iEfGmxpKA3ARReA" name="RESTInterface">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_QihRYG9jEfGmxpKA3ARReA" name="listStations"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_RJZrMG9jEfGmxpKA3ARReA" name="getStation"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_xbNbIG9iEfGmxpKA3ARReA" client="_uNeT0G9iEfGmxpKA3ARReA" supplier="_8nFWYDQJEfGqxb1hcs_CXg"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_dvfhsDQKEfGqxb1hcs_CXg" name="Fleet">
-      <packagedElement xmi:type="uml:Class" xmi:id="_mO5W8DQKEfGqxb1hcs_CXg" name="Fleet_C"/>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_otrGgDQKEfGqxb1hcs_CXg" name="query"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_3zPwkGwHEfGPQ9rTkf8qTA" client="_otrGgDQKEfGqxb1hcs_CXg" supplier="_mO5W8DQKEfGqxb1hcs_CXg"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_0jvGYG8iEfGICvqO2RVgqQ" name="Class4"/>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_BtZj8G8mEfGICvqO2RVgqQ" name="Interface6"/>
       <packagedElement xmi:type="uml:Package" xmi:id="_-ojdcG8mEfGICvqO2RVgqQ" name="Package8">
         <packagedElement xmi:type="uml:Class" xmi:id="_1UlUgG8iEfGICvqO2RVgqQ" name="Class5"/>
         <packagedElement xmi:type="uml:Interface" xmi:id="_CSVdAG8mEfGICvqO2RVgqQ" name="Interface7"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Package" xmi:id="_LV8WEG8nEfGICvqO2RVgqQ" name="Package7"/>
+      <packagedElement xmi:type="uml:Package" xmi:id="_LV8WEG8nEfGICvqO2RVgqQ" name="Package7">
+        <packagedElement xmi:type="uml:Interface" xmi:id="_BtZj8G8mEfGICvqO2RVgqQ" name="Interface6"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_0jvGYG8iEfGICvqO2RVgqQ" name="Class4"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Package" xmi:id="_f0fwMG9vEfGjVP3x2oT6sQ" name="Package6">
+        <packagedElement xmi:type="uml:Class" xmi:id="_mO5W8DQKEfGqxb1hcs_CXg" name="Fleet_C"/>
+        <packagedElement xmi:type="uml:Interface" xmi:id="_otrGgDQKEfGqxb1hcs_CXg" name="query"/>
+      </packagedElement>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_VSUBMGwJEfGPQ9rTkf8qTA" name="Logistica">
-      <packagedElement xmi:type="uml:Class" xmi:id="_bCZJcGwJEfGPQ9rTkf8qTA" name="Logistica_C"/>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_dMfpgGwJEfGPQ9rTkf8qTA" name="Logistica_I"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_VSUBMGwJEfGPQ9rTkf8qTA" name="logistics-service">
+      <packagedElement xmi:type="uml:Class" xmi:id="_bCZJcGwJEfGPQ9rTkf8qTA" name="LogisticsService">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TJ4ZYG9cEfGmxpKA3ARReA" name="getVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TJ8DwG9cEfGmxpKA3ARReA" name="getVehicles"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TJ8q0G9cEfGmxpKA3ARReA" name="holdVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TJ-gAG9cEfGmxpKA3ARReA" name="pickupVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TKA8QG9cEfGmxpKA3ARReA" name="releaseVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TKBjUG9cEfGmxpKA3ARReA" name="returnVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TKCKYG9cEfGmxpKA3ARReA" name="startCharging"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_TKCxcG9cEfGmxpKA3ARReA" name="stopCharging"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_X2y0cG9cEfGmxpKA3ARReA" name="LogisticsService"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_oAqbAG9cEfGmxpKA3ARReA" name="canBeRented"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_pTdfoG9cEfGmxpKA3ARReA" name="getVehiclesByPosition"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_pbmvAG9cEfGmxpKA3ARReA" name="isAtPosition"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_pfvBEG9cEfGmxpKA3ARReA" name="increaseBattery"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_piLREG9cEfGmxpKA3ARReA" name="getVehiclesNeedingCharge"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_pjFQAG9cEfGmxpKA3ARReA" name="getChargingVehicles"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_pkIY4G9cEfGmxpKA3ARReA" name="findVehicleOrThrow"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_9ysj8G9cEfGmxpKA3ARReA" name="updateStatus"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_97R4MG9cEfGmxpKA3ARReA" name="toResponse"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_-DXdMG9cEfGmxpKA3ARReA" name="toStatusResponse"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_dMfpgGwJEfGPQ9rTkf8qTA" name="LogisticsResource">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_fA3V0G9ZEfGmxpKA3ARReA" name="getVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_631nQG9aEfGmxpKA3ARReA" name="getVehicles"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_dKbGsG9bEfGmxpKA3ARReA" name="holdVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_iXKRUG9bEfGmxpKA3ARReA" name="pickupVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_xSirgG9bEfGmxpKA3ARReA" name="releaseVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_yGwWsG9bEfGmxpKA3ARReA" name="returnVehicle"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_yhLo4G9bEfGmxpKA3ARReA" name="startCharging"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_yniIgG9bEfGmxpKA3ARReA" name="stopCharging"/>
+      </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_1AqCQGwJEfGPQ9rTkf8qTA" client="_dMfpgGwJEfGPQ9rTkf8qTA" supplier="_bCZJcGwJEfGPQ9rTkf8qTA"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_Q5i-AG8mEfGICvqO2RVgqQ" client="_bCZJcGwJEfGPQ9rTkf8qTA" supplier="_75l-QDQJEfGqxb1hcs_CXg"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_Q5i-AG8mEfGICvqO2RVgqQ" client="_bCZJcGwJEfGPQ9rTkf8qTA" supplier="_uNeT0G9iEfGmxpKA3ARReA"/>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_8sv04G8iEfGICvqO2RVgqQ" name="Package9">
-      <packagedElement xmi:type="uml:Interface" xmi:id="__XMo8G8iEfGICvqO2RVgqQ" name="Interface1"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_AmcDQG8jEfGICvqO2RVgqQ" name="Class2"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_8sv04G8iEfGICvqO2RVgqQ" name="simulator-service">
+      <packagedElement xmi:type="uml:Interface" xmi:id="__XMo8G8iEfGICvqO2RVgqQ" name="SimulationResource" visibility="package">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hbnJ4G9tEfGjVP3x2oT6sQ" name="start"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_ilzsIG9tEfGjVP3x2oT6sQ" name="stop"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_iphugG9tEfGjVP3x2oT6sQ" name="active"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_AmcDQG8jEfGICvqO2RVgqQ" name="SimulationService">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_9MSbgG9tEfGjVP3x2oT6sQ" name="start"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_9MTpoG9tEfGjVP3x2oT6sQ" name="stop"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_-RAA0G9tEfGjVP3x2oT6sQ" name="isActive"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_-9mBEG9tEfGjVP3x2oT6sQ" name="tick"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="__AjOcG9tEfGjVP3x2oT6sQ" name="interpolateAlongRoute"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_LibaoG9uEfGjVP3x2oT6sQ" name="totalRouteDistance"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_Lr3qgG9uEfGjVP3x2oT6sQ" name="lerp"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_Lyw8sG9uEfGjVP3x2oT6sQ" name="distanceMeters"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_VpACAG9uEfGjVP3x2oT6sQ" name="shutdown"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_uaDg0G9uEfGjVP3x2oT6sQ" client="__XMo8G8iEfGICvqO2RVgqQ" supplier="_AmcDQG8jEfGICvqO2RVgqQ"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_NrVc8G8jEfGICvqO2RVgqQ" name="Package10">
       <packagedElement xmi:type="uml:Class" xmi:id="_Rctc0G8jEfGICvqO2RVgqQ" name="Class1"/>
       <packagedElement xmi:type="uml:Interface" xmi:id="_Sg-9QG8jEfGICvqO2RVgqQ" name="Interface2"/>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_43JKYG8kEfGICvqO2RVgqQ" name="reservation">
-      <packagedElement xmi:type="uml:Interface" xmi:id="_YZVwYG8mEfGICvqO2RVgqQ" name="Interface1"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_t4ahEG8mEfGICvqO2RVgqQ" name="Class2"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_43JKYG8kEfGICvqO2RVgqQ" name="reservation-service">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_YZVwYG8mEfGICvqO2RVgqQ" name="ReservationResource">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_MW5iUG9fEfGmxpKA3ARReA" name="getReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_N_ssIG9fEfGmxpKA3ARReA" name="createReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OFlRsG9fEfGmxpKA3ARReA" name="holdReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OHgkUG9fEfGmxpKA3ARReA" name="pickupReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OIk7UG9fEfGmxpKA3ARReA" name="cancelReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_OLrSoG9fEfGmxpKA3ARReA" name="endReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_UWNiQG9fEfGmxpKA3ARReA" name="getReservations"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_t4ahEG8mEfGICvqO2RVgqQ" name="ReservationService" visibility="public">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_rh93MG9fEfGmxpKA3ARReA" name="getReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_rh_sYG9fEfGmxpKA3ARReA" name="createReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_riA6gG9fEfGmxpKA3ARReA" name="holdReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_riCIoG9fEfGmxpKA3ARReA" name="pickupReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_riCvsG9fEfGmxpKA3ARReA" name="cancelReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_riDWwG9fEfGmxpKA3ARReA" name="endReservation"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_s5pb0G9fEfGmxpKA3ARReA" name="ReservationService"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_riD90G9fEfGmxpKA3ARReA" name="findReservationOrThrow"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_uJyOAG9fEfGmxpKA3ARReA" name="updateReservationStatus"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_PdBJQG9gEfGmxpKA3ARReA" name="getReservationsByUserId"/>
+      </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_xzM7oG8mEfGICvqO2RVgqQ" client="_t4ahEG8mEfGICvqO2RVgqQ" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_4fJKMG9dEfGmxpKA3ARReA" client="_YZVwYG8mEfGICvqO2RVgqQ" supplier="_t4ahEG8mEfGICvqO2RVgqQ"/>
     </packagedElement>
-    <packagedElement xmi:type="uml:Package" xmi:id="_KjnMIG8lEfGICvqO2RVgqQ" name="authentication">
-      <packagedElement xmi:type="uml:Interface" xmi:id="_X-OhsG8mEfGICvqO2RVgqQ" name="Interface1"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_aF-RUG8mEfGICvqO2RVgqQ" name="Class2"/>
+    <packagedElement xmi:type="uml:Package" xmi:id="_KjnMIG8lEfGICvqO2RVgqQ" name="auth-service">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_X-OhsG8mEfGICvqO2RVgqQ" name="AuthResource">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_xFficG9lEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_xvilAG9lEfGmxpKA3ARReA" name="signup"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Class" xmi:id="_aF-RUG8mEfGICvqO2RVgqQ" name="AuthService">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_7wUGYG9lEfGmxpKA3ARReA" name="login"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_7wXJsG9lEfGmxpKA3ARReA" name="signup"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_8zA5gG9lEfGmxpKA3ARReA" name="toResponse"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_rhOBkG9lEfGmxpKA3ARReA" client="_X-OhsG8mEfGICvqO2RVgqQ" supplier="_aF-RUG8mEfGICvqO2RVgqQ"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_YeS-UG8lEfGICvqO2RVgqQ" name="graphhopper">
       <packagedElement xmi:type="uml:Interface" xmi:id="_XlKhcG8mEfGICvqO2RVgqQ" name="Interface1"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_ZZNR8G8mEfGICvqO2RVgqQ" name="Class2"/>
     </packagedElement>
     <packagedElement xmi:type="uml:AssociationClass" xmi:id="_MwCVgG8nEfGICvqO2RVgqQ"/>
-    <packagedElement xmi:type="uml:Class" xmi:id="_M-bW0G8nEfGICvqO2RVgqQ" name="Class15"/>
     <profileApplication xmi:type="uml:ProfileApplication" xmi:id="_2Yr24DFKEfGIpamFaYrQyg">
       <eAnnotations xmi:type="ecore:EAnnotation" xmi:id="_YEA3IDFNEfGIpamFaYrQyg" source="PapyrusVersion">
         <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_YEA3ITFNEfGIpamFaYrQyg" key="Version" value="2.0.0"/>
@@ -113,4 +218,15 @@
   <tiny:Entities xmi:id="_8RACIG8kEfGICvqO2RVgqQ" base_Package="_43JKYG8kEfGICvqO2RVgqQ"/>
   <tiny:Entities xmi:id="_MiLxoG8lEfGICvqO2RVgqQ" base_Package="_KjnMIG8lEfGICvqO2RVgqQ"/>
   <tiny:Utilities xmi:id="_idDtgG8lEfGICvqO2RVgqQ" base_Package="_YeS-UG8lEfGICvqO2RVgqQ"/>
+  <tiny:Expose xmi:id="_5fJ1sG9dEfGmxpKA3ARReA" base_Dependency="_4fJKMG9dEfGmxpKA3ARReA"/>
+  <tiny:ServiceInterface xmi:id="_mWEPgG9eEfGmxpKA3ARReA" base_Interface="_YZVwYG8mEfGICvqO2RVgqQ"/>
+  <tiny:Capability xmi:id="_4U_TMG9eEfGmxpKA3ARReA" base_Class="_t4ahEG8mEfGICvqO2RVgqQ"/>
+  <tiny:Expose xmi:id="_yVZLcG9iEfGmxpKA3ARReA" base_Dependency="_xbNbIG9iEfGmxpKA3ARReA"/>
+  <tiny:ServiceInterface xmi:id="_zfZgcG9iEfGmxpKA3ARReA" base_Interface="_uNeT0G9iEfGmxpKA3ARReA"/>
+  <tiny:ServiceInterface xmi:id="_iJdoAG9lEfGmxpKA3ARReA" base_Interface="_X-OhsG8mEfGICvqO2RVgqQ"/>
+  <tiny:Capability xmi:id="_ivH50G9lEfGmxpKA3ARReA" base_Class="_aF-RUG8mEfGICvqO2RVgqQ"/>
+  <tiny:Expose xmi:id="_s-tTQG9lEfGmxpKA3ARReA" base_Dependency="_rhOBkG9lEfGmxpKA3ARReA"/>
+  <tiny:ServiceInterface xmi:id="_MjymcG9tEfGjVP3x2oT6sQ" base_Interface="__XMo8G8iEfGICvqO2RVgqQ"/>
+  <tiny:Capability xmi:id="_RaeBgG9tEfGjVP3x2oT6sQ" base_Class="_AmcDQG8jEfGICvqO2RVgqQ"/>
+  <tiny:Expose xmi:id="_vbqu0G9uEfGjVP3x2oT6sQ" base_Dependency="_uaDg0G9uEfGjVP3x2oT6sQ"/>
 </xmi:XMI>
