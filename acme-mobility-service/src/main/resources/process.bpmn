@@ -66,7 +66,7 @@
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="={&#10;  reservationId: reservationAction.reservationId,&#10;  status: &#34;RETURN_CONFIRMED&#34;,&#10;  message: &#34;Restituzione richiesta.&#34;&#10;}" target="body" />
+          <zeebe:input source="={&#10;  reservationId: reservation.reservationId,&#10;  status: &#34;RETURN_CONFIRMED&#34;,&#10;  message: &#34;Restituzione richiesta.&#34;&#10;}" target="body" />
           <zeebe:input source="=false" target="ignoreNullValues" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
@@ -394,7 +394,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="noAuth" target="authentication.type" />
           <zeebe:input source="POST" target="method" />
-          <zeebe:input source="=services.reservation + &#34;/&#34; + reservationRequest.requestId + &#34;/hold&#34;" target="url" />
+          <zeebe:input source="=services.reservation + &#34;/&#34; + reservation.reservationId + &#34;/hold&#34;" target="url" />
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
@@ -613,7 +613,7 @@
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="={&#10;  reservationId: reservationAction.reservationId,&#10;  status: &#34;FAILED&#34;,&#10;  message: &#34;Connessione alla banca non avvenuta.&#34;&#10;}" target="body" />
+          <zeebe:input source="={&#10;  requestId: reservationRequest.requestId,&#10;  status: &#34;FAILED&#34;,&#10;  message: &#34;Connessione alla banca non avvenuta.&#34;&#10;}" target="body" />
           <zeebe:input source="=false" target="ignoreNullValues" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
@@ -645,7 +645,7 @@
   </bpmn:message>
   <bpmn:message id="Message_0jf1gis" name="RESERVATION_RETURN_REQUEST">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="=reservationAction.reservationId" />
+      <zeebe:subscription correlationKey="=reservation.reservationId" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:error id="Error_10uud1c" name="Create Reservation Failed" errorCode="CREATE_RESERVATION_FAILED" />

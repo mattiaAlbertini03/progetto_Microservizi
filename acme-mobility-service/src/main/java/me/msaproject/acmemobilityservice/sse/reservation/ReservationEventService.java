@@ -27,7 +27,7 @@ public class ReservationEventService {
                 .add(sink);
     }
 
-    public void publish(String topicId, ReservationEvent event) {
+    public void publish(String topicId, Object event) {
         List<SseEventSink> sinks = subscribers.get(topicId);
 
         if (sinks == null) {
@@ -42,7 +42,7 @@ public class ReservationEventService {
                         sse.newEventBuilder()
                                 .name("reservation-update")
                                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                                .data(ReservationEvent.class, event)
+                                .data(event.getClass(), event)
                                 .build());
             } catch (Exception e) {
                 try {

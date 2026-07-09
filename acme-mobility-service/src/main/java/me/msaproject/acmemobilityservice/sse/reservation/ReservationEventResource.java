@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.sse.SseEventSink;
+import me.msaproject.acmemobilityservice.dto.reservation.ReservationCreationEvent;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationEvent;
 
 @Path("/")
@@ -30,7 +31,7 @@ public class ReservationEventResource {
     @Path("/reservation-requests/{requestId}/events")
     public Response publishReservationRequestEvent(
             @PathParam("requestId") String requestId,
-            ReservationEvent event) {
+            ReservationCreationEvent event) {
 
         reservationEventService.publish("request-" + requestId, event);
 
