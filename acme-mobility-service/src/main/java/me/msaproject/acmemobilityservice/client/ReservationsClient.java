@@ -9,7 +9,7 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import me.msaproject.acmemobilityservice.dto.reservation.ReservationRequest;
+import me.msaproject.acmemobilityservice.dto.reservation.ReservationCreationRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationStatusResponse;
 
@@ -20,7 +20,7 @@ public class ReservationsClient {
 
     private final Client client = ClientBuilder.newClient();
 
-    public ReservationResponse createReservation(ReservationRequest request) {
+    public ReservationResponse createReservation(ReservationCreationRequest request) {
         Response response = client
                 .target(RESERVATION_SERVICE_BASE_URL)
                 .path("/reservations")

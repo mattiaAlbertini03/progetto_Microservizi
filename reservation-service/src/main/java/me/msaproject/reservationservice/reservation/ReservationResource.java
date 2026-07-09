@@ -7,7 +7,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.reservationservice.dto.ReservationEvent;
-import me.msaproject.reservationservice.dto.ReservationRequest;
+import me.msaproject.reservationservice.dto.ReservationCreationRequest;
 import me.msaproject.reservationservice.dto.ReservationResponse;
 import me.msaproject.reservationservice.dto.ReservationStatusResponse;
 
@@ -35,7 +35,7 @@ public class ReservationResource {
         }
 
         @POST
-        public Response createReservation(ReservationRequest request) {
+        public Response createReservation(ReservationCreationRequest request) {
                 Reservation reservation = reservationService.createReservation(request);
 
                 return Response

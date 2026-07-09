@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { ACME_API_URL } from "../App";
 import { useAuth } from "../components/AuthContext";
 import ReservationCard from "../components/ReservationCard";
 import {
@@ -8,6 +7,7 @@ import {
     sendReservationAction,
 } from "../api/acmeApi";
 import type { ReservationData } from "../types/domain";
+import { useReservationEvents } from "../components/ReservationEventsContext";
 
 export default function ReservationsPage() {
     const { user } = useAuth();
@@ -15,12 +15,9 @@ export default function ReservationsPage() {
     const [reservations, setReservations] = useState<ReservationData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { listenReturnEvents } = useReservationEvents();
 
-    useEffect(() => {
-        loadReservations();
-    }, [user]);
-
-    async function loadReservations() {
+    const loadReservations = useCallback(async () => {
         if (!user) {
             setLoading(false);
             return;
@@ -30,47 +27,28 @@ export default function ReservationsPage() {
             setLoading(true);
             const data = await getReservations(user.id);
             setReservations(data);
+            setError(null);
         } catch (err) {
             console.error(err);
             setError("Impossibile caricare le prenotazioni");
         } finally {
             setLoading(false);
         }
-    }
+    }, [user]);
 
-    function listenReturnEvents(reservationId: string) {
-        const eventSource = new EventSource(
-            `${ACME_API_URL}/reservations/${reservationId}/return/events`
-        );
+    useEffect(() => {
+        loadReservations();
+    }, [loadReservations]);
 
-        eventSource.addEventListener("reservation-update", async (event) => {
-            const data = JSON.parse((event as MessageEvent).data);
+    useEffect(() => {
+        window.addEventListener("reservations-changed", loadReservations);
+        window.addEventListener("reservation-confirmed", loadReservations);
 
-            switch (data.status) {
-                case "VEHICLE_NOT_AT_DESTINATION":
-                    alert("Il veicolo non è ancora arrivato alla stazione.");
-                    break;
-
-                case "RETURN_CONFIRMED":
-                    alert("Veicolo riconsegnato correttamente.");
-                    await loadReservations();
-                    eventSource.close();
-                    break;
-
-                case "RETURN_FAILED":
-                    alert("Errore durante la riconsegna.");
-                    eventSource.close();
-                    break;
-            }
-        });
-
-        eventSource.onerror = () => {
-            console.error("Errore SSE return");
-            eventSource.close();
+        return () => {
+            window.removeEventListener("reservations-changed", loadReservations);
+            window.removeEventListener("reservation-confirmed", loadReservations);
         };
-
-        return eventSource;
-    }
+    }, [loadReservations]);
 
     async function pickupReservation(reservation: ReservationData) {
         await executeReservationAction(

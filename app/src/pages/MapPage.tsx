@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 
 import Station from "../components/Station";
 import { useAuth } from "../components/AuthContext";
-import { ACME_API_URL } from "../App";
+import { useReservationEvents } from "../components/ReservationEventsContext";
 import { useVehicleEvents } from "../hooks/useVehicleEvents";
 import {
     createReservation,
@@ -35,6 +35,7 @@ export default function MapPage() {
     >({});
     const [loadingStationId, setLoadingStationId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { listenReservationRequest } = useReservationEvents();
 
     useEffect(() => {
         loadStations();
@@ -68,6 +69,24 @@ export default function MapPage() {
         }
     }, []);
 
+    useEffect(() => {
+        async function onReservationConfirmed(event: Event) {
+            const customEvent = event as CustomEvent<{
+                stationId?: string;
+            }>;
+
+            if (customEvent.detail.stationId) {
+                await refreshVehicles(customEvent.detail.stationId);
+            }
+        }
+
+        window.addEventListener("reservation-confirmed", onReservationConfirmed);
+
+        return () => {
+            window.removeEventListener("reservation-confirmed", onReservationConfirmed);
+        };
+    }, [refreshVehicles]);
+
     const loadVehicles = useCallback(
         async (stationId: string) => {
             setSelectedStationId(stationId);
@@ -96,30 +115,10 @@ export default function MapPage() {
 
         try {
             const data = await createReservation(user.id, vehicle.id, station.id);
-            const requestId = data.requestId;
 
-            const source = new EventSource(
-                `${ACME_API_URL}/reservations/${requestId}/events`
-            );
+            listenReservationRequest(data.requestId, station.id);
 
-            source.addEventListener("reservation-update", async (event) => {
-                const update = JSON.parse((event as MessageEvent).data);
-
-                if (update.status === "RESERVED") {
-                    source.close();
-                    await refreshVehicles(station.id);
-                    alert("Prenotazione confermata");
-                }
-
-                if (update.status === "FAILED") {
-                    source.close();
-                    alert(update.message ?? "Prenotazione fallita");
-                }
-            });
-
-            source.onerror = (err) => {
-                console.error("Reservation SSE error:", err);
-            };
+            alert("Richiesta di prenotazione inviata");
         } catch (err) {
             console.error(err);
             alert("Errore durante la prenotazione");

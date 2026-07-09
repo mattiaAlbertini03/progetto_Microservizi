@@ -5,7 +5,7 @@ import jakarta.inject.Inject;
 import me.msaproject.reservationservice.client.LogisticsClient;
 import me.msaproject.reservationservice.db.ReservationRepository;
 import me.msaproject.reservationservice.dto.ReservationEvent;
-import me.msaproject.reservationservice.dto.ReservationRequest;
+import me.msaproject.reservationservice.dto.ReservationCreationRequest;
 import me.msaproject.reservationservice.dto.ReservationResponse;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class ReservationService {
         this.logisticsClient = logisticsClient;
     }
 
-    public Reservation createReservation(ReservationRequest request) {
+    public Reservation createReservation(ReservationCreationRequest request) {
         String reservationId = UUID.randomUUID().toString();
 
         Reservation reservation = new Reservation(

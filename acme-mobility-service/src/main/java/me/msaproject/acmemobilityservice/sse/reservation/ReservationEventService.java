@@ -21,14 +21,14 @@ public class ReservationEventService {
     @Context
     Sse sse;
 
-    public void subscribe(String reservationId, SseEventSink sink) {
+    public void subscribe(String topicId, SseEventSink sink) {
         subscribers
-                .computeIfAbsent(reservationId, key -> new CopyOnWriteArrayList<>())
+                .computeIfAbsent(topicId, key -> new CopyOnWriteArrayList<>())
                 .add(sink);
     }
 
-    public void publish(String reservationId, ReservationEvent event) {
-        List<SseEventSink> sinks = subscribers.get(reservationId);
+    public void publish(String topicId, ReservationEvent event) {
+        List<SseEventSink> sinks = subscribers.get(topicId);
 
         if (sinks == null) {
             return;
@@ -43,8 +43,7 @@ public class ReservationEventService {
                                 .name("reservation-update")
                                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                                 .data(ReservationEvent.class, event)
-                                .build()
-                );
+                                .build());
             } catch (Exception e) {
                 try {
                     sink.close();
@@ -56,7 +55,7 @@ public class ReservationEventService {
         sinks.removeIf(SseEventSink::isClosed);
 
         if (sinks.isEmpty()) {
-            subscribers.remove(reservationId);
+            subscribers.remove(topicId);
         }
     }
 }

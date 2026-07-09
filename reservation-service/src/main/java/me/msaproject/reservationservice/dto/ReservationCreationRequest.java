@@ -1,6 +1,6 @@
 package me.msaproject.reservationservice.dto;
 
-public record ReservationRequest(
+public record ReservationCreationRequest(
         String userId,
         String vehicleId,
         String stationId
