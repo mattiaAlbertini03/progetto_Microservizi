@@ -22,6 +22,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<User> {
         userId: string;
         username: string;
         email?: string;
+        token: string;
     }>("/auth/login", {
         method: "POST",
         headers: {
@@ -34,6 +35,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<User> {
         id: data.userId,
         name: data.username,
         email: data.email ?? `${data.username}@acme.local`,
+        token: data.token,
     };
 }
 
@@ -48,7 +50,7 @@ export function getVehiclesByStation(stationId: string): Promise<VehicleData[]> 
 }
 
 export async function createReservation(
-    userId: string,
+    user: User,
     vehicleId: string,
     stationId: string
 ): Promise<{ requestId: string }> {
@@ -56,26 +58,26 @@ export async function createReservation(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${userId}`,
+            Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-            userId,
+            userId: user.id,
             vehicleId,
             stationId,
         }),
     });
 }
 
-export function getReservations(userId: string): Promise<ReservationData[]> {
-    return request<ReservationData[]>(`/reservations?userId=${userId}`, {
+export function getReservations(user: User): Promise<ReservationData[]> {
+    return request<ReservationData[]>(`/reservations?userId=${user.id}`, {
         headers: {
-            Authorization: `Bearer ${userId}`,
+            Authorization: `Bearer ${user.token}`,
         },
     });
 }
 
 export async function sendReservationAction(
-    userId: string,
+    user: User,
     reservationId: string,
     action: "pickup" | "cancel" | "return"
 ): Promise<void> {
@@ -84,7 +86,7 @@ export async function sendReservationAction(
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${userId}`,
+                Authorization: `Bearer ${user.token}`,
             },
         }
     );

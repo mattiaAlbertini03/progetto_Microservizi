@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaauth="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -15,11 +17,23 @@
   <artifactId>auth-service</artifactId>
   <version>1.0-SNAPSHOT</version>
 
+  <properties>
+    <nimbus-jose-jwt.version>10.5</nimbus-jose-jwt.version>
+  </properties>
+
   <dependencies>
+
     <!-- Helidon MP -->
     <dependency>
       <groupId>io.helidon.microprofile.bundles</groupId>
       <artifactId>helidon-microprofile-core</artifactId>
+    </dependency>
+
+    <!-- JWT creation and validation -->
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>${nimbus-jose-jwt.version}</version>
     </dependency>
 
     <dependency>
@@ -37,7 +51,7 @@
       <artifactId>helidon-microprofile-metrics</artifactId>
     </dependency>
 
-    <!-- JSON (Jersey + Jackson) -->
+    <!-- JSON -->
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
@@ -49,6 +63,11 @@
       <artifactId>jakarta.xml.bind-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
     <!-- Logging -->
     <dependency>
       <groupId>io.helidon.logging</groupId>
@@ -56,7 +75,7 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Reactive Messaging + Kafka (Helidon way) -->
+    <!-- Reactive Messaging + Kafka -->
     <dependency>
       <groupId>io.helidon.microprofile.messaging</groupId>
       <artifactId>helidon-microprofile-messaging</artifactId>
@@ -75,19 +94,16 @@
     </dependency>
 
     <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
     <plugins>
+
       <plugin>
         <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
@@ -97,23 +113,28 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-dependency-plugin</artifactId>
-  <executions>
-    <execution>
-      <id>copy-libs</id>
-      <phase>package</phase>
-      <goals>
-        <goal>copy-dependencies</goal>
-      </goals>
-      <configuration>
-        <outputDirectory>${project.build.directory}/libs</outputDirectory>
-        <includeScope>runtime</includeScope>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-libs</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>
+                ${project.build.directory}/libs
+              </outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
+
 </project>

@@ -1,12 +1,10 @@
 package me.msaproject.acmemobilityservice.sse.reservation;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
-import me.msaproject.acmemobilityservice.dto.reservation.ReservationEvent;
 
 import java.util.List;
 import java.util.Map;
