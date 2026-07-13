@@ -55,6 +55,7 @@
       <packagedElement xmi:type="uml:Dependency" xmi:id="_8JjmcG9dEfGmxpKA3ARReA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_YZVwYG8mEfGICvqO2RVgqQ"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_IrbR8G9mEfGmxpKA3ARReA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_X-OhsG8mEfGICvqO2RVgqQ"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_skZ7EHSCEfGdV7Ozi5q6FQ" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_YeS-UG8lEfGICvqO2RVgqQ"/>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_a5g7UH7CEfGoZOcDyoTzOA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_RSy6IH49EfG1eYGkX8WnOQ"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_JJ5J8DP6EfGqxb1hcs_CXg" name="App">
       <packagedElement xmi:type="uml:Dependency" xmi:id="_J-n9YHSDEfGdV7Ozi5q6FQ" client="_JJ5J8DP6EfGqxb1hcs_CXg" supplier="_BIoesDP5EfGqxb1hcs_CXg"/>
@@ -154,6 +155,11 @@
           <ownedOperation xmi:type="uml:Operation" xmi:id="_lBnGwH5AEfG1eYGkX8WnOQ" name="pickRandomDestination"/>
         </packagedElement>
         <packagedElement xmi:type="uml:Dependency" xmi:id="_XgL0AH4-EfG1eYGkX8WnOQ" client="_RSy6IH49EfG1eYGkX8WnOQ" supplier="_TFBFsH49EfG1eYGkX8WnOQ"/>
+        <packagedElement xmi:type="uml:Dependency" xmi:id="_POXi0H7CEfGoZOcDyoTzOA" client="_TFBFsH49EfG1eYGkX8WnOQ" supplier="__XMo8G8iEfGICvqO2RVgqQ"/>
+        <packagedElement xmi:type="uml:Dependency" xmi:id="_RlCp0H7DEfGoZOcDyoTzOA" client="_TFBFsH49EfG1eYGkX8WnOQ" supplier="_otrGgDQKEfGqxb1hcs_CXg"/>
+        <packagedElement xmi:type="uml:Dependency" xmi:id="_XHUmoH7DEfGoZOcDyoTzOA" client="_TFBFsH49EfG1eYGkX8WnOQ" supplier="_YZVwYG8mEfGICvqO2RVgqQ"/>
+        <packagedElement xmi:type="uml:Dependency" xmi:id="_aK990H7DEfGoZOcDyoTzOA" client="_TFBFsH49EfG1eYGkX8WnOQ" supplier="_dMfpgGwJEfGPQ9rTkf8qTA"/>
+        <packagedElement xmi:type="uml:Dependency" xmi:id="_j_E8MH7DEfGoZOcDyoTzOA" client="_TFBFsH49EfG1eYGkX8WnOQ" supplier="_uNeT0G9iEfGmxpKA3ARReA"/>
       </packagedElement>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_VSUBMGwJEfGPQ9rTkf8qTA" name="logistics-service">
@@ -248,6 +254,10 @@
         <ownedOperation xmi:type="uml:Operation" xmi:id="_8zA5gG9lEfGmxpKA3ARReA" name="toResponse"/>
       </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_rhOBkG9lEfGmxpKA3ARReA" client="_X-OhsG8mEfGICvqO2RVgqQ" supplier="_aF-RUG8mEfGICvqO2RVgqQ"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_NjXPAH7BEfGoZOcDyoTzOA" name="TokenService" visibility="package">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_h6PokH7BEfGoZOcDyoTzOA" name="generateToken"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Dependency" xmi:id="_Ym3_wH7BEfGoZOcDyoTzOA" client="_aF-RUG8mEfGICvqO2RVgqQ" supplier="_NjXPAH7BEfGoZOcDyoTzOA"/>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_YeS-UG8lEfGICvqO2RVgqQ" name="graphhopper"/>
     <packagedElement xmi:type="uml:Package" xmi:id="_6_hLwHO8EfGaBtASHglMxQ" name="kafka"/>
@@ -315,4 +325,5 @@
   <tiny:Expose xmi:id="_Y-b6sH4-EfG1eYGkX8WnOQ" base_Dependency="_XgL0AH4-EfG1eYGkX8WnOQ"/>
   <tiny:ServiceInterface xmi:id="_wbcXsH4-EfG1eYGkX8WnOQ" base_Interface="_RSy6IH49EfG1eYGkX8WnOQ"/>
   <tiny:Capability xmi:id="_yiT9kH4-EfG1eYGkX8WnOQ" base_Class="_TFBFsH49EfG1eYGkX8WnOQ"/>
+  <tiny:Capability xmi:id="_c4JnsH7BEfGoZOcDyoTzOA" base_Class="_NjXPAH7BEfGoZOcDyoTzOA"/>
 </xmi:XMI>
