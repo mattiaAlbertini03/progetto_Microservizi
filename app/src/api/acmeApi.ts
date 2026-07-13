@@ -7,17 +7,49 @@ import type {
     VehicleData,
 } from "../types/domain";
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+type ApiErrorResponse = {
+    status?: string;
+    message?: string;
+    requestId?: string;
+    userId?: string;
+};
+
+async function request<T>(
+    path: string,
+    options?: RequestInit
+): Promise<T> {
     const response = await fetch(`${ACME_API_URL}${path}`, options);
 
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        let errorMessage = `HTTP ${response.status}`;
+
+        if (response.status === 401) {
+            errorMessage = "Sessione non valida o token scaduto. Effettua nuovamente il login.";
+        }
+
+        try {
+            const errorBody =
+                (await response.json()) as ApiErrorResponse;
+
+            if (errorBody.status && errorBody.message) {
+                errorMessage =
+                    `${errorBody.status}: ${errorBody.message}`;
+            } else if (errorBody.message) {
+                errorMessage = errorBody.message;
+            }
+        } catch {
+            // Nessun JSON nella risposta.
+        }
+
+        throw new Error(errorMessage);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
 }
 
-export async function loginUser(credentials: LoginCredentials): Promise<User> {
+export async function loginUser(
+    credentials: LoginCredentials
+): Promise<User> {
     const data = await request<{
         userId: string;
         username: string;
@@ -43,9 +75,13 @@ export function getStations(): Promise<StationData[]> {
     return request<StationData[]>("/stations");
 }
 
-export function getVehiclesByStation(stationId: string): Promise<VehicleData[]> {
+export function getVehiclesByStation(
+    stationId: string
+): Promise<VehicleData[]> {
     return request<VehicleData[]>(
-        `/logistics/vehicles?stationId=${encodeURIComponent(stationId)}`
+        `/logistics/vehicles?stationId=${encodeURIComponent(
+            stationId
+        )}`
     );
 }
 
@@ -68,12 +104,17 @@ export async function createReservation(
     });
 }
 
-export function getReservations(user: User): Promise<ReservationData[]> {
-    return request<ReservationData[]>(`/reservations?userId=${user.id}`, {
-        headers: {
-            Authorization: `Bearer ${user.token}`,
-        },
-    });
+export function getReservations(
+    user: User
+): Promise<ReservationData[]> {
+    return request<ReservationData[]>(
+        `/reservations?userId=${encodeURIComponent(user.id)}`,
+        {
+            headers: {
+                Authorization: `Bearer ${user.token}`,
+            },
+        }
+    );
 }
 
 export async function sendReservationAction(
@@ -81,8 +122,10 @@ export async function sendReservationAction(
     reservationId: string,
     action: "pickup" | "cancel" | "return"
 ): Promise<void> {
-    const response = await fetch(
-        `${ACME_API_URL}/reservations/${reservationId}/${action}`,
+    await request<unknown>(
+        `/reservations/${encodeURIComponent(
+            reservationId
+        )}/${action}`,
         {
             method: "POST",
             headers: {
@@ -90,16 +133,4 @@ export async function sendReservationAction(
             },
         }
     );
-
-    if (!response.ok) {
-        if (response.status === 403) {
-            throw new Error("FORBIDDEN");
-        }
-
-        if (response.status === 409) {
-            throw new Error("CONFLICT");
-        }
-
-        throw new Error(`HTTP ${response.status}`);
-    }
 }

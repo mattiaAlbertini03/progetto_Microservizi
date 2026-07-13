@@ -12,17 +12,26 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class JwtService {
 
-    @ConfigProperty(name = "jwt.secret")
-    String secret;
+    private final String secret;
+    private final String expectedIssuer;
 
-    @ConfigProperty(name = "jwt.issuer")
-    String expectedIssuer;
+    @Inject
+    public JwtService(
+            @ConfigProperty(name = "jwt.secret") String secret,
+            @ConfigProperty(
+                    name = "jwt.issuer",
+                    defaultValue = "auth-service") String expectedIssuer) {
+
+        this.secret = secret;
+        this.expectedIssuer = expectedIssuer;
+    }
 
     public AuthenticatedUser authenticate(String authorizationHeader) {
         if (authorizationHeader == null
@@ -80,6 +89,7 @@ public class JwtService {
         } catch (WebApplicationException exception) {
             throw exception;
         } catch (Exception exception) {
+            exception.printStackTrace();
             throw unauthorized("Invalid authorization token");
         }
     }

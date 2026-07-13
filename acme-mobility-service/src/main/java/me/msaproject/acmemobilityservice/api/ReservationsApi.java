@@ -47,9 +47,12 @@ public class ReservationsApi {
                 String username = authenticatedUser.username();
 
                 if (!userId.equals(request.userId())) {
-                        throw new WebApplicationException(
-                                        "User mismatch",
-                                        Response.Status.FORBIDDEN);
+                        return Response.status(Response.Status.FORBIDDEN)
+                                        .entity(Map.of(
+                                                        "status", "FORBIDDEN",
+                                                        "message",
+                                                        "The authenticated user does not match the requested user"))
+                                        .build();
                 }
 
                 String requestId = UUID.randomUUID().toString();
@@ -65,16 +68,23 @@ public class ReservationsApi {
                                 "account", "demo-account",
                                 "deposit", 0);
 
-                camundaClient
-                                .newCreateInstanceCommand()
-                                .bpmnProcessId("process")
-                                .latestVersion()
-                                .variables(Map.of(
-                                                "reservationRequest", createRequest,
-                                                "reservationType", "ONLINE",
-                                                "bankLoginPayload", bankLoginPayload))
-                                .send()
-                                .join();
+                try {
+                        startReservationProcess(
+                                        createRequest,
+                                        "ONLINE",
+                                        bankLoginPayload);
+
+                } catch (Exception exception) {
+                        exception.printStackTrace();
+
+                        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                                        .entity(Map.of(
+                                                        "requestId", requestId,
+                                                        "userId", userId,
+                                                        "status", "CAMUNDA_UNAVAILABLE",
+                                                        "message", "Unable to start the reservation process"))
+                                        .build();
+                }
 
                 return Response.accepted(
                                 new ReservationRequestStatusResponse(
@@ -96,9 +106,12 @@ public class ReservationsApi {
                 String username = authenticatedUser.username();
 
                 if (!userId.equals(request.userId())) {
-                        throw new WebApplicationException(
-                                        "User mismatch",
-                                        Response.Status.FORBIDDEN);
+                        return Response.status(Response.Status.FORBIDDEN)
+                                        .entity(Map.of(
+                                                        "status", "FORBIDDEN",
+                                                        "message",
+                                                        "The authenticated user does not match the requested user"))
+                                        .build();
                 }
 
                 String requestId = UUID.randomUUID().toString();
@@ -114,16 +127,23 @@ public class ReservationsApi {
                                 "account", "demo-account",
                                 "deposit", 0);
 
-                camundaClient
-                                .newCreateInstanceCommand()
-                                .bpmnProcessId("process")
-                                .latestVersion()
-                                .variables(Map.of(
-                                                "reservationRequest", qrPickupRequest,
-                                                "reservationType", "QR_PICKUP",
-                                                "bankLoginPayload", bankLoginPayload))
-                                .send()
-                                .join();
+                try {
+                        startReservationProcess(
+                                        qrPickupRequest,
+                                        "QR_PICKUP",
+                                        bankLoginPayload);
+
+                } catch (Exception exception) {
+                        exception.printStackTrace();
+
+                        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                                        .entity(Map.of(
+                                                        "requestId", requestId,
+                                                        "userId", userId,
+                                                        "status", "CAMUNDA_UNAVAILABLE",
+                                                        "message", "Unable to start the QR pickup process"))
+                                        .build();
+                }
 
                 return Response.accepted(
                                 new ReservationRequestStatusResponse(
@@ -131,6 +151,23 @@ public class ReservationsApi {
                                                 userId,
                                                 "PICKUP_PENDING"))
                                 .build();
+        }
+
+        private void startReservationProcess(
+                        ReservationCreationRequest request,
+                        String reservationType,
+                        Map<String, Object> bankLoginPayload) {
+
+                camundaClient
+                                .newCreateInstanceCommand()
+                                .bpmnProcessId("process")
+                                .latestVersion()
+                                .variables(Map.of(
+                                                "reservationRequest", request,
+                                                "reservationType", reservationType,
+                                                "bankLoginPayload", bankLoginPayload))
+                                .send()
+                                .join();
         }
 
         @POST
@@ -142,7 +179,7 @@ public class ReservationsApi {
                 String userId = jwtService
                                 .authenticate(authorizationHeader)
                                 .userId();
-                ;
+
                 ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
                 ReservationActionRequest cancelRequest = new ReservationActionRequest(
@@ -170,7 +207,7 @@ public class ReservationsApi {
                 String userId = jwtService
                                 .authenticate(authorizationHeader)
                                 .userId();
-                ;
+                
                 ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
                 ReservationActionRequest pickupRequest = new ReservationActionRequest(

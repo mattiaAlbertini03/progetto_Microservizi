@@ -108,21 +108,20 @@ export default function MapPage() {
 
     useVehicleEvents(selectedStationId, refreshSelectedStationVehicles);
 
-    async function reserveVehicle(station: StationData, vehicle: VehicleData) {
-        if (!user) {
-            return;
-        }
-
-        try {
-            const data = await createReservation(user.id, vehicle.id, station.id);
-
-            listenReservationRequest(data.requestId, station.id);
-
-            alert("Richiesta di prenotazione inviata");
-        } catch (err) {
-            console.error(err);
-            alert("Errore durante la prenotazione");
-        }
+    async function reserveVehicle(station: StationData, vehicle: VehicleData) { 
+        if (!user) { 
+            alert("Devi effettuare il login per prenotare un veicolo"); 
+            return; 
+        } 
+        try { 
+            const data = await createReservation(user, vehicle.id, station.id); 
+            listenReservationRequest(data.requestId, station.id); alert("Richiesta di prenotazione inviata"); 
+        } 
+        catch (err) { 
+            console.error("Errore durante la prenotazione:", err);
+            const message = err instanceof Error ? err.message : "Errore sconosciuto durante la prenotazione"; 
+            alert(message); 
+        } 
     }
 
     return (

@@ -9,8 +9,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.acmemobilityservice.client.AuthClient;
-import me.msaproject.acmemobilityservice.dto.auth.AuthUserResponse;
 import me.msaproject.acmemobilityservice.dto.auth.LoginRequest;
+import me.msaproject.acmemobilityservice.dto.auth.LoginResponse;
 import me.msaproject.acmemobilityservice.dto.auth.SignupRequest;
 
 @Path("/auth")
@@ -21,14 +21,11 @@ public class AuthApi {
     @Inject
     AuthClient authClient;
 
-    @Inject
-    CamundaClient camundaClient;
-
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
-        AuthUserResponse response = authClient.login(request);
-        return Response.ok(response).build();   
+        LoginResponse response = authClient.login(request);
+        return Response.ok(response).build();
     }
 
     @POST

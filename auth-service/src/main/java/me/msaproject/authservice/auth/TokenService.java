@@ -16,46 +16,61 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class TokenService {
 
-    @ConfigProperty(name = "jwt.secret")
-    String secret;
+        private final String secret;
+        private final String issuer;
 
-    @ConfigProperty(name = "jwt.issuer", defaultValue = "auth-service")
-    String issuer;
+        @Inject
+        public TokenService(
+                        @ConfigProperty(name = "jwt.secret") String secret,
+                        @ConfigProperty(name = "jwt.issuer", defaultValue = "auth-service") String issuer) {
 
-    public String generateToken(User user) {
-        try {
-            Instant now = Instant.now();
+                this.secret = secret;
+                this.issuer = issuer;
 
-            JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .issuer(issuer)
-                    .subject(user.id())
-                    .claim("username", user.username())
-                    .claim("email", user.email())
-                    .claim("groups", List.of("USER"))
-                    .issueTime(Date.from(now))
-                    .expirationTime(Date.from(
-                            now.plus(1, ChronoUnit.HOURS)))
-                    .build();
-
-            SignedJWT jwt = new SignedJWT(
-                    new JWSHeader.Builder(JWSAlgorithm.HS256)
-                            .type(JOSEObjectType.JWT)
-                            .build(),
-                    claims);
-
-            jwt.sign(new MACSigner(
-                    secret.getBytes(StandardCharsets.UTF_8)));
-
-            return jwt.serialize();
-
-        } catch (Exception exception) {
-            throw new IllegalStateException(
-                    "Could not generate authentication token",
-                    exception);
+                System.out.println("=== TOKEN SERVICE CONSTRUCTOR DEBUG ===");
+                System.out.println("secret null: " + (secret == null));
+                System.out.println("issuer: " + issuer);
         }
-    }
+
+        public String generateToken(User user) {
+                try {
+                        if (secret == null || secret.isBlank()) {
+                                throw new IllegalStateException(
+                                                "JWT_SECRET is not configured");
+                        }
+                        Instant now = Instant.now();
+
+                        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                                        .issuer(issuer)
+                                        .subject(user.id())
+                                        .claim("username", user.username())
+                                        .claim("email", user.email())
+                                        .claim("groups", List.of("USER"))
+                                        .issueTime(Date.from(now))
+                                        .expirationTime(Date.from(
+                                                        now.plus(1, ChronoUnit.HOURS)))
+                                        .build();
+
+                        SignedJWT jwt = new SignedJWT(
+                                        new JWSHeader.Builder(JWSAlgorithm.HS256)
+                                                        .type(JOSEObjectType.JWT)
+                                                        .build(),
+                                        claims);
+
+                        jwt.sign(new MACSigner(
+                                        secret.getBytes(StandardCharsets.UTF_8)));
+
+                        return jwt.serialize();
+
+                } catch (Exception exception) {
+                        throw new IllegalStateException(
+                                        "Could not generate authentication token",
+                                        exception);
+                }
+        }
 }
