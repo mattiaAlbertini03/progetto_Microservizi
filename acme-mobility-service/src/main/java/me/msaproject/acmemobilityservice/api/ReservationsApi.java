@@ -12,231 +12,300 @@ import me.msaproject.acmemobilityservice.dto.reservation.ReservationActionReques
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationRequestStatusResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationStatusResponse;
+import me.msaproject.acmemobilityservice.auth.AuthenticatedUser;
+import me.msaproject.acmemobilityservice.auth.JwtService;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-	@Path("/reservations")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public class ReservationsApi {
+@Path("/reservations")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class ReservationsApi {
 
-		@Inject
-		CamundaClient camundaClient;
+        @Inject
+        CamundaClient camundaClient;
 
-		@Inject
-		ReservationsClient reservationClient;
+        @Inject
+        ReservationsClient reservationClient;
 
-		@Inject
-		FleetClient fleetClient;
+        @Inject
+        FleetClient fleetClient;
 
-		@POST
-		public Response createReservation(
-				ReservationCreationRequest request,
-				@HeaderParam("Authorization") String authorizationHeader) {
+        @Inject
+        JwtService jwtService;
 
-				String userId = extractUserId(authorizationHeader);
+        @POST
+        public Response createReservation(
+                        ReservationCreationRequest request,
+                        @HeaderParam("Authorization") String authorizationHeader) {
 
-				if (!userId.equals(request.userId())) {
-					throw new WebApplicationException("User mismatch", Response.Status.FORBIDDEN);
-				}
+                AuthenticatedUser authenticatedUser = jwtService.authenticate(authorizationHeader);
 
-				String requestId = UUID.randomUUID().toString();
+                String userId = authenticatedUser.userId();
+                String username = authenticatedUser.username();
 
-				ReservationCreationRequest createRequest = new ReservationCreationRequest(
-						requestId,
-						userId,
-						request.vehicleId(),
-						request.stationId());
+                if (!userId.equals(request.userId())) {
+                        return Response.status(Response.Status.FORBIDDEN)
+                                        .entity(Map.of(
+                                                        "status", "FORBIDDEN",
+                                                        "message",
+                                                        "The authenticated user does not match the requested user"))
+                                        .build();
+                }
 
-				camundaClient
-					.newCreateInstanceCommand()
-					.bpmnProcessId("process")
-					.latestVersion()
-					.variables(Map.of(
-								"reservationRequest", createRequest,
-								"reservationType", "ONLINE"))
-					.send()
-					.join();
+                String requestId = UUID.randomUUID().toString();
 
-				return Response.accepted(new ReservationRequestStatusResponse(
-							requestId,
-							userId,
-							"CREATION_PENDING")).build();
-				}
+                ReservationCreationRequest createRequest = new ReservationCreationRequest(
+                                requestId,
+                                userId,
+                                request.vehicleId(),
+                                request.stationId());
 
-		@POST
-		@Path("/qr-pickup")
-		public Response createQrReservation(
-				ReservationCreationRequest request,
-				@HeaderParam("Authorization") String authorizationHeader) {
+                Map<String, Object> bankLoginPayload = Map.of(
+                                "username", username,
+                                "account", "demo-account",
+                                "deposit", 0);
 
-				String userId = extractUserId(authorizationHeader);
+                try {
+                        startReservationProcess(
+                                        createRequest,
+                                        "ONLINE",
+                                        bankLoginPayload);
 
-				if (!userId.equals(request.userId())) {
-					throw new WebApplicationException("User mismatch", Response.Status.FORBIDDEN);
-				}
+                } catch (Exception exception) {
+                        exception.printStackTrace();
 
-				String requestId = UUID.randomUUID().toString();
+                        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                                        .entity(Map.of(
+                                                        "requestId", requestId,
+                                                        "userId", userId,
+                                                        "status", "CAMUNDA_UNAVAILABLE",
+                                                        "message", "Unable to start the reservation process"))
+                                        .build();
+                }
 
-				ReservationCreationRequest qrPickupRequest = new ReservationCreationRequest(
-						requestId,
-						userId,
-						request.vehicleId(),
-						request.stationId());
+                return Response.accepted(
+                                new ReservationRequestStatusResponse(
+                                                requestId,
+                                                userId,
+                                                "CREATION_PENDING"))
+                                .build();
+        }
 
-				camundaClient
-					.newCreateInstanceCommand()
-					.bpmnProcessId("process")
-					.latestVersion()
-					.variables(Map.of(
-								"reservationRequest", qrPickupRequest,
-								"reservationType", "QR_PICKUP"))
-					.send()
-					.join();
+        @POST
+        @Path("/qr-pickup")
+        public Response createQrReservation(
+                        ReservationCreationRequest request,
+                        @HeaderParam("Authorization") String authorizationHeader) {
 
-				return Response.accepted(new ReservationRequestStatusResponse(
-							requestId,
-							userId,
-							"PICKUP_PENDING")).build();
-				}
+                AuthenticatedUser authenticatedUser = jwtService.authenticate(authorizationHeader);
 
-		@POST
-		@Path("/{reservationId}/cancel")
-		public Response cancelReservation(
-				@PathParam("reservationId") String reservationId,
-				@HeaderParam("Authorization") String authorizationHeader) {
+                String userId = authenticatedUser.userId();
+                String username = authenticatedUser.username();
 
-				String userId = extractUserId(authorizationHeader);
-				ReservationResponse reservation = getOwnedReservation(reservationId, userId);
+                if (!userId.equals(request.userId())) {
+                        return Response.status(Response.Status.FORBIDDEN)
+                                        .entity(Map.of(
+                                                        "status", "FORBIDDEN",
+                                                        "message",
+                                                        "The authenticated user does not match the requested user"))
+                                        .build();
+                }
 
-				ReservationActionRequest cancelRequest = new ReservationActionRequest(
-						reservationId,
-						userId,
-						reservation.vehicleId(),
-						reservation.stationId());
+                String requestId = UUID.randomUUID().toString();
 
-				publishReservationAction(
-						"CANCEL_RESERVATION_REQUEST",
-						reservationId,
-						cancelRequest);
+                ReservationCreationRequest qrPickupRequest = new ReservationCreationRequest(
+                                requestId,
+                                userId,
+                                request.vehicleId(),
+                                request.stationId());
 
-				return Response.accepted(new ReservationStatusResponse(
-							reservationId,
-							"CANCELLATION_PENDING")).build();
-				}
+                Map<String, Object> bankLoginPayload = Map.of(
+                                "username", username,
+                                "account", "demo-account",
+                                "deposit", 0);
 
-		@POST
-		@Path("/{reservationId}/pickup")
-		public Response pickupReservation(
-				@PathParam("reservationId") String reservationId,
-				@HeaderParam("Authorization") String authorizationHeader) {
+                try {
+                        startReservationProcess(
+                                        qrPickupRequest,
+                                        "QR_PICKUP",
+                                        bankLoginPayload);
 
-				String userId = extractUserId(authorizationHeader);
-				ReservationResponse reservation = getOwnedReservation(reservationId, userId);
+                } catch (Exception exception) {
+                        exception.printStackTrace();
 
-				ReservationActionRequest pickupRequest = new ReservationActionRequest(
-						reservationId,
-						userId,
-						reservation.vehicleId(),
-						reservation.stationId());
+                        return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                                        .entity(Map.of(
+                                                        "requestId", requestId,
+                                                        "userId", userId,
+                                                        "status", "CAMUNDA_UNAVAILABLE",
+                                                        "message", "Unable to start the QR pickup process"))
+                                        .build();
+                }
 
-				publishReservationAction(
-						"PICKUP_RESERVATION_REQUEST",
-						reservationId,
-						pickupRequest);
+                return Response.accepted(
+                                new ReservationRequestStatusResponse(
+                                                requestId,
+                                                userId,
+                                                "PICKUP_PENDING"))
+                                .build();
+        }
 
-				return Response.accepted(new ReservationStatusResponse(
-							reservationId,
-							"PICKUP_PENDING")).build();
-				}
+        private void startReservationProcess(
+                        ReservationCreationRequest request,
+                        String reservationType,
+                        Map<String, Object> bankLoginPayload) {
 
-		@POST
-		@Path("/{reservationId}/return")
-		public Response returnReservation(
-				@PathParam("reservationId") String reservationId,
-				@HeaderParam("Authorization") String authorizationHeader) {
+                camundaClient
+                                .newCreateInstanceCommand()
+                                .bpmnProcessId("process")
+                                .latestVersion()
+                                .variables(Map.of(
+                                                "reservationRequest", request,
+                                                "reservationType", reservationType,
+                                                "bankLoginPayload", bankLoginPayload))
+                                .send()
+                                .join();
+        }
 
-				String userId = extractUserId(authorizationHeader);
-				ReservationResponse reservation = getOwnedReservation(reservationId, userId);
+        @POST
+        @Path("/{reservationId}/cancel")
+        public Response cancelReservation(
+                        @PathParam("reservationId") String reservationId,
+                        @HeaderParam("Authorization") String authorizationHeader) {
 
-				if (!"ACTIVE".equals(reservation.status())) {
-					throw new WebApplicationException(
-							"Reservation cannot be returned from status: " + reservation.status(),
-							Response.Status.CONFLICT);
-				}
+                String userId = jwtService
+                                .authenticate(authorizationHeader)
+                                .userId();
 
-				ReservationActionRequest returnRequest = new ReservationActionRequest(
-						reservationId,
-						userId,
-						reservation.vehicleId(),
-						reservation.stationId());
+                ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
-				publishReservationAction(
-						"RESERVATION_RETURN_REQUEST",
-						reservationId,
-						returnRequest);
+                ReservationActionRequest cancelRequest = new ReservationActionRequest(
+                                reservationId,
+                                userId,
+                                reservation.vehicleId(),
+                                reservation.stationId());
 
-				return Response.accepted(new ReservationStatusResponse(
-							reservationId,
-							"RETURN_PENDING")).build();
-				}
+                publishReservationAction(
+                                "CANCEL_RESERVATION_REQUEST",
+                                reservationId,
+                                cancelRequest);
 
-		@GET
-		public Response getReservationsForCurrentUser(
-				@QueryParam("userId") String userId,
-				@HeaderParam("Authorization") String authorizationHeader) {
+                return Response.accepted(new ReservationStatusResponse(
+                                reservationId,
+                                "CANCELLATION_PENDING")).build();
+        }
 
-				String authenticatedUserId = extractUserId(authorizationHeader);
+        @POST
+        @Path("/{reservationId}/pickup")
+        public Response pickupReservation(
+                        @PathParam("reservationId") String reservationId,
+                        @HeaderParam("Authorization") String authorizationHeader) {
 
-				if (!authenticatedUserId.equals(userId)) {
-					throw new WebApplicationException("Forbidden", Response.Status.FORBIDDEN);
-				}
+                String userId = jwtService
+                                .authenticate(authorizationHeader)
+                                .userId();
+                
+                ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
-				List<ReservationResponse> reservations =
-					reservationClient.getReservationsByUserId(userId);
+                ReservationActionRequest pickupRequest = new ReservationActionRequest(
+                                reservationId,
+                                userId,
+                                reservation.vehicleId(),
+                                reservation.stationId());
 
-				return Response.ok(reservations).build();
-				}
+                publishReservationAction(
+                                "PICKUP_RESERVATION_REQUEST",
+                                reservationId,
+                                pickupRequest);
 
-		private ReservationResponse getOwnedReservation(String reservationId, String userId) {
-			ReservationResponse reservation = reservationClient.getReservation(reservationId);
+                return Response.accepted(new ReservationStatusResponse(
+                                reservationId,
+                                "PICKUP_PENDING")).build();
+        }
 
-			if (!reservation.userId().equals(userId)) {
-				throw new WebApplicationException("Forbidden", Response.Status.FORBIDDEN);
-			}
+        @POST
+        @Path("/{reservationId}/return")
+        public Response returnReservation(
+                        @PathParam("reservationId") String reservationId,
+                        @HeaderParam("Authorization") String authorizationHeader) {
 
-			return reservation;
-		}
+                String userId = jwtService
+                                .authenticate(authorizationHeader)
+                                .userId();
+                ;
+                ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
-		private void publishReservationAction(
-				String messageName,
-				String reservationId,
-				ReservationActionRequest actionRequest) {
+                if (!"ACTIVE".equals(reservation.status())) {
+                        throw new WebApplicationException(
+                                        "Reservation cannot be returned from status: " + reservation.status(),
+                                        Response.Status.CONFLICT);
+                }
 
-			try {
-				camundaClient
-					.newPublishMessageCommand()
-					.messageName(messageName)
-					.correlationKey(reservationId)
-					.variables(Map.of("reservationAction", actionRequest))
-					.send()
-					.join();
-			} catch (Exception e) {
-				throw new WebApplicationException(
-						"No active process found for reservation " + reservationId,
-						Response.Status.CONFLICT);
-			}
-				}
+                ReservationActionRequest returnRequest = new ReservationActionRequest(
+                                reservationId,
+                                userId,
+                                reservation.vehicleId(),
+                                reservation.stationId());
 
-		private String extractUserId(String authorizationHeader) {
-			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-				throw new WebApplicationException(
-						"Missing authorization token",
-						Response.Status.UNAUTHORIZED);
-			}
+                publishReservationAction(
+                                "RESERVATION_RETURN_REQUEST",
+                                reservationId,
+                                returnRequest);
 
-			return authorizationHeader.substring("Bearer ".length());
-		}
-	}
+                return Response.accepted(new ReservationStatusResponse(
+                                reservationId,
+                                "RETURN_PENDING")).build();
+        }
+
+        @GET
+        public Response getReservationsForCurrentUser(
+                        @QueryParam("userId") String userId,
+                        @HeaderParam("Authorization") String authorizationHeader) {
+
+                String authenticatedUserId = jwtService
+                                .authenticate(authorizationHeader)
+                                .userId();
+                ;
+
+                if (!authenticatedUserId.equals(userId)) {
+                        throw new WebApplicationException("Forbidden", Response.Status.FORBIDDEN);
+                }
+
+                List<ReservationResponse> reservations = reservationClient.getReservationsByUserId(userId);
+
+                return Response.ok(reservations).build();
+        }
+
+        private ReservationResponse getOwnedReservation(String reservationId, String userId) {
+                ReservationResponse reservation = reservationClient.getReservation(reservationId);
+
+                if (!reservation.userId().equals(userId)) {
+                        throw new WebApplicationException("Forbidden", Response.Status.FORBIDDEN);
+                }
+
+                return reservation;
+        }
+
+        private void publishReservationAction(
+                        String messageName,
+                        String reservationId,
+                        ReservationActionRequest actionRequest) {
+
+                try {
+                        camundaClient
+                                        .newPublishMessageCommand()
+                                        .messageName(messageName)
+                                        .correlationKey(reservationId)
+                                        .variables(Map.of("reservationAction", actionRequest))
+                                        .send()
+                                        .join();
+                } catch (Exception e) {
+                        throw new WebApplicationException(
+                                        "No active process found for reservation " + reservationId,
+                                        Response.Status.CONFLICT);
+                }
+        }
+}

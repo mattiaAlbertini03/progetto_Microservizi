@@ -6,6 +6,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import me.msaproject.acmemobilityservice.dto.auth.AuthUserResponse;
 import me.msaproject.acmemobilityservice.dto.auth.LoginRequest;
+import me.msaproject.acmemobilityservice.dto.auth.LoginResponse;
 import me.msaproject.acmemobilityservice.dto.auth.SignupRequest;
 
 @ApplicationScoped
@@ -16,12 +17,12 @@ public class AuthClient {
 
     private final Client client = ClientBuilder.newClient();
 
-    public AuthUserResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         return client
                 .target(AUTH_BASE_URL)
                 .path("/auth/login")
                 .request()
-                .post(Entity.json(request), AuthUserResponse.class);
+                .post(Entity.json(request), LoginResponse.class);
     }
 
     public AuthUserResponse signup(SignupRequest request) {

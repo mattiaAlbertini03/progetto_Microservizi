@@ -1,3 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-secret
+  namespace: acme
+type: Opaque
+stringData:
+  JWT_SECRET: "U/sBzg58tPlFrkJoSajPQgFsrRKC/Qf54ga7fopb5MQ="
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,6 +28,12 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_SECRET
 ---
 apiVersion: v1
 kind: Service

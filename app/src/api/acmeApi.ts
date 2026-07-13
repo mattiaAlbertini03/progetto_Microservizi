@@ -7,21 +7,54 @@ import type {
     VehicleData,
 } from "../types/domain";
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+type ApiErrorResponse = {
+    status?: string;
+    message?: string;
+    requestId?: string;
+    userId?: string;
+};
+
+async function request<T>(
+    path: string,
+    options?: RequestInit
+): Promise<T> {
     const response = await fetch(`${ACME_API_URL}${path}`, options);
 
     if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        let errorMessage = `HTTP ${response.status}`;
+
+        if (response.status === 401) {
+            errorMessage = "Sessione non valida o token scaduto. Effettua nuovamente il login.";
+        }
+
+        try {
+            const errorBody =
+                (await response.json()) as ApiErrorResponse;
+
+            if (errorBody.status && errorBody.message) {
+                errorMessage =
+                    `${errorBody.status}: ${errorBody.message}`;
+            } else if (errorBody.message) {
+                errorMessage = errorBody.message;
+            }
+        } catch {
+            // Nessun JSON nella risposta.
+        }
+
+        throw new Error(errorMessage);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
 }
 
-export async function loginUser(credentials: LoginCredentials): Promise<User> {
+export async function loginUser(
+    credentials: LoginCredentials
+): Promise<User> {
     const data = await request<{
         userId: string;
         username: string;
         email?: string;
+        token: string;
     }>("/auth/login", {
         method: "POST",
         headers: {
@@ -34,6 +67,7 @@ export async function loginUser(credentials: LoginCredentials): Promise<User> {
         id: data.userId,
         name: data.username,
         email: data.email ?? `${data.username}@acme.local`,
+        token: data.token,
     };
 }
 
@@ -41,14 +75,18 @@ export function getStations(): Promise<StationData[]> {
     return request<StationData[]>("/stations");
 }
 
-export function getVehiclesByStation(stationId: string): Promise<VehicleData[]> {
+export function getVehiclesByStation(
+    stationId: string
+): Promise<VehicleData[]> {
     return request<VehicleData[]>(
-        `/logistics/vehicles?stationId=${encodeURIComponent(stationId)}`
+        `/logistics/vehicles?stationId=${encodeURIComponent(
+            stationId
+        )}`
     );
 }
 
 export async function createReservation(
-    userId: string,
+    user: User,
     vehicleId: string,
     stationId: string
 ): Promise<{ requestId: string }> {
@@ -56,48 +94,43 @@ export async function createReservation(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${userId}`,
+            Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-            userId,
+            userId: user.id,
             vehicleId,
             stationId,
         }),
     });
 }
 
-export function getReservations(userId: string): Promise<ReservationData[]> {
-    return request<ReservationData[]>(`/reservations?userId=${userId}`, {
-        headers: {
-            Authorization: `Bearer ${userId}`,
-        },
-    });
-}
-
-export async function sendReservationAction(
-    userId: string,
-    reservationId: string,
-    action: "pickup" | "cancel" | "return"
-): Promise<void> {
-    const response = await fetch(
-        `${ACME_API_URL}/reservations/${reservationId}/${action}`,
+export function getReservations(
+    user: User
+): Promise<ReservationData[]> {
+    return request<ReservationData[]>(
+        `/reservations?userId=${encodeURIComponent(user.id)}`,
         {
-            method: "POST",
             headers: {
-                Authorization: `Bearer ${userId}`,
+                Authorization: `Bearer ${user.token}`,
             },
         }
     );
+}
 
-    if (!response.ok) {
-        if (response.status === 403) {
-            throw new Error("FORBIDDEN");
+export async function sendReservationAction(
+    user: User,
+    reservationId: string,
+    action: "pickup" | "cancel" | "return"
+): Promise<void> {
+    await request<unknown>(
+        `/reservations/${encodeURIComponent(
+            reservationId
+        )}/${action}`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${user.token}`,
+            },
         }
-
-        if (response.status === 409) {
-            throw new Error("CONFLICT");
-        }
-
-        throw new Error(`HTTP ${response.status}`);
-    }
+    );
 }
