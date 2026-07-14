@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acme-mobility-service
+  namespace: acme
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acme-mobility-service
+  template:
+    metadata:
+      labels:
+        app: acme-mobility-service
+    spec:
+      containers:
+        - name: acme-mobility-service
+          image: acme-mobility-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_SECRET
+
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service.acme:8080"
+
+            - name: FLEET_SERVICE_URL
+              value: "http://fleet-service.acme:8080"
+
+            - name: LOGISTICS_SERVICE_URL
+              value: "http://logistics-service.acme:8080"
+
+            - name: RESERVATION_SERVICE_URL
+              value: "http://reservation-service.acme:8080"
+
+            - name: STATIONS_SERVICE_URL
+              value: "http://stations-service.acme:8080"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: acme-mobility-service
+  namespace: acme
+spec:
+  type: NodePort
+  selector:
+    app: acme-mobility-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080

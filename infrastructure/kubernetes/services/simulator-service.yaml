@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulator-service
+  namespace: simulation
+  labels:
+    app: simulator-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simulator-service
+  template:
+    metadata:
+      labels:
+        app: simulator-service
+    spec:
+      containers:
+        - name: simulator-service
+          image: simulator-service:latest
+          imagePullPolicy: Never
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+
+            - name: TRACKING_SERVICE_URL
+              value: "http://tracking-service.simulation:8080"
+
+            - name: BATTERY_SERVICE_URL
+              value: "http://battery-service.simulation:8080"
+
+            - name: GRAPHHOPPER_BASE_URL
+              value: "http://graphhopper-service.simulation:8989"
+
+            - name: GRAPHHOPPER_PROFILE
+              value: "car"
+
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simulator-service
+  namespace: simulation
+  labels:
+    app: simulator-service
+spec:
+  type: ClusterIP
+  selector:
+    app: simulator-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

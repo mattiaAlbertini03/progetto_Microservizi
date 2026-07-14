@@ -1,0 +1,55 @@
+connectors:
+  inbound:
+    mode: disabled
+
+global:
+  elasticsearch:
+    enabled: true
+
+  identity:
+    auth:
+      enabled: false
+
+identity:
+  enabled: false
+
+identityKeycloak:
+  enabled: false
+
+optimize:
+  enabled: false
+
+elasticsearch:
+  enabled: true
+  heapSize: 2g
+
+  master:
+    replicaCount: 1
+
+    persistence:
+      size: 10Gi
+
+    resourcesPreset: "none"
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 3Gi
+      limits:
+        cpu: "2"
+        memory: 6Gi
+
+orchestration:
+  exporters:
+    rdbms:
+      enabled: true
+
+  clusterSize: "1"
+  partitionCount: "1"
+  replicationFactor: "1"
+  replicas: 1
+  pvcSize: 10Gi
+
+  env:
+    - name: CAMUNDA_PERSISTENT_SESSIONS_ENABLED
+      value: "false"
