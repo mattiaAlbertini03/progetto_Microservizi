@@ -135,8 +135,7 @@ resolve_service_dir() {
     local candidate
 
     for candidate in "${candidates[@]}"; do
-        if [[ -f "$candidate/pom.xml" ]] &&
-           [[ -f "$candidate/Dockerfile" ]]; then
+        if [[ -f "$candidate/Dockerfile" ]]; then
             realpath "$candidate"
             return 0
         fi
