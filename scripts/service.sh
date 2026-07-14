@@ -92,8 +92,8 @@ build_image() {
 image_exists() {
     local image="$1"
 
-    minikube -p "$PROFILE" image ls |
-        grep -Fxq "$image"
+    minikube -p "$PROFILE" ssh -- \
+        docker image inspect "$image" >/dev/null 2>&1
 }
 
 deploy_manifest() {
