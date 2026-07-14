@@ -314,6 +314,11 @@ main() {
     apply_shared_resources
 
     install_camunda
+
+    wait_for_namespace "$ORCHESTRATION_NAMESPACE" 900
+
+    "$ROOT_DIR/scripts/deploy-processes.sh"
+
     install_kafka
     deploy_services
 

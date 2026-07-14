@@ -16,12 +16,6 @@ public final class Main {
 
         CamundaClient camundaClient = CamundaClientFactory.create();
 
-        camundaClient.newDeployResourceCommand()
-                .addResourceFromClasspath("process.bpmn")
-                .execute();
-
-        LOG.info("Deployed BPMN.");
-
         camundaClient.newTopologyRequest().execute();
         LOG.info("Connected to Camunda");
 
