@@ -78,10 +78,22 @@ build_image() {
     echo "==> Building ${service}:${tag}"
     echo "    Build context: $service_dir"
 
-    minikube -p "$PROFILE" image build \
-        --file "$service_dir/Dockerfile" \
-        --tag "${service}:${tag}" \
-        "$service_dir"
+    (
+        cd "$service_dir"
+
+        if ! minikube -p "$PROFILE" image build \
+            -t "${service}:${tag}" \
+            .; then
+            die "Failed to build image ${service}:${tag}"
+        fi
+    )
+}
+
+image_exists() {
+    local image="$1"
+
+    minikube -p "$PROFILE" image ls |
+        grep -Fxq "$image"
 }
 
 deploy_manifest() {
@@ -164,6 +176,11 @@ main() {
 
         deploy)
             build_image "$service" "$service_dir" "$tag"
+
+            if ! image_exists "${service}:${tag}"; then
+                die "Image ${service}:${tag} was not found in Minikube after the build"
+            fi
+
             deploy_manifest "$service"
             set_deployment_image "$service" "$deployment" "$tag"
             ;;
@@ -178,6 +195,11 @@ main() {
 
         rebuild)
             build_image "$service" "$service_dir" "$tag"
+
+            if ! image_exists "${service}:${tag}"; then
+                die "Image ${service}:${tag} was not found in Minikube after the build"
+            fi
+
             set_deployment_image "$service" "$deployment" "$tag"
             ;;
 
@@ -191,7 +213,7 @@ main() {
 
         *)
             usage
-            die "Unknown mode: $mode"
+            die "Unknown command: $command"
             ;;
     esac
 }
