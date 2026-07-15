@@ -93,7 +93,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="2" />
           <zeebe:header key="elementTemplateId" value="io.camunda:soap" />
-          <zeebe:header key="resultExpression" value="={&#10;  vehicleLocked: Envelope.Body.lockVehicleResponse.success[&#34;$content&#34;]&#10;}" />
+          <zeebe:header key="resultExpression" value="={&#10;  vehicleLocked: Envelope.Body.lockVehicleResponse.success&#10;}" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
@@ -245,7 +245,7 @@
     </bpmn:serviceTask>
     <bpmn:scriptTask id="Activity_0wjx4nl" name="Set environment variables">
       <bpmn:extensionElements>
-        <zeebe:script expression="={&#10;  reservation: &#34;http://reservation-service.acme:8080&#34;,&#10;  logistics: &#34;http://logistics-service.acme:8080&#34;,&#10;  acme: &#34;http://acme-mobility-service.acme:8080&#34;,&#10;  tracking: &#34;http://tracking-service.acme:8080&#34;,&#10;  banking: &#34;http://banking-service.acme:8080&#34;,&#10;  stations: &#34;http://station-service.acme:8080&#34;,&#10;  fleet: &#34;http:fleet-service.acme:8080&#34;,&#10;  query: &#34;http:query-service.acme-fleet:8080&#34;&#10;}" resultVariable="services" />
+        <zeebe:script expression="={&#10;  reservation: &#34;http://reservation-service.acme:8080&#34;,&#10;  logistics: &#34;http://logistics-service.acme:8080&#34;,&#10;  acme: &#34;http://acme-mobility-service.acme:8080&#34;,&#10;  tracking: &#34;http://tracking-service.acme:8080&#34;,&#10;  banking: &#34;http://banking-service.acme:8080&#34;,&#10;  stations: &#34;http://stations-service.acme:8080&#34;,&#10;  fleet: &#34;http://fleet-service.acme:8080&#34;&#10;}" resultVariable="services" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0fwhog8</bpmn:incoming>
       <bpmn:outgoing>Flow_11iy8nu</bpmn:outgoing>
@@ -268,7 +268,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="2" />
           <zeebe:header key="elementTemplateId" value="io.camunda:soap" />
-          <zeebe:header key="resultExpression" value="={&#10;  bankSessionId: Envelope.Body.loginResponse.sessionId&#10;}" />
+          <zeebe:header key="resultExpression" value="={&#10;  bankSessionId: Envelope.Body.loginResponse.sessionId.`$content`&#10;}" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
@@ -466,7 +466,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="2" />
           <zeebe:header key="elementTemplateId" value="io.camunda:soap" />
-          <zeebe:header key="resultExpression" value="={&#10;  stationSessionId:&#10;    Envelope.Body.openSessionResponse.sessionId[&#34;$content&#34;]&#10;}" />
+          <zeebe:header key="resultExpression" value="={&#10;  stationSessionId:&#10;    Envelope.Body.openSessionResponse.sessionId&#10;}" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
@@ -492,7 +492,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="2" />
           <zeebe:header key="elementTemplateId" value="io.camunda:soap" />
-          <zeebe:header key="resultExpression" value="={&#10;  vehicleUnlocked:&#10;    Envelope.Body.unlockVehicleResponse.success[&#34;$content&#34;]&#10;}" />
+          <zeebe:header key="resultExpression" value="={&#10;  vehicleUnlocked:&#10;    Envelope.Body.unlockVehicleResponse.success&#10;}" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
@@ -510,7 +510,7 @@
           <zeebe:input source="none" target="header.type" />
           <zeebe:input source="template" target="body.type" />
           <zeebe:input source="&#60;holdDeposit xmlns=&#34;urn:acme:banking:xsd&#34;&#62;&#10;  &#60;sessionId&#62;{{bankSessionId}}&#60;/sessionId&#62;&#10;  &#60;amount&#62;{{depositAmount}}&#60;/amount&#62;&#10;&#60;/holdDeposit&#62;" target="body.template" />
-          <zeebe:input source="={&#10;  bankSessionId: bankSessionId,&#10;  amount: 10&#10;}" target="body.context" />
+          <zeebe:input source="={&#10;  bankSessionId: bankSessionId,&#10;  depositAmount: 10&#10;}" target="body.context" />
           <zeebe:input source="={}" target="namespaces" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
         </zeebe:ioMapping>
@@ -701,7 +701,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="2" />
           <zeebe:header key="elementTemplateId" value="io.camunda:soap" />
-          <zeebe:header key="resultExpression" value="={&#10;  stationSessionClosed: Envelope.Body.closeSessionResponse.success[&#34;$content&#34;]&#10;}" />
+          <zeebe:header key="resultExpression" value="={&#10;  stationSessionClosed: Envelope.Body.closeSessionResponse.success&#10;}" />
           <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>

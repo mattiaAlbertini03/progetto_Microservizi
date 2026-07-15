@@ -46,21 +46,16 @@ cset {
 }
 
 main {
-    login(request)(response) {
-        username = request.username;
-        accountId = request.accountId;
+    login(loginRequest)(loginResponse) {
+        username = loginRequest.username;
+        accountId = loginRequest.accountId;
 
-        /*
-         * Temporary simulated account data.
-         * Persistence will later load these values using accountId.
-         */
         accountBalance = 100.0;
         rechargeAmount = 50.0;
         heldDeposit = 0.0;
-
         isLoggedIn = true;
 
-        response.sessionId = csets.sessionId = new;
+        loginResponse.sessionId = csets.sessionId = new;
 
         println@Console(
             "User " + username
@@ -70,24 +65,24 @@ main {
     };
 
     while (isLoggedIn) {
-        [ charge(request)(response) {
-            applyCharge
-        }] {
-            if (response.success) {
-                println@Console(
-                    "Charged " + request.amount
-                    + " from account " + accountId
-                    + ". New balance: " + accountBalance
-                )()
+        [ charge(chargeRequest)(chargeResponse) {
+            amount = chargeRequest.amount;
+
+            if (amount > 0.0) {
+                ensureSufficientBalance;
+                accountBalance -= amount;
+                chargeResponse.success = true
             } else {
-                println@Console(
-                    "Charge rejected: amount must be greater than zero."
-                )()
+                chargeResponse.success = false
             }
+        }] {
+            println@Console(
+                "Charge operation completed for account " + accountId
+            )()
         }
 
-        [ holdDeposit(request)(response) {
-            amount = request.amount;
+        [ holdDeposit(holdRequest)(holdResponse) {
+            amount = holdRequest.amount;
 
             if (amount > 0.0) {
                 ensureSufficientBalance;
@@ -95,14 +90,14 @@ main {
                 accountBalance -= amount;
                 heldDeposit += amount;
 
-                response.success = true
+                holdResponse.success = true
             } else {
-                response.success = false
+                holdResponse.success = false
             }
         }] {
-            if (response.success) {
+            if (holdResponse.success) {
                 println@Console(
-                    "Held deposit of " + request.amount
+                    "Held deposit of " + holdRequest.amount
                     + " for account " + accountId
                     + ". Available balance: " + accountBalance
                 )();
@@ -110,57 +105,41 @@ main {
                 depositIsActive = true;
 
                 while (depositIsActive) {
-                    [ charge(request)(response) {
-                        applyCharge
-                    }] {
-                        if (response.success) {
-                            println@Console(
-                                "Charged " + request.amount
-                                + " while deposit is active."
-                                + " New balance: " + accountBalance
-                            )()
-                        } else {
-                            println@Console(
-                                "Charge rejected: amount must be greater than zero."
-                            )()
-                        }
-                    }
+                    [ charge(activeChargeRequest)(activeChargeResponse) {
+                        amount = activeChargeRequest.amount;
 
-                    [ releaseDeposit(request)(response) {
+                        if (amount > 0.0) {
+                            ensureSufficientBalance;
+                            accountBalance -= amount;
+                            activeChargeResponse.success = true
+                        } else {
+                            activeChargeResponse.success = false
+                        }
+                    }]
+
+                    [ releaseDeposit(releaseRequest)(releaseResponse) {
                         accountBalance += heldDeposit;
                         heldDeposit = 0.0;
                         depositIsActive = false;
 
-                        response.success = true
-                    }] {
-                        println@Console(
-                            "Deposit released for account " + accountId
-                            + ". New balance: " + accountBalance
-                        )()
-                    }
+                        releaseResponse.success = true
+                    }]
                 }
-            } else {
-                println@Console(
-                    "Deposit hold rejected: amount must be greater than zero."
-                )()
             }
         }
 
-        [ releaseDeposit(request)(response) {
-            /*
-             * No deposit is currently active.
-             */
-            response.success = false
+        [ releaseDeposit(releaseRequest)(releaseResponse) {
+            releaseResponse.success = false
         }] {
             println@Console(
                 "Deposit release rejected: no active deposit."
             )()
         }
 
-        [ logout(request)(response) {
-            response.username = username;
-            response.accountId = accountId;
-            response.balance = accountBalance;
+        [ logout(logoutRequest)(logoutResponse) {
+            logoutResponse.username = username;
+            logoutResponse.accountId = accountId;
+            logoutResponse.balance = accountBalance;
 
             isLoggedIn = false
         }] {

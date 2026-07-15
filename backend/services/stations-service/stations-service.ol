@@ -42,60 +42,60 @@ service StationsService {
     }
 
     main {
-        [ listStations(request)(response) {
+        [ listStations(listRequest)(listResponse) {
             readFile@FileService({
                 filename = "./stations.json",
                 format = "json"
             })(data);
 
             for (i = 0, i < #data._, i++) {
-                response.stations[i].id = data._[i].id;
-                response.stations[i].name = data._[i].name;
-                response.stations[i].lat = data._[i].lat;
-                response.stations[i].lon = data._[i].lon;
-                response.stations[i].capacity = data._[i].capacity
+                listResponse.stations[i].id = data._[i].id;
+                listResponse.stations[i].name = data._[i].name;
+                listResponse.stations[i].lat = data._[i].lat;
+                listResponse.stations[i].lon = data._[i].lon;
+                listResponse.stations[i].capacity = data._[i].capacity
             }
         }]
 
-        [ getStation(request)(response) {
+        [ getStation(getRequest)(getResponse) {
             readFile@FileService({
                 filename = "./stations.json",
                 format = "json"
             })(data);
 
             for (i = 0, i < #data._, i++) {
-                if (data._[i].id == request.id) {
-                    response.id = data._[i].id;
-                    response.name = data._[i].name;
-                    response.lat = data._[i].lat;
-                    response.lon = data._[i].lon;
-                    response.capacity = data._[i].capacity
+                if (data._[i].id == getRequest.id) {
+                    getResponse.id = data._[i].id;
+                    getResponse.name = data._[i].name;
+                    getResponse.lat = data._[i].lat;
+                    getResponse.lon = data._[i].lon;
+                    getResponse.capacity = data._[i].capacity
                 }
             }
         }]
 
-        [ openSession(request)(response) {
-            stationId = request.stationId;
+        [ openSession(openRequest)(openResponse) {
+            stationId = openRequest.stationId;
             sessionIsOpen = true;
 
-            response.sessionId = csets.sessionId = new
+            openResponse.sessionId = csets.sessionId = new
         }] {
             while (sessionIsOpen) {
-                [ unlockVehicle(request)(response) {
-                    lastVehicleId = request.vehicleId;
-                    response.success = true
+                [ unlockVehicle(unlockRequest)(unlockResponse) {
+                    lastVehicleId = unlockRequest.vehicleId;
+                    unlockResponse.success = true
                 }]
 
-                [ lockVehicle(request)(response) {
-                    lastVehicleId = request.vehicleId;
-                    response.success = true
+                [ lockVehicle(lockRequest)(lockResponse) {
+                    lastVehicleId = lockRequest.vehicleId;
+                    lockResponse.success = true
                 }]
 
-                [ closeSession(request)(response) {
+                [ closeSession(closeRequest)(closeResponse) {
                     sessionIsOpen = false;
-                    response.success = true
+                    closeResponse.success = true
                 }]
             }
-        }
+        }   
     }
 }
