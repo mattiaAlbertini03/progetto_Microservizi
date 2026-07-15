@@ -65,8 +65,7 @@ public class ReservationsApi {
 
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
-                                "account", "demo-account",
-                                "deposit", 0);
+                                "accountId", "demo-account");
 
                 try {
                         startReservationProcess(
@@ -124,8 +123,7 @@ public class ReservationsApi {
 
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
-                                "account", "demo-account",
-                                "deposit", 0);
+                                "accountId", "demo-account");
 
                 try {
                         startReservationProcess(
@@ -207,7 +205,7 @@ public class ReservationsApi {
                 String userId = jwtService
                                 .authenticate(authorizationHeader)
                                 .userId();
-                
+
                 ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
                 ReservationActionRequest pickupRequest = new ReservationActionRequest(

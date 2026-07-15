@@ -39,7 +39,7 @@ spec:
               value: "http://reservation-service.acme:8080"
 
             - name: STATIONS_SERVICE_URL
-              value: "http://stations-service.acme:8080"
+              value: "http://stations-service.acme:8000"
 
 ---
 apiVersion: v1

@@ -29,7 +29,7 @@ export type VehicleData = {
 };
 
 export type ReservationData = {
-    id: string;
+    reservationId: string;
     userId: string;
     vehicleId: string;
     stationId: string;

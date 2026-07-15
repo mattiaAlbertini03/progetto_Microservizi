@@ -1,10 +1,11 @@
 FROM jolielang/jolie
+
 EXPOSE 8080
 EXPOSE 8000
 
-COPY server.ol server.ol
-COPY interface.iol interface.iol
-COPY MyInput.wsdl MyInput.wsdl
+COPY stations-service.ol stations-service.ol
+COPY stations-interface.iol stations-interface.iol
+COPY StationsService.wsdl StationsService.wsdl
 COPY stations.json stations.json
 
-CMD jolie server.ol
+CMD jolie stations-service.ol

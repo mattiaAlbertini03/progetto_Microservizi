@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="acme.stations.wsdl" xmlns:xsd1="acme.stations.xsd" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="acme.stations.wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xs:schema targetNamespace="acme.stations.xsd" xmlns:sch="acme.stations.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="unlockVehicle"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="vehicleId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="unlockVehicleResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="lockVehicle"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="vehicleId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="lockVehicleResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="openSession"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="stationId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="openSessionResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="closeSession"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="closeSessionResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element></xs:schema>
+  </wsdl:types>
+  <wsdl:message name="OpenSessionResponse">
+    <wsdl:part name="body" element="xsd1:openSessionResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LockVehicleResponse">
+    <wsdl:part name="body" element="xsd1:lockVehicleResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CloseSessionRequest">
+    <wsdl:part name="body" element="xsd1:closeSession">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CloseSessionResponse">
+    <wsdl:part name="body" element="xsd1:closeSessionResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="LockVehicleRequest">
+    <wsdl:part name="body" element="xsd1:lockVehicle">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="UnlockVehicleResponse">
+    <wsdl:part name="body" element="xsd1:unlockVehicleResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="OpenSessionRequest">
+    <wsdl:part name="body" element="xsd1:openSession">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="UnlockVehicleRequest">
+    <wsdl:part name="body" element="xsd1:unlockVehicle">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="MyInput">
+    <wsdl:operation name="unlockVehicle">
+      <wsdl:input message="tns:UnlockVehicleRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:UnlockVehicleResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="lockVehicle">
+      <wsdl:input message="tns:LockVehicleRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:LockVehicleResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="openSession">
+      <wsdl:input message="tns:OpenSessionRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:OpenSessionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeSession">
+      <wsdl:input message="tns:CloseSessionRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:CloseSessionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="MyInputSOAPBinding" type="tns:MyInput">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="unlockVehicle">
+      <soap:operation soapAction="unlockVehicle" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="lockVehicle">
+      <soap:operation soapAction="lockVehicle" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="openSession">
+      <soap:operation soapAction="openSession" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="closeSession">
+      <soap:operation soapAction="closeSession" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MyInputService">
+    <wsdl:port name="MyInputServicePort" binding="tns:MyInputSOAPBinding">
+      <soap:address location="http://stations-service.acme:8080"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

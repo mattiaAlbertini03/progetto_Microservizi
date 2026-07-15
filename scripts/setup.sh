@@ -42,7 +42,7 @@ die() {
 
 require_command() {
     command -v "$1" >/dev/null 2>&1 ||
-        die "Required command not found:: $1"
+        die "Required command not found: $1"
 }
 
 profile_exists() {
@@ -56,10 +56,15 @@ profile_running() {
         grep -q '^Running$'
 }
 
-docker_memory_bytes() {
-    docker inspect "$PROFILE" \
-        --format '{{.HostConfig.Memory}}' 2>/dev/null ||
+minikube_memory_mb() {
+    local config_file="$HOME/.minikube/profiles/$PROFILE/config.json"
+
+    if [[ ! -f "$config_file" ]]; then
         printf '0\n'
+        return
+    fi
+
+    jq -r '.Memory // 0' "$config_file"
 }
 
 collect_namespace_diagnostics() {
@@ -72,22 +77,31 @@ collect_namespace_diagnostics() {
 
     echo
     echo "--- Recent Events ---"
+
     kubectl get events \
         -n "$namespace" \
         --sort-by=.lastTimestamp |
         tail -50 || true
 
     local failed_pods
+
     failed_pods="$(
         kubectl get pods \
             -n "$namespace" \
             --no-headers 2>/dev/null |
-        awk '$2 !~ /^[0-9]+\/[0-9]+$/ || $3 != "Running" {
-            print $1
-        }'
+        awk '
+            {
+                split($2, ready, "/");
+
+                if ($3 != "Running" || ready[1] != ready[2]) {
+                    print $1;
+                }
+            }
+        '
     )"
 
     local pod
+
     while IFS= read -r pod; do
         [[ -n "$pod" ]] || continue
 
@@ -96,7 +110,7 @@ collect_namespace_diagnostics() {
         kubectl describe pod "$pod" -n "$namespace" || true
 
         echo
-        echo "--- Current logs: $pod ---"
+        echo "--- Current Logs: $pod ---"
         kubectl logs "$pod" \
             -n "$namespace" \
             --all-containers=true \
@@ -115,19 +129,101 @@ collect_namespace_diagnostics() {
 wait_for_namespace() {
     local namespace="$1"
     local timeout_seconds="$2"
+    local interval_seconds=5
+    local elapsed=0
 
-    echo "==> Waiting for all pods in namespace '$namespace'"
+    echo "==> Waiting for all current pods in namespace '$namespace'"
 
-    if ! kubectl wait \
-        --for=condition=Ready \
-        pod \
-        --all \
-        -n "$namespace" \
-        --timeout="${timeout_seconds}s"; then
+    while (( elapsed < timeout_seconds )); do
+        local pod_output
+        local total_pods
+        local unready_pods
 
-        collect_namespace_diagnostics "$namespace"
-        return 1
+        pod_output="$(
+            kubectl get pods \
+                -n "$namespace" \
+                --no-headers 2>/dev/null || true
+        )"
+
+        total_pods="$(
+            awk 'NF { count++ } END { print count + 0 }' \
+                <<< "$pod_output"
+        )"
+
+        unready_pods="$(
+            awk '
+                NF {
+                    split($2, ready, "/");
+
+                    if ($3 != "Running" || ready[1] != ready[2]) {
+                        count++;
+                    }
+                }
+
+                END {
+                    print count + 0;
+                }
+            ' <<< "$pod_output"
+        )"
+
+        if (( total_pods > 0 && unready_pods == 0 )); then
+            echo "==> Namespace '$namespace' is ready"
+            return 0
+        fi
+
+        printf \
+            "    Waiting: %s pod(s), %s not ready\r" \
+            "$total_pods" \
+            "$unready_pods"
+
+        sleep "$interval_seconds"
+        elapsed=$((elapsed + interval_seconds))
+    done
+
+    echo
+    echo "ERROR: Namespace '$namespace' did not become ready within ${timeout_seconds}s"
+
+    collect_namespace_diagnostics "$namespace"
+    return 1
+}
+
+wait_for_deployments() {
+    local namespace="$1"
+    local timeout_seconds="$2"
+
+    echo "==> Waiting for Deployments in namespace '$namespace'"
+
+    local deployments
+
+    deployments="$(
+        kubectl get deployments \
+            -n "$namespace" \
+            -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
+    )"
+
+    if [[ -z "$deployments" ]]; then
+        echo "==> No Deployments found in namespace '$namespace'"
+        return 0
     fi
+
+    local deployment
+
+    while IFS= read -r deployment; do
+        [[ -n "$deployment" ]] || continue
+
+        echo "    Waiting for deployment/$deployment"
+
+        if ! kubectl rollout status \
+            "deployment/$deployment" \
+            -n "$namespace" \
+            --timeout="${timeout_seconds}s"; then
+
+            collect_namespace_diagnostics "$namespace"
+            return 1
+        fi
+    done <<< "$deployments"
+
+    echo "==> All Deployments in namespace '$namespace' are ready"
 }
 
 ensure_minikube() {
@@ -139,8 +235,10 @@ ensure_minikube() {
             --driver=docker \
             --memory="$MINIKUBE_MEMORY_MB" \
             --cpus="$MINIKUBE_CPUS"
+
     elif ! profile_running; then
         echo "==> Starting existing Minikube profile '$PROFILE'"
+
         minikube -p "$PROFILE" start
     else
         echo "==> Minikube profile '$PROFILE' is already running"
@@ -148,19 +246,20 @@ ensure_minikube() {
 
     minikube -p "$PROFILE" update-context
 
-    local required_bytes
-    local actual_bytes
+    local actual_memory_mb
+    actual_memory_mb="$(minikube_memory_mb)"
 
-    required_bytes=$((MINIKUBE_MEMORY_MB * 1024 * 1024))
-    actual_bytes="$(docker_memory_bytes)"
+    if [[ ! "$actual_memory_mb" =~ ^[0-9]+$ ]]; then
+        die "Invalid Minikube memory value: $actual_memory_mb"
+    fi
 
-    if (( actual_bytes < required_bytes )); then
+    if (( actual_memory_mb < MINIKUBE_MEMORY_MB )); then
         cat >&2 <<EOF
 
 The Minikube profile '$PROFILE' does not have enough memory.
 
 Required: ${MINIKUBE_MEMORY_MB} MiB
-Configured: $((actual_bytes / 1024 / 1024)) MiB
+Configured: ${actual_memory_mb} MiB
 
 This script will not automatically recreate an existing cluster.
 
@@ -176,21 +275,26 @@ minikube start -p "$PROFILE" \
 EOF
         exit 1
     fi
+
+    echo "==> Minikube memory: ${actual_memory_mb} MiB"
 }
 
 ensure_namespaces() {
     echo "==> Creating Kubernetes namespaces"
 
     kubectl create namespace "$ACME_NAMESPACE" \
-        --dry-run=client -o yaml |
+        --dry-run=client \
+        -o yaml |
         kubectl apply -f -
 
     kubectl create namespace "$ORCHESTRATION_NAMESPACE" \
-        --dry-run=client -o yaml |
+        --dry-run=client \
+        -o yaml |
         kubectl apply -f -
 
     kubectl create namespace "$KAFKA_NAMESPACE" \
-        --dry-run=client -o yaml |
+        --dry-run=client \
+        -o yaml |
         kubectl apply -f -
 }
 
@@ -211,7 +315,7 @@ install_camunda() {
         camunda/camunda-platform \
         -n "$ORCHESTRATION_NAMESPACE" \
         -f "$CAMUNDA_VALUES" \
-        --wait=false
+        --wait=hookOnly
 }
 
 install_kafka() {
@@ -277,6 +381,7 @@ apply_kafka_topics() {
 
     if ! kubectl get crd kafkatopics.kafka.strimzi.io \
         >/dev/null 2>&1; then
+
         die "KafkaTopic CRD is not installed. Strimzi is not ready."
     fi
 
@@ -293,7 +398,7 @@ deploy_services() {
     for service in "${SERVICES[@]}"; do
         echo
         echo "========================================"
-        echo "  BUILDING AND DEPLOYING: $service      "
+        echo " BUILDING AND DEPLOYING: $service"
         echo "========================================"
 
         "$ROOT_DIR/scripts/service.sh" \
@@ -308,6 +413,7 @@ main() {
     require_command kubectl
     require_command helm
     require_command timeout
+    require_command jq
 
     ensure_minikube
     ensure_namespaces
@@ -326,18 +432,19 @@ main() {
 
     wait_for_namespace "$KAFKA_NAMESPACE" 600 || failed=1
     wait_for_namespace "$ORCHESTRATION_NAMESPACE" 900 || failed=1
-    wait_for_namespace "$ACME_NAMESPACE" 600 || failed=1
+    wait_for_deployments "$ACME_NAMESPACE" 300 || failed=1
 
     if (( failed != 0 )); then
-        die "Setup incompleto: uno o più componenti non sono pronti"
+        die "Setup incomplete: one or more components are not ready"
     fi
 
     echo
     echo "========================================"
-    echo "  SETUP COMPLETED SUCCESSFULLY "
+    echo " SETUP COMPLETED SUCCESSFULLY"
     echo "========================================"
 
     kubectl get pods -A
+
     echo
     echo "Minikube IP: $(minikube -p "$PROFILE" ip)"
 }

@@ -29,7 +29,7 @@ export default function ReservationCard({
                 background: "white",
             }}
         >
-            <strong>{reservation.id}</strong>
+            <strong>{reservation.reservationId}</strong>
 
             <p>Veicolo: {reservation.vehicleId}</p>
             <p>Stazione: {reservation.stationId}</p>

@@ -101,7 +101,7 @@ export default function ReservationsPage() {
     async function returnReservation(
         reservation: ReservationData
     ): Promise<void> {
-        const eventSource = listenReservationEvents(reservation.id);
+        const eventSource = listenReservationEvents(reservation.reservationId);
 
         try {
             await executeReservationAction(
@@ -128,7 +128,7 @@ export default function ReservationsPage() {
         try {
             await sendReservationAction(
                 user,
-                reservation.id,
+                reservation.reservationId,
                 action
             );
 
@@ -211,7 +211,7 @@ export default function ReservationsPage() {
                 >
                     {reservations.map((reservation) => (
                         <ReservationCard
-                            key={reservation.id}
+                            key={reservation.reservationId}
                             reservation={reservation}
                             onPickup={pickupReservation}
                             onCancel={cancelReservation}
