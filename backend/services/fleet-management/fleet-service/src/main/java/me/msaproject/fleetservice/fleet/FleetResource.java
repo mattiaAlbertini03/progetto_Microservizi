@@ -11,7 +11,6 @@ import java.util.Map;
 
 @ApplicationScoped
 @Path("/fleet")
-@Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class FleetResource {
 

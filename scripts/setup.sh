@@ -33,6 +33,7 @@ SERVICES=(
     banking-service
     acme-worker-service
     acme-mobility-service
+    simulation-visualizer-service
 )
 
 die() {
@@ -401,9 +402,11 @@ deploy_services() {
         echo " BUILDING AND DEPLOYING: $service"
         echo "========================================"
 
-        "$ROOT_DIR/scripts/service.sh" \
-            deploy \
-            "$service"
+        if ! "$ROOT_DIR/scripts/service.sh" deploy "$service"; then
+            die "Build or deployment failed for service: $service"
+        fi
+
+        echo "==> Successfully deployed: $service"
     done
 }
 

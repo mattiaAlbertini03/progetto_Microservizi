@@ -1,7 +1,7 @@
 package me.msaproject.reservationservice.reservation;
 
 public record Reservation(
-        String id,
+        String reservationId,
         String userId,
         String vehicleId,
         String stationId,

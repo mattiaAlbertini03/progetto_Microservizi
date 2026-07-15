@@ -114,7 +114,7 @@ public class ReservationResource {
             Reservation reservation) {
 
         return new ReservationResponse(
-                reservation.id(),
+                reservation.reservationId(),
                 reservation.userId(),
                 reservation.vehicleId(),
                 reservation.stationId(),

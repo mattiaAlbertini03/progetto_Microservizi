@@ -29,6 +29,8 @@ spec:
   selector:
     app: simulation-visualizer
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 80
+      nodePort: 30081
   type: NodePort

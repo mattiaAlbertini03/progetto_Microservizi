@@ -1,7 +1,7 @@
 package me.msaproject.fleetservice.dto;
 
 public record Reservation(
-        String id,
+        String reservationId,
         String userId,
         String vehicleId,
         String stationId,

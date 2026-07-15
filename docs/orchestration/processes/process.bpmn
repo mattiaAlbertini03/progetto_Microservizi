@@ -15,7 +15,7 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0hjdol8" sourceRef="Activity_1tzw3io" targetRef="Gateway_1nilk40" />
     <bpmn:sequenceFlow id="Flow_0pb1wll" sourceRef="Event_05izywd" targetRef="Activity_1tzw3io" />
-    <bpmn:sequenceFlow id="Flow_1m8e59a" sourceRef="Gateway_1nilk40" targetRef="Activity_15lttuv">
+    <bpmn:sequenceFlow id="Flow_1m8e59a" sourceRef="Gateway_1nilk40" targetRef="Activity_15vukvv">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=vehicleAtDestination = false</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1gb57kc" sourceRef="Activity_0uc88kr" targetRef="Activity_13bvzok" />
@@ -111,7 +111,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="noAuth" target="authentication.type" />
           <zeebe:input source="GET" target="method" />
-          <zeebe:input source="=services.fleet + &#34;/&#34; + reservation.reservationId + &#34;/at-destination&#34;" target="url" />
+          <zeebe:input source="=services.fleet + &#34;/fleet/&#34; + reservation.reservationId + &#34;/at-destination&#34;" target="url" />
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
@@ -129,7 +129,7 @@
     </bpmn:serviceTask>
     <bpmn:subProcess id="Activity_15lttuv">
       <bpmn:incoming>Flow_00x6ano</bpmn:incoming>
-      <bpmn:incoming>Flow_1m8e59a</bpmn:incoming>
+      <bpmn:incoming>Flow_1hhkfrc</bpmn:incoming>
       <bpmn:intermediateCatchEvent id="Event_1ijobds" name="Every 2s">
         <bpmn:incoming>Flow_01951bd</bpmn:incoming>
         <bpmn:incoming>Flow_0i4smac</bpmn:incoming>
@@ -144,7 +144,7 @@
           <zeebe:ioMapping>
             <zeebe:input source="noAuth" target="authentication.type" />
             <zeebe:input source="GET" target="method" />
-            <zeebe:input source="=services.fleet + &#34;/&#34; + reservation.reservationId + &#34;/status&#34;" target="url" />
+            <zeebe:input source="=services.fleet + &#34;/fleet/&#34; + reservation.reservationId + &#34;/status&#34;" target="url" />
             <zeebe:input source="=false" target="storeResponse" />
             <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
             <zeebe:input source="=20" target="readTimeoutInSeconds" />
@@ -530,7 +530,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="noAuth" target="authentication.type" />
           <zeebe:input source="POST" target="method" />
-          <zeebe:input source="=services.fleet + &#34;/&#34; + reservation.reservationId + &#34;/start&#34;" target="url" />
+          <zeebe:input source="=services.fleet + &#34;/fleet/&#34; + reservation.reservationId + &#34;/start&#34;" target="url" />
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
@@ -709,6 +709,32 @@
       <bpmn:outgoing>Flow_1a3jcjw</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1a3jcjw" sourceRef="Activity_175mt03" targetRef="Activity_1livisy" />
+    <bpmn:serviceTask id="Activity_15vukvv" name="Send notification to client" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="12" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE3LjAzMzUgOC45OTk5N0MxNy4wMzM1IDEzLjQ0NzUgMTMuNDI4MSAxNy4wNTI5IDguOTgwNjUgMTcuMDUyOUM0LjUzMzE2IDE3LjA1MjkgMC45Mjc3NjUgMTMuNDQ3NSAwLjkyNzc2NSA4Ljk5OTk3QzAuOTI3NzY1IDQuNTUyNDggNC41MzMxNiAwLjk0NzA4MyA4Ljk4MDY1IDAuOTQ3MDgzQzEzLjQyODEgMC45NDcwODMgMTcuMDMzNSA0LjU1MjQ4IDE3LjAzMzUgOC45OTk5N1oiIGZpbGw9IiM1MDU1NjIiLz4KPHBhdGggZD0iTTQuOTMxMjYgMTQuMTU3MUw2Ljc4MTA2IDMuNzE0NzFIMTAuMTM3NUMxMS4xOTE3IDMuNzE0NzEgMTEuOTgyNCAzLjk4MzIzIDEyLjUwOTUgNC41MjAyN0MxMy4wNDY1IDUuMDQ3MzYgMTMuMzE1IDUuNzMzNTggMTMuMzE1IDYuNTc4OTJDMTMuMzE1IDcuNDQ0MTQgMTMuMDcxNCA4LjE1NTIyIDEyLjU4NDEgOC43MTIxNUMxMi4xMDY3IDkuMjU5MTMgMTEuNDU1MyA5LjYzNzA1IDEwLjYyOTggOS44NDU5TDEyLjA2MTkgMTQuMTU3MUgxMC4zMzE1TDkuMDMzNjQgMTAuMDI0OUg3LjI0MzUxTDYuNTEyNTQgMTQuMTU3MUg0LjkzMTI2Wk03LjQ5NzExIDguNTkyODFIOS4yNDI0OEM5Ljk5ODMyIDguNTkyODEgMTAuNTkwMSA4LjQyMzc0IDExLjAxNzcgOC4wODU2MUMxMS40NTUzIDcuNzM3NTMgMTEuNjc0MSA3LjI2NTEzIDExLjY3NDEgNi42Njg0MkMxMS42NzQxIDYuMTkxMDYgMTEuNTI0OSA1LjgxODExIDExLjIyNjUgNS41NDk1OUMxMC45MjgyIDUuMjcxMTMgMTAuNDU1OCA1LjEzMTkgOS44MDkzNiA1LjEzMTlIOC4xMDg3NEw3LjQ5NzExIDguNTkyODFaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="noAuth" target="authentication.type" />
+          <zeebe:input source="POST" target="method" />
+          <zeebe:input source="=services.acme + &#34;/reservations/&#34; + reservation.reservationId + &#34;/events&#34;" target="url" />
+          <zeebe:input source="=false" target="storeResponse" />
+          <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
+          <zeebe:input source="=20" target="readTimeoutInSeconds" />
+          <zeebe:input source="={&#10;  reservationId: reservation.reservationId,&#10;  status: &#34;VEHICLE_NOT_AT_DESTINATION&#34;,&#10;  message: &#34;Impossibile procedere alla restituzione: il veicolo non si trova presso una stazione.&#34;&#10;}" target="body" />
+          <zeebe:input source="=false" target="ignoreNullValues" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="12" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+          <zeebe:header key="resultVariable" />
+          <zeebe:header key="resultExpression" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1m8e59a</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hhkfrc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1hhkfrc" sourceRef="Activity_15vukvv" targetRef="Activity_15lttuv" />
   </bpmn:process>
   <bpmn:error id="Error_1ekw6va" name="Hold Reservation Failed" errorCode="HOLD_RESERVATION_FAILED" />
   <bpmn:message id="Message_3liunb2" name="CANCEL_RESERVATION_REQUEST">
@@ -796,6 +822,10 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1576my6" bpmnElement="Activity_175mt03">
         <dc:Bounds x="2840" y="88" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0brr9m2" bpmnElement="Activity_15vukvv">
+        <dc:Bounds x="2210" y="340" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_15lttuv_di" bpmnElement="Activity_15lttuv" isExpanded="true">
@@ -961,9 +991,7 @@
       <bpmndi:BPMNEdge id="Flow_1m8e59a_di" bpmnElement="Flow_1m8e59a">
         <di:waypoint x="2490" y="315" />
         <di:waypoint x="2490" y="380" />
-        <di:waypoint x="2070" y="380" />
-        <di:waypoint x="2070" y="170" />
-        <di:waypoint x="2110" y="170" />
+        <di:waypoint x="2310" y="380" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1gb57kc_di" bpmnElement="Flow_1gb57kc">
         <di:waypoint x="1200" y="128" />
@@ -1097,6 +1125,12 @@
       <bpmndi:BPMNEdge id="Flow_1a3jcjw_di" bpmnElement="Flow_1a3jcjw">
         <di:waypoint x="2940" y="128" />
         <di:waypoint x="2980" y="128" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hhkfrc_di" bpmnElement="Flow_1hhkfrc">
+        <di:waypoint x="2210" y="380" />
+        <di:waypoint x="2070" y="380" />
+        <di:waypoint x="2070" y="170" />
+        <di:waypoint x="2110" y="170" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -133,13 +133,13 @@ public class ReservationService {
 
     private void updateReservationStatus(Reservation old, String status) {
         Reservation updated = new Reservation(
-                old.id(),
+                old.reservationId(),
                 old.userId(),
                 old.vehicleId(),
                 old.stationId(),
                 status);
 
-        reservationRepository.getReservations().put(old.id(), updated);
+        reservationRepository.getReservations().put(old.reservationId(), updated);
         reservationRepository.sync();
     }
 
@@ -150,7 +150,7 @@ public class ReservationService {
                 .stream()
                 .filter(reservation -> reservation.userId().equals(userId))
                 .map(reservation -> new ReservationResponse(
-                        reservation.id(),
+                        reservation.reservationId(),
                         reservation.userId(),
                         reservation.vehicleId(),
                         reservation.stationId(),

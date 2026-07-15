@@ -130,6 +130,7 @@ resolve_service_dir() {
     local candidates=(
         "$ROOT_DIR/backend/services/$service"
         "$ROOT_DIR/backend/services/fleet-management/$service"
+        "$ROOT_DIR/frontend/$service"
     )
 
     local candidate

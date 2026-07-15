@@ -8,6 +8,7 @@ import {
 } from "../api/acmeApi";
 import type { ReservationData } from "../types/domain";
 import { useReservationEvents } from "../components/ReservationEventsContext";
+import { SIMULATION_VISUALIZER_URL } from "../App";
 
 export default function ReservationsPage() {
     const { user } = useAuth();
@@ -77,6 +78,26 @@ export default function ReservationsPage() {
             );
         };
     }, [loadReservations]);
+
+    function trackReservation(
+        reservation: ReservationData
+    ): void {
+        if (!SIMULATION_VISUALIZER_URL) {
+            alert("Il visualizzatore della simulazione non è configurato.");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            reservationId: reservation.reservationId,
+            vehicleId: reservation.vehicleId,
+        });
+
+        window.open(
+            `${SIMULATION_VISUALIZER_URL}/?${params.toString()}`,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }
 
     async function pickupReservation(
         reservation: ReservationData
@@ -216,6 +237,7 @@ export default function ReservationsPage() {
                             onPickup={pickupReservation}
                             onCancel={cancelReservation}
                             onReturn={returnReservation}
+                            onTrack={trackReservation}
                         />
                     ))}
                 </div>

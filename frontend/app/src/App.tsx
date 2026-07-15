@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import LoginModal from "./components/LoginModal";
 
 export const ACME_API_URL = "http://192.168.49.2:30080";
+export const SIMULATION_VISUALIZER_URL = "http://192.168.49.2:30081";
 
 export default function App() {
     return (

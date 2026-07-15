@@ -36,7 +36,7 @@ public class JsonReservationRepository implements ReservationRepository {
             this.reservations = new ConcurrentHashMap<>();
 
             for (Reservation reservation : loadedReservations) {
-                reservations.put(reservation.id(), reservation);
+                reservations.put(reservation.reservationId(), reservation);
             }
 
         } catch (Exception e) {

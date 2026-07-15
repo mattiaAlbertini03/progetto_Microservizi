@@ -2,9 +2,18 @@ import type { ReservationData } from "../types/domain";
 
 type Props = {
     reservation: ReservationData;
-    onPickup: (reservation: ReservationData) => void | Promise<void>;
-    onCancel: (reservation: ReservationData) => void | Promise<void>;
-    onReturn: (reservation: ReservationData) => void | Promise<void>;
+    onPickup: (
+        reservation: ReservationData
+    ) => void | Promise<void>;
+    onCancel: (
+        reservation: ReservationData
+    ) => void | Promise<void>;
+    onReturn: (
+        reservation: ReservationData
+    ) => void | Promise<void>;
+    onTrack: (
+        reservation: ReservationData
+    ) => void;
 };
 
 export default function ReservationCard({
@@ -12,6 +21,7 @@ export default function ReservationCard({
     onPickup,
     onCancel,
     onReturn,
+    onTrack,
 }: Props) {
     const canCancel =
         reservation.status === "PENDING" ||
@@ -19,6 +29,7 @@ export default function ReservationCard({
 
     const canPickup = reservation.status === "RESERVED";
     const canReturn = reservation.status === "ACTIVE";
+    const canTrack = reservation.status === "ACTIVE";
 
     return (
         <div
@@ -51,6 +62,12 @@ export default function ReservationCard({
                 {canReturn && (
                     <button onClick={() => onReturn(reservation)}>
                         Riconsegna
+                    </button>
+                )}
+
+                {canTrack && (
+                    <button onClick={() => onTrack(reservation)}>
+                        Traccia posizione
                     </button>
                 )}
             </div>

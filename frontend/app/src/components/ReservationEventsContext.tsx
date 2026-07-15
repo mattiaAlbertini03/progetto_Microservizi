@@ -84,11 +84,11 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
 
             switch (data.status) {
                 case "VEHICLE_NOT_AT_DESTINATION":
-                    alert("Il veicolo non è ancora arrivato alla stazione.");
+                    alert(data.message);
                     break;
 
                 case "RETURN_CONFIRMED":
-                    alert("Veicolo riconsegnato correttamente.");
+                    alert(data.message);
 
                     window.dispatchEvent(
                         new CustomEvent("reservations-changed")
@@ -99,7 +99,7 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
                     break;
 
                 case "RETURN_FAILED":
-                    alert("Errore durante la riconsegna.");
+                    alert(data.message);
 
                     eventSource.close();
                     delete sources.current[key];
