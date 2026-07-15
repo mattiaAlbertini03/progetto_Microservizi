@@ -30,7 +30,7 @@ spec:
               value: "http://simulator-service.acme:8080"
 
             - name: STATION_SERVICE_URL
-              value: "http://stations-service.acme:8080"
+              value: "http://stations-service.acme:8000"
 
             - name: QUERY_SERVICE_URL
               value: "http://query-service.acme:8080"

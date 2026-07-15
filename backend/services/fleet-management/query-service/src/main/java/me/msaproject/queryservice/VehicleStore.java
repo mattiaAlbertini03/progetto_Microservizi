@@ -2,33 +2,83 @@ package me.msaproject.queryservice;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 @ApplicationScoped
 public class VehicleStore {
-    private final java.util.concurrent.ConcurrentHashMap<String, VehicleSnapshot> map = new java.util.concurrent.ConcurrentHashMap<>();
 
-    public VehicleSnapshot get(String vehicleId) { return map.get(vehicleId); }
+    private final ConcurrentMap<String, VehicleSnapshot> snapshots =
+            new ConcurrentHashMap<>();
 
-    public java.util.Collection<VehicleSnapshot> all() { return map.values(); }
-
-    public void upsertTracking(String vehicleId, double lat, double lon, long ts) {
-        map.compute(vehicleId, (k, old) -> new VehicleSnapshot(
-            vehicleId,
-            lat,
-            lon,
-            ts,
-            old != null ? old.batteryPercent() : null,
-            old != null ? old.batteryTimestampEpochMs() : null
-        ));
+    public VehicleSnapshot get(
+            String vehicleId
+    ) {
+        return snapshots.get(vehicleId);
     }
 
-    public void upsertBattery(String vehicleId, Double batteryPercent, long ts) {
-        map.compute(vehicleId, (k, old) -> new VehicleSnapshot(
-            vehicleId,
-            old != null ? old.lat() : null,
-            old != null ? old.lon() : null,
-            old != null ? old.trackingTimestampEpochMs() : null,
-            batteryPercent,
-            ts
-        ));
+    public Collection<VehicleSnapshot> all() {
+        ArrayList<VehicleSnapshot> result =
+                new ArrayList<>(snapshots.values());
+
+        result.sort(
+                Comparator.comparing(
+                        VehicleSnapshot::vehicleId
+                )
+        );
+
+        return result;
+    }
+
+    public void upsertTracking(
+            String vehicleId,
+            double lat,
+            double lon,
+            long timestampEpochMs
+    ) {
+        snapshots.compute(
+                vehicleId,
+                (key, current) ->
+                        new VehicleSnapshot(
+                                vehicleId,
+                                lat,
+                                lon,
+                                timestampEpochMs,
+                                current != null
+                                        ? current.batteryPercent()
+                                        : null,
+                                current != null
+                                        ? current.batteryTimestampEpochMs()
+                                        : null
+                        )
+        );
+    }
+
+    public void upsertBattery(
+            String vehicleId,
+            double batteryPercent,
+            long timestampEpochMs
+    ) {
+        snapshots.compute(
+                vehicleId,
+                (key, current) ->
+                        new VehicleSnapshot(
+                                vehicleId,
+                                current != null
+                                        ? current.lat()
+                                        : null,
+                                current != null
+                                        ? current.lon()
+                                        : null,
+                                current != null
+                                        ? current.trackingTimestampEpochMs()
+                                        : null,
+                                batteryPercent,
+                                timestampEpochMs
+                        )
+        );
     }
 }

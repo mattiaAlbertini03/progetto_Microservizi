@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: simulator-service
-  namespace: simulation
+  namespace: acme
   labels:
     app: simulator-service
 spec:
@@ -32,13 +32,13 @@ spec:
               value: "0.0.0.0"
 
             - name: TRACKING_SERVICE_URL
-              value: "http://tracking-service.simulation:8080"
+              value: "http://tracking-service.acme:8080"
 
             - name: BATTERY_SERVICE_URL
-              value: "http://battery-service.simulation:8080"
+              value: "http://battery-service.acme:8080"
 
             - name: GRAPHHOPPER_BASE_URL
-              value: "http://graphhopper-service.simulation:8989"
+              value: "http://graphhopper-service.acme:8989"
 
             - name: GRAPHHOPPER_PROFILE
               value: "car"
@@ -64,7 +64,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: simulator-service
-  namespace: simulation
+  namespace: acme
   labels:
     app: simulator-service
 spec:

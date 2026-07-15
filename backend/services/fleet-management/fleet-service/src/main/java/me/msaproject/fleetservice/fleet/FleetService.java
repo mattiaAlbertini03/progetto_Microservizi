@@ -38,16 +38,23 @@ public class FleetService {
         VehicleQueryClient vehicleQueryClient;
 
         public void startSimulation(String reservationId) {
+                System.out.println("[Fleet] Loading reservation");
                 Reservation reservation = reservationClient.getReservation(reservationId);
 
+                System.out.println("[Fleet] Loading vehicle");
                 Vehicle vehicle = logisticsClient.getVehicle(reservation.vehicleId());
 
+                System.out.println("[Fleet] Loading stations");
                 List<Station> stations = stationClient.getStations();
 
+                System.out.println("[Fleet] Selecting destination");
                 Station fromStation = findStation(stations, reservation.stationId());
+
                 Station toStation = pickRandomDestination(stations, fromStation.id());
 
-                destinationByReservationId.put(reservationId, toStation.id());
+                destinationByReservationId.put(
+                                reservationId,
+                                toStation.id());
 
                 StartSimulationRequest request = new StartSimulationRequest(
                                 reservation.vehicleId(),
@@ -60,7 +67,10 @@ public class FleetService {
                                 8.0,
                                 vehicle.batteryPct());
 
+                System.out.println("[Fleet] Calling simulator");
                 simulatorClient.startSimulation(request);
+
+                System.out.println("[Fleet] Simulation started");
         }
 
         public void stopSimulation(String reservationId) {

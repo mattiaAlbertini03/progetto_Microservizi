@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simulation-visualizer
-  namespace: simulation
+  name: simulation-visualizer-service
+  namespace: acme
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simulation-visualizer
+      app: simulation-visualizer-service
   template:
     metadata:
       labels:
-        app: simulation-visualizer
+        app: simulation-visualizer-service
     spec:
       containers:
-        - name: simulation-visualizer
-          image: simulation-visualizer:latest
+        - name: simulation-visualizer-service
+          image: simulation-visualizer-service:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 80
@@ -23,11 +23,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: simulation-visualizer
-  namespace: simulation
+  name: simulation-visualizer-service
+  namespace: acme
 spec:
   selector:
-    app: simulation-visualizer
+    app: simulation-visualizer-service
   ports:
     - name: http
       port: 80

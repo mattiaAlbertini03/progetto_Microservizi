@@ -28,7 +28,7 @@ public class GraphHopperClient {
     public GraphHopperClient(
             @ConfigProperty(
                     name = "graphhopper.base-url",
-                    defaultValue = "http://graphhopper-service.simulation:8989"
+                    defaultValue = "http://graphhopper-service.acme:8989"
             )
             String graphhopperBaseUrl,
 

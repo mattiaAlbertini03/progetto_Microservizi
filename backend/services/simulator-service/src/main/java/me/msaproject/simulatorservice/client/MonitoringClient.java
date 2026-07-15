@@ -25,13 +25,13 @@ public class MonitoringClient {
     public MonitoringClient(
             @ConfigProperty(
                     name = "tracking-service.url",
-                    defaultValue = "http://tracking-service.simulation:8080"
+                    defaultValue = "http://tracking-service.acme:8080"
             )
             String trackingServiceUrl,
 
             @ConfigProperty(
                     name = "battery-service.url",
-                    defaultValue = "http://battery-service.simulation:8080"
+                    defaultValue = "http://battery-service.acme:8080"
             )
             String batteryServiceUrl
     ) {

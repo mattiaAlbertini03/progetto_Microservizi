@@ -30,7 +30,7 @@ public class SimulatorClient {
     public void startSimulation(StartSimulationRequest request) {
         try (Response response = client
                 .target(simulatorServiceUrl)
-                .path("simulation")
+                .path("simulations")
                 .path("start")
                 .request()
                 .post(Entity.json(request))) {
@@ -46,7 +46,7 @@ public class SimulatorClient {
     public void stopSimulation(StopSimulationRequest request) {
         try (Response response = client
                 .target(simulatorServiceUrl)
-                .path("simulation")
+                .path("simulations")
                 .path("stop")
                 .request()
                 .post(Entity.json(request))) {

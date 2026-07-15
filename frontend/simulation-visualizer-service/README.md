@@ -79,7 +79,7 @@ Output: dist/
 Build:
 
 ```bash
-docker build -t simulation-visualizer:latest .
+docker build -t simulation-visualizer-service:latest .
 ```
 
 ---
@@ -111,7 +111,7 @@ Build:
 
 ```bash
 eval $(minikube docker-env)
-docker build -t simulation-visualizer:latest .
+docker build -t simulation-visualizer-service:latest .
 ```
 
 Deploy:
@@ -123,7 +123,7 @@ kubectl apply -f k8s/
 Restart:
 
 ```bash
-kubectl rollout restart deployment/simulation-visualizer -n acme-fleet
+kubectl rollout restart deployment/simulation-visualizer-service -n acme-fleet
 ```
 
 ---
@@ -137,7 +137,7 @@ http://<visualizer-url>/api/vehicles
 Check nginx config:
 
 ```bash
-kubectl exec -it -n acme-fleet deploy/simulation-visualizer -- sh
+kubectl exec -it -n acme-fleet deploy/simulation-visualizer-service -- sh
 cat /etc/nginx/conf.d/default.conf
 ```
 

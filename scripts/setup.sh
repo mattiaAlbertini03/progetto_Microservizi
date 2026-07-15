@@ -34,6 +34,8 @@ SERVICES=(
     acme-worker-service
     acme-mobility-service
     simulation-visualizer-service
+    simulator-service
+    graphhopper-service
 )
 
 die() {

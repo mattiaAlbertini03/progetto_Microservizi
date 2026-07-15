@@ -71,19 +71,27 @@ export default function SimulationMap() {
 
     useEffect(() => {
         if (!vehicleId) {
+            setVehicle(null);
+            setHistory([]);
             setError(
                 "Nessun vehicleId specificato nell'indirizzo."
             );
             return;
         }
 
+        /*
+         * Dopo questo controllo sappiamo che vehicleId è una stringa.
+         * La copiamo in una costante per mantenere il tipo string anche
+         * dentro la funzione asincrona e il callback dell'intervallo.
+         */
+        const trackedVehicleId = vehicleId;
         let cancelled = false;
 
-        async function fetchVehicle() {
+        async function fetchVehicle(): Promise<void> {
             try {
                 const response = await fetch(
                     `${API_BASE}/vehicles/${encodeURIComponent(
-                        vehicleId
+                        trackedVehicleId
                     )}`
                 );
 
@@ -125,7 +133,10 @@ export default function SimulationMap() {
                     ];
                 });
             } catch (exception) {
-                console.error(exception);
+                console.error(
+                    "Errore recupero posizione veicolo:",
+                    exception
+                );
 
                 if (!cancelled) {
                     setError(
@@ -137,17 +148,20 @@ export default function SimulationMap() {
 
         setVehicle(null);
         setHistory([]);
+        setError(null);
 
         void fetchVehicle();
 
-        const interval = window.setInterval(
-            fetchVehicle,
+        const intervalId = window.setInterval(
+            () => {
+                void fetchVehicle();
+            },
             POLL_MS
         );
 
         return () => {
             cancelled = true;
-            window.clearInterval(interval);
+            window.clearInterval(intervalId);
         };
     }, [vehicleId]);
 
@@ -237,7 +251,7 @@ export default function SimulationMap() {
 
                 {history.map((point, index) => (
                     <CircleMarker
-                        key={index}
+                        key={`${index}-${String(point)}`}
                         center={point}
                         radius={3}
                     />

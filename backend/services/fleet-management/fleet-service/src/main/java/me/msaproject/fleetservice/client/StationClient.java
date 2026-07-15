@@ -5,9 +5,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import me.msaproject.fleetservice.dto.Station;
+import me.msaproject.fleetservice.dto.StationsResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped
@@ -20,7 +20,7 @@ public class StationClient {
     public StationClient(
             @ConfigProperty(
                     name = "station-service.url",
-                    defaultValue = "http://stations-service.acme:8080"
+                    defaultValue = "http://stations-service.acme:8000"
             )
             String stationServiceUrl
     ) {
@@ -28,12 +28,12 @@ public class StationClient {
     }
 
     public List<Station> getStations() {
-        Station[] stations = client
+        StationsResponse response = client
                 .target(stationServiceUrl)
                 .path("stations")
                 .request()
-                .get(Station[].class);
+                .get(StationsResponse.class);
 
-        return Arrays.asList(stations);
+        return response.stations();
     }
 }
