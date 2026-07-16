@@ -8,6 +8,7 @@ import MapPage from "./pages/MapPage";
 import ReservationsPage from "./pages/ReservationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginModal from "./components/LoginModal";
+import "./App.css";
 
 export const ACME_API_URL = "http://192.168.49.2:30080";
 export const SIMULATION_VISUALIZER_URL = "http://192.168.49.2:30081";
@@ -16,30 +17,32 @@ export default function App() {
     return (
         <BrowserRouter>
             <ReservationEventsProvider>
-                <Navbar />
-                <LoginModal />
+                <div className="app-shell">
+                    <Navbar />
+                    <LoginModal />
 
-                <div style={{ paddingTop: "56px" }}>
-                    <Routes>
-                        <Route path="/" element={<MapPage />} />
-                        <Route
-                            path="/reservations"
-                            element={
-                                <ProtectedRoute>
-                                    <ReservationsPage />
-                                </ProtectedRoute>
-                            }
-                        />
+                    <div className="app-content">
+                        <Routes>
+                            <Route path="/" element={<MapPage />} />
+                            <Route
+                                path="/reservations"
+                                element={
+                                    <ProtectedRoute>
+                                        <ReservationsPage />
+                                    </ProtectedRoute>
+                                }
+                            />
 
-                        <Route
-                            path="/profile"
-                            element={
-                                <ProtectedRoute>
-                                    <ProfilePage />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Routes>
+                            <Route
+                                path="/profile"
+                                element={
+                                    <ProtectedRoute>
+                                        <ProfilePage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Routes>
+                    </div>
                 </div>
             </ReservationEventsProvider>
         </BrowserRouter>

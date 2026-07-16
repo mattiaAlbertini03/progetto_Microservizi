@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { useAuth } from "../components/AuthContext";
 import ReservationCard from "../components/ReservationCard";
@@ -259,33 +260,48 @@ export default function ReservationsPage() {
 
     if (loading) {
         return (
-            <p style={{ padding: "1.5rem" }}>
-                Caricamento prenotazioni...
-            </p>
+            <main className="page">
+                <div className="state-panel panel"><span className="spinner" /><strong>Caricamento prenotazioni…</strong></div>
+            </main>
         );
     }
 
     if (error) {
         return (
-            <p style={{ padding: "1.5rem", color: "red" }}>
-                {error}
-            </p>
+            <main className="page"><div className="alert">{error}</div></main>
         );
     }
 
+    const activeCount = reservations.filter((reservation) =>
+        reservation.status === "ACTIVE" || reservation.status === "PICKED_UP"
+    ).length;
+    const upcomingCount = reservations.filter((reservation) =>
+        reservation.status === "RESERVED" || reservation.status === "PENDING"
+    ).length;
+
     return (
-        <main style={{ padding: "1.5rem" }}>
-            <h1>Prenotazioni</h1>
+        <main className="page reservations-page">
+            <header className="page-header">
+                <div>
+                    <p className="eyebrow">I tuoi viaggi</p>
+                    <h1 className="page-title">Prenotazioni</h1>
+                    <p className="page-subtitle">Controlla i prossimi ritiri e segui in tempo reale le corse attive.</p>
+                </div>
+                <div className="reservation-summary">
+                    <span><strong>{activeCount}</strong> attive</span>
+                    <span><strong>{upcomingCount}</strong> in arrivo</span>
+                </div>
+            </header>
 
             {reservations.length === 0 ? (
-                <p>Nessuna prenotazione trovata.</p>
+                <div className="state-panel panel">
+                    <div className="state-icon">⌖</div>
+                    <h2>Nessun viaggio pianificato</h2>
+                    <p className="page-subtitle">Apri la mappa, scegli una stazione e prenota il tuo prossimo mezzo.</p>
+                    <Link className="button" to="/">Esplora la mappa</Link>
+                </div>
             ) : (
-                <div
-                    style={{
-                        display: "grid",
-                        gap: "1rem",
-                    }}
-                >
+                <div className="reservation-grid">
                     {reservations.map((reservation) => (
                         <ReservationCard
                             key={reservation.reservationId}

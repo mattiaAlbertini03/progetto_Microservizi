@@ -76,24 +76,26 @@ export default function Station({
     }, []);
 
     return (
-        <div>
-            <strong>{station.name}</strong>
-
-            <div style={{ fontSize: "0.85rem", color: "#555", marginTop: "0.25rem" }}>
-                Capacità: {station.capacity}
-            </div>
-
-            <hr />
-
-            <strong>Veicoli</strong>
+        <div className="station-content">
+            <header className="station-title">
+                <div className="station-symbol">⚡</div>
+                <div>
+                    <p className="eyebrow">Stazione ACMEMobility</p>
+                    <h2>{station.name}</h2>
+                    <p>{vehicles?.length ?? 0} mezzi · {station.capacity} posti totali</p>
+                </div>
+            </header>
 
             {onReserve && (
-                <label style={{ display: "block", margin: "0.5rem 0" }}>
-                    Fascia oraria (solo nei prossimi 30 minuti)
+                <label className="time-slot-card">
+                    <span>
+                        <strong>Quando vuoi partire?</strong>
+                        <small>Seleziona un orario entro 30 minuti</small>
+                    </span>
                     <select
+                        className="time-slot-select"
                         value={selectedSlot}
                         onChange={(event) => setScheduledStart(Number(event.target.value))}
-                        style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
                     >
                         {timeSlots.map((slot) => (
                             <option key={slot.value} value={slot.value}>
@@ -101,20 +103,27 @@ export default function Station({
                             </option>
                         ))}
                     </select>
-                    <small style={{ color: "#555" }}>
-                        Intervalli di 5 minuti; le opzioni scadute scompaiono automaticamente.
-                    </small>
                 </label>
             )}
 
-            {loading && <p>Caricamento veicoli...</p>}
+            <div className="vehicle-list-heading">
+                <strong>Mezzi disponibili</strong>
+                <span>Aggiornamento live</span>
+            </div>
 
-            {!loading && vehicles?.length === 0 && (
-                <p>Nessun veicolo disponibile.</p>
+            {loading && (
+                <div className="vehicle-loading">
+                    <span className="spinner" /> Caricamento mezzi…
+                </div>
             )}
 
-            {!loading &&
-                vehicles?.map((vehicle) => (
+            {!loading && vehicles?.length === 0 && (
+                <div className="vehicle-empty">Nessun veicolo disponibile in questa stazione.</div>
+            )}
+
+            {!loading && (
+                <div className="vehicle-list">
+                    {vehicles?.map((vehicle) => (
                     <Vehicle
                         key={vehicle.id}
                         vehicle={vehicle}
@@ -133,7 +142,9 @@ export default function Station({
                                 : undefined
                         }
                     />
-                ))}
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

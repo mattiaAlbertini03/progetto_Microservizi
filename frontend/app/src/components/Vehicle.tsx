@@ -19,41 +19,45 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
     };
 
     const canReserve = !!onReserve && canReserveVehicle(vehicle);
+    const statusLabels: Record<string, string> = {
+        AVAILABLE: "Disponibile",
+        CHARGING: "In ricarica",
+        ON_HOLD: "Prenotato",
+        IN_USE: "In uso",
+        MAINTENANCE: "Manutenzione",
+        UNAVAILABLE: "Non disponibile",
+    };
+    const typeLabels: Record<string, string> = {
+        CAR: "Auto elettrica",
+        SCOOTER: "Scooter elettrico",
+        KICKSCOOTER: "Monopattino",
+    };
+    const batteryTone = vehicle.batteryPct < 20 ? "low" : vehicle.batteryPct < 55 ? "medium" : "high";
 
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "0.5rem",
-                padding: "0.5rem 0",
-                borderBottom: "1px solid #ddd",
-            }}
-        >
-            <div>
-                <div>
-                    <span style={{ marginRight: "0.4rem" }}>
-                        {iconByType[vehicle.type] ?? "🚘"}
-                    </span>
-                    <strong>{vehicle.id}</strong>
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#555" }}>
-                    Tipo: {vehicle.type}
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#555" }}>
-                    Batteria: {vehicle.batteryPct}%
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#555" }}>
-                    Stato: {vehicle.status}
+        <article className="vehicle-card">
+            <div className="vehicle-summary">
+                <div className="vehicle-icon">{iconByType[vehicle.type] ?? "🚘"}</div>
+                <div className="vehicle-identity">
+                    <div>
+                        <strong>{vehicle.id}</strong>
+                        <span className={`status-badge status-badge--${canReserveVehicle(vehicle) ? "available" : "busy"}`}>
+                            {statusLabels[vehicle.status] ?? vehicle.status}
+                        </span>
+                    </div>
+                    <small>{typeLabels[vehicle.type] ?? vehicle.type}</small>
+                    <div className="battery-row">
+                        <span className={`battery-icon battery-icon--${batteryTone}`}><i /></span>
+                        <div className="battery-track"><i style={{ width: `${Math.max(0, Math.min(100, vehicle.batteryPct))}%` }} /></div>
+                        <strong>{Math.round(vehicle.batteryPct)}%</strong>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <div className="vehicle-actions">
                 {onReserve && (
                     <button
+                        className="button"
                         disabled={!canReserve}
                         onClick={() => onReserve(vehicle)}
                     >
@@ -63,13 +67,14 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
 
                 {onQrPickup && (
                     <button
+                        className="button button--secondary"
                         disabled={!canReserve}
                         onClick={() => onQrPickup(vehicle)}
                     >
-                        Scansiona QR
+                        QR rapido
                     </button>
                 )}
             </div>
-        </div>
+        </article>
     );
 }
