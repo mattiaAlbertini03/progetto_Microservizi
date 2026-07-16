@@ -6,5 +6,8 @@ public record ReservationResponse(
         String userId,
         String vehicleId,
         String stationId,
-        String status
+        String status,
+        long createdAtEpochMs,
+        long scheduledStartEpochMs,
+        long pickupDeadlineEpochMs
 ) {}

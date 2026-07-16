@@ -31,10 +31,6 @@ public class TokenService {
 
                 this.secret = secret;
                 this.issuer = issuer;
-
-                System.out.println("=== TOKEN SERVICE CONSTRUCTOR DEBUG ===");
-                System.out.println("secret null: " + (secret == null));
-                System.out.println("issuer: " + issuer);
         }
 
         public String generateToken(User user) {

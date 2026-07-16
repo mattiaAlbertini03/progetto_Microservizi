@@ -40,6 +40,13 @@ public class KafkaQueryConsumer {
 
     @Inject
     @ConfigProperty(
+            name = "kafka.consumer.enabled",
+            defaultValue = "true"
+    )
+    boolean enabled;
+
+    @Inject
+    @ConfigProperty(
             name = "kafka.bootstrap.servers",
             defaultValue = "my-cluster-kafka-bootstrap.kafka:9092"
     )
@@ -97,6 +104,11 @@ public class KafkaQueryConsumer {
             @Initialized(ApplicationScoped.class)
             Object ignored
     ) {
+        if (!enabled) {
+            LOG.info("Kafka consumer is disabled.");
+            return;
+        }
+
         startConsumer();
     }
 

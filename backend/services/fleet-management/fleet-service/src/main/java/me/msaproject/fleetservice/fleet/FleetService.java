@@ -73,13 +73,20 @@ public class FleetService {
                 System.out.println("[Fleet] Simulation started");
         }
 
-        public void stopSimulation(String reservationId) {
+        public FleetStopResponse stopSimulation(String reservationId) {
                 Reservation reservation = reservationClient.getReservation(reservationId);
 
-                simulatorClient.stopSimulation(
+                SimulationSummary summary = simulatorClient.stopSimulation(
                                 new StopSimulationRequest(reservation.vehicleId()));
 
                 destinationByReservationId.remove(reservationId);
+
+                return new FleetStopResponse(
+                                reservationId,
+                                reservation.vehicleId(),
+                                summary.minutesUsed(),
+                                summary.kilometers(),
+                                summary.batteryPct());
         }
 
         public FleetStatusResponse getStatus(String reservationId) {

@@ -9,6 +9,7 @@ import { useReservationEvents } from "../components/ReservationEventsContext";
 import { useVehicleEvents } from "../hooks/useVehicleEvents";
 import {
     createReservation,
+    createQrReservation,
     getStations,
     getVehiclesByStation,
 } from "../api/acmeApi";
@@ -108,13 +109,22 @@ export default function MapPage() {
 
     useVehicleEvents(selectedStationId, refreshSelectedStationVehicles);
 
-    async function reserveVehicle(station: StationData, vehicle: VehicleData) { 
+    async function reserveVehicle(
+        station: StationData,
+        vehicle: VehicleData,
+        scheduledStartEpochMs: number
+    ) {
         if (!user) { 
             alert("Devi effettuare il login per prenotare un veicolo"); 
             return; 
         } 
         try { 
-            const data = await createReservation(user, vehicle.id, station.id); 
+            const data = await createReservation(
+                user,
+                vehicle.id,
+                station.id,
+                scheduledStartEpochMs
+            );
             listenReservationRequest(data.requestId, station.id); alert("Richiesta di prenotazione inviata"); 
         } 
         catch (err) { 
@@ -122,6 +132,32 @@ export default function MapPage() {
             const message = err instanceof Error ? err.message : "Errore sconosciuto durante la prenotazione"; 
             alert(message); 
         } 
+    }
+
+    async function pickupWithQr(station: StationData, vehicle: VehicleData) {
+        if (!user) {
+            alert("Devi effettuare il login per usare il QR");
+            return;
+        }
+
+        const scannedCode = window.prompt("Scansiona o inserisci il codice QR del veicolo");
+        if (!scannedCode) {
+            return;
+        }
+        try {
+            const data = await createQrReservation(
+                user,
+                vehicle.id,
+                station.id,
+                scannedCode
+            );
+            listenReservationRequest(data.requestId, station.id);
+            alert("Richiesta di ritiro tramite QR inviata");
+        } catch (err) {
+            console.error("Errore durante il ritiro tramite QR:", err);
+            const message = err instanceof Error ? err.message : "Errore sconosciuto durante il ritiro QR";
+            alert(message);
+        }
     }
 
     return (
@@ -169,6 +205,7 @@ export default function MapPage() {
                                 vehicles={vehiclesByStation[station.id]}
                                 loading={loadingStationId === station.id}
                                 onReserve={user ? reserveVehicle : undefined}
+                                onQrPickup={user ? pickupWithQr : undefined}
                             />
                         </Popup>
                     </Marker>

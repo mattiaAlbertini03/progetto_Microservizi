@@ -8,6 +8,7 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.fleetservice.dto.StartSimulationRequest;
 import me.msaproject.fleetservice.dto.StopSimulationRequest;
+import me.msaproject.fleetservice.dto.SimulationSummary;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -43,7 +44,7 @@ public class SimulatorClient {
         }
     }
 
-    public void stopSimulation(StopSimulationRequest request) {
+    public SimulationSummary stopSimulation(StopSimulationRequest request) {
         try (Response response = client
                 .target(simulatorServiceUrl)
                 .path("simulations")
@@ -56,6 +57,8 @@ public class SimulatorClient {
                     "Failed to stop simulation for vehicle "
                             + request.vehicleId()
             );
+
+            return response.readEntity(SimulationSummary.class);
         }
     }
 

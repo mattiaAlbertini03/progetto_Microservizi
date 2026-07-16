@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.simulatorservice.dto.StartSimulationRequest;
 import me.msaproject.simulatorservice.dto.StopSimulationRequest;
+import me.msaproject.simulatorservice.dto.SimulationSummary;
 
 @Path("/simulations")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -30,9 +31,9 @@ public class SimulationResource {
     @Path("/stop")
     public Response stop(StopSimulationRequest request) {
 
-        simulationService.stop(request.vehicleId());
+        SimulationSummary summary = simulationService.stop(request.vehicleId());
 
-        return Response.ok("{\"status\":\"stopped\"}")
+        return Response.ok(summary)
                 .build();
     }
 

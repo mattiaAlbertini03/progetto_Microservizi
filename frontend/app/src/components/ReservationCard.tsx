@@ -28,8 +28,14 @@ export default function ReservationCard({
         reservation.status === "RESERVED";
 
     const canPickup = reservation.status === "RESERVED";
-    const canReturn = reservation.status === "ACTIVE";
-    const canTrack = reservation.status === "ACTIVE";
+    const isPickedUp =
+        reservation.status === "ACTIVE" ||
+        reservation.status === "PICKED_UP";
+    const canReturn = isPickedUp;
+    const canTrack = isPickedUp;
+    const scheduledStart = reservation.scheduledStartEpochMs
+        ? new Date(reservation.scheduledStartEpochMs).toLocaleString("it-IT")
+        : null;
 
     return (
         <div
@@ -44,6 +50,7 @@ export default function ReservationCard({
 
             <p>Veicolo: {reservation.vehicleId}</p>
             <p>Stazione: {reservation.stationId}</p>
+            {scheduledStart && <p>Inizio previsto: {scheduledStart}</p>}
             <p>Stato: {reservation.status}</p>
 
             <div style={{ display: "flex", gap: "0.5rem" }}>

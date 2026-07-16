@@ -4,5 +4,6 @@ public record ReservationCreationRequest(
         String requestId,
         String userId,
         String vehicleId,
-        String stationId
+        String stationId,
+        long scheduledStartEpochMs
 ) {}

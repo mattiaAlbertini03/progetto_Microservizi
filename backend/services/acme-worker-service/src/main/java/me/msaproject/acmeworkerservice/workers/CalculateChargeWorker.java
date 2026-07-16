@@ -2,13 +2,9 @@ package me.msaproject.acmeworkerservice.workers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.client.CamundaClient;
-import me.msaproject.acmeworkerservice.dto.reservation.ReservationRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,8 +16,6 @@ public class CalculateChargeWorker implements AcmeWorker {
         private static final Logger LOG = LoggerFactory.getLogger(CalculateChargeWorker.class);
 
         private static final String RESERVATION_SERVICE_URL = "http://reservation-service.acme:8080";
-        private static final String LOGISTICS_SERVICE_URL = "http://logistics-service.acme:8080";
-
         private static final String ERROR_CODE = "CALCULATE_CHARGE_FAILED";
 
         private final CamundaClient client;
@@ -41,15 +35,23 @@ public class CalculateChargeWorker implements AcmeWorker {
                                 .handler((jobClient, job) -> {
                                         Map<String, Object> variables = job.getVariablesAsMap();
 
-                                        ReservationRequest reservationRequest = mapper.convertValue(
-                                                        variables.get("reservationRequest"),
-                                                        ReservationRequest.class);
-                                        String reservationId = reservationRequest.requestId();
+                                        String reservationId = "unknown";
 
                                         try {
+                                                ReservationDto reservation = mapper.convertValue(
+                                                                variables.get("reservation"),
+                                                                ReservationDto.class);
+
+                                                if (reservation == null || reservation.reservationId() == null
+                                                                || reservation.reservationId().isBlank()) {
+                                                        throw new IllegalArgumentException(
+                                                                        "Missing reservation.reservationId process variable");
+                                                }
+
+                                                reservationId = reservation.reservationId();
                                                 LOG.info("Calculating charge: reservationId={}", reservationId);
 
-                                                ChargeResult result = calculateCharge(reservationId, variables);
+                                                ChargeCalculator.Result result = calculateCharge(reservationId, variables);
 
                                                 jobClient.newCompleteCommand(job.getKey())
                                                                 .variables(Map.of(
@@ -83,29 +85,17 @@ public class CalculateChargeWorker implements AcmeWorker {
                                 .open();
         }
 
-        private ChargeResult calculateCharge(
+        private ChargeCalculator.Result calculateCharge(
                         String reservationId,
                         Map<String, Object> variables) throws Exception {
 
-                ReservationDto reservation = getReservation(reservationId);
-                VehicleDto vehicle = getVehicle(reservation.vehicleId());
+                getReservation(reservationId);
 
-                int minutesUsed = getIntVariable(variables, "minutesUsed", 0);
-                double kilometers = getDoubleVariable(variables, "kilometers", 0.0);
+                int minutesUsed = getRequiredIntVariable(variables, "minutesUsed");
+                double kilometers = getRequiredDoubleVariable(variables, "kilometers");
+                double batteryPct = getRequiredDoubleVariable(variables, "batteryPct");
 
-                BigDecimal baseAmount = calculateBaseAmount(minutesUsed, kilometers);
-
-                boolean batteryPenaltyApplied = vehicle.batteryPct() < 15;
-
-                BigDecimal finalAmount = batteryPenaltyApplied
-                                ? baseAmount.multiply(BigDecimal.valueOf(1.10))
-                                : baseAmount;
-
-                return new ChargeResult(
-                                baseAmount.setScale(2, RoundingMode.HALF_UP),
-                                finalAmount.setScale(2, RoundingMode.HALF_UP),
-                                vehicle.batteryPct(),
-                                batteryPenaltyApplied);
+                return ChargeCalculator.calculate(minutesUsed, kilometers, batteryPct);
         }
 
         private ReservationDto getReservation(String reservationId) throws Exception {
@@ -135,93 +125,35 @@ public class CalculateChargeWorker implements AcmeWorker {
                 return mapper.readValue(response.body(), ReservationDto.class);
         }
 
-        private VehicleDto getVehicle(String vehicleId) throws Exception {
-                HttpRequest request = HttpRequest.newBuilder()
-                                .uri(URI.create(
-                                                LOGISTICS_SERVICE_URL +
-                                                                "/vehicles/" +
-                                                                vehicleId))
-                                .GET()
-                                .build();
-
-                HttpResponse<String> response = httpClient.send(
-                                request,
-                                HttpResponse.BodyHandlers.ofString());
-
-                LOG.info("Vehicle response: statusCode={}, body={}",
-                                response.statusCode(), response.body());
-
-                if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                        throw new IllegalStateException(
-                                        "Failed to get vehicle " +
-                                                        vehicleId +
-                                                        ": HTTP " +
-                                                        response.statusCode());
-                }
-
-                return mapper.readValue(response.body(), VehicleDto.class);
-        }
-
-        private BigDecimal calculateBaseAmount(int minutesUsed, double kilometers) {
-                BigDecimal unlockFee = BigDecimal.valueOf(1.00);
-
-                BigDecimal timeCost = BigDecimal.valueOf(minutesUsed)
-                                .multiply(BigDecimal.valueOf(0.20));
-
-                BigDecimal distanceCost = BigDecimal.valueOf(kilometers)
-                                .multiply(BigDecimal.valueOf(0.50));
-
-                return unlockFee.add(timeCost).add(distanceCost);
-        }
-
-        private int getIntVariable(
-                        Map<String, Object> variables,
-                        String key,
-                        int defaultValue) {
+        private int getRequiredIntVariable(Map<String, Object> variables, String key) {
                 Object value = variables.get(key);
 
-                if (value == null) {
-                        return defaultValue;
+                if (!(value instanceof Number number)) {
+                        throw new IllegalArgumentException("Missing numeric process variable: " + key);
                 }
 
-                return ((Number) value).intValue();
+                return number.intValue();
         }
 
-        private double getDoubleVariable(
-                        Map<String, Object> variables,
-                        String key,
-                        double defaultValue) {
+        private double getRequiredDoubleVariable(Map<String, Object> variables, String key) {
                 Object value = variables.get(key);
 
-                if (value == null) {
-                        return defaultValue;
+                if (!(value instanceof Number number)) {
+                        throw new IllegalArgumentException("Missing numeric process variable: " + key);
                 }
 
-                return ((Number) value).doubleValue();
+                return number.doubleValue();
         }
 
         private record ReservationDto(
-                        String id,
+                        String reservationId,
                         String userId,
                         String vehicleId,
                         String stationId,
-                        String status) {
-        }
-
-        private record VehicleDto(
-                        String id,
-                        String type,
-                        Double lat,
-                        Double lon,
                         String status,
-                        int batteryPct,
-                        String qrCode) {
+                        long createdAtEpochMs,
+                        long scheduledStartEpochMs,
+                        long pickupDeadlineEpochMs) {
         }
 
-        private record ChargeResult(
-                        BigDecimal baseAmount,
-                        BigDecimal finalAmount,
-                        int batteryPct,
-                        boolean batteryPenaltyApplied) {
-        }
 }

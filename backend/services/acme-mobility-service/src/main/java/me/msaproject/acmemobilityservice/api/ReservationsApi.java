@@ -6,15 +6,21 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.acmemobilityservice.client.FleetClient;
+import me.msaproject.acmemobilityservice.client.LogisticsClient;
 import me.msaproject.acmemobilityservice.client.ReservationsClient;
+import me.msaproject.acmemobilityservice.dto.reservation.QrPickupRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationCreationRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationActionRequest;
+import me.msaproject.acmemobilityservice.dto.reservation.ReservationEvent;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationRequestStatusResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationStatusResponse;
 import me.msaproject.acmemobilityservice.auth.AuthenticatedUser;
 import me.msaproject.acmemobilityservice.auth.JwtService;
+import me.msaproject.acmemobilityservice.sse.reservation.ReservationEventService;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +30,11 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReservationsApi {
 
+        private static final Duration MAX_RESERVATION_ADVANCE = Duration.ofMinutes(30);
+        private static final Duration SCHEDULE_CLOCK_TOLERANCE = Duration.ofMinutes(1);
+        private static final Duration FREE_CANCELLATION_MARGIN = Duration.ofMinutes(5);
+        private static final Duration PICKUP_GRACE_PERIOD = Duration.ofMinutes(5);
+
         @Inject
         CamundaClient camundaClient;
 
@@ -31,7 +42,13 @@ public class ReservationsApi {
         ReservationsClient reservationClient;
 
         @Inject
+        LogisticsClient logisticsClient;
+
+        @Inject
         FleetClient fleetClient;
+
+        @Inject
+        ReservationEventService reservationEventService;
 
         @Inject
         JwtService jwtService;
@@ -56,12 +73,14 @@ public class ReservationsApi {
                 }
 
                 String requestId = UUID.randomUUID().toString();
+                Instant scheduledStart = validateScheduledStart(request.scheduledStartEpochMs());
 
                 ReservationCreationRequest createRequest = new ReservationCreationRequest(
                                 requestId,
                                 userId,
                                 request.vehicleId(),
-                                request.stationId());
+                                request.stationId(),
+                                scheduledStart.toEpochMilli());
 
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
@@ -96,7 +115,7 @@ public class ReservationsApi {
         @POST
         @Path("/qr-pickup")
         public Response createQrReservation(
-                        ReservationCreationRequest request,
+                        QrPickupRequest request,
                         @HeaderParam("Authorization") String authorizationHeader) {
 
                 AuthenticatedUser authenticatedUser = jwtService.authenticate(authorizationHeader);
@@ -113,13 +132,26 @@ public class ReservationsApi {
                                         .build();
                 }
 
+                String expectedQrCode = logisticsClient
+                                .getVehicle(request.vehicleId())
+                                .qrCode();
+                if (request.qrCode() == null || !request.qrCode().equals(expectedQrCode)) {
+                        return Response.status(Response.Status.BAD_REQUEST)
+                                        .entity(Map.of(
+                                                        "status", "INVALID_QR_CODE",
+                                                        "message", "The QR code does not match the selected vehicle"))
+                                        .build();
+                }
+
                 String requestId = UUID.randomUUID().toString();
+                Instant scheduledStart = Instant.now();
 
                 ReservationCreationRequest qrPickupRequest = new ReservationCreationRequest(
                                 requestId,
                                 userId,
                                 request.vehicleId(),
-                                request.stationId());
+                                request.stationId(),
+                                scheduledStart.toEpochMilli());
 
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
@@ -163,7 +195,14 @@ public class ReservationsApi {
                                 .variables(Map.of(
                                                 "reservationRequest", request,
                                                 "reservationType", reservationType,
-                                                "bankLoginPayload", bankLoginPayload))
+                                                "bankLoginPayload", bankLoginPayload,
+                                                "scheduledStartAt", Instant
+                                                                .ofEpochMilli(request.scheduledStartEpochMs())
+                                                                .toString(),
+                                                "pickupDeadlineAt", Instant
+                                                                .ofEpochMilli(request.scheduledStartEpochMs())
+                                                                .plus(PICKUP_GRACE_PERIOD)
+                                                                .toString()))
                                 .send()
                                 .join();
         }
@@ -179,15 +218,21 @@ public class ReservationsApi {
                                 .userId();
 
                 ReservationResponse reservation = getOwnedReservation(reservationId, userId);
+                boolean lateCancellation = Instant.now().isAfter(
+                                Instant.ofEpochMilli(reservation.scheduledStartEpochMs())
+                                                .minus(FREE_CANCELLATION_MARGIN));
 
                 ReservationActionRequest cancelRequest = new ReservationActionRequest(
                                 reservationId,
                                 userId,
                                 reservation.vehicleId(),
-                                reservation.stationId());
+                                reservation.stationId(),
+                                lateCancellation);
 
                 publishReservationAction(
-                                "CANCEL_RESERVATION_REQUEST",
+                                lateCancellation
+                                                ? "LATE_CANCEL_RESERVATION_REQUEST"
+                                                : "CANCEL_RESERVATION_REQUEST",
                                 reservationId,
                                 cancelRequest);
 
@@ -212,7 +257,8 @@ public class ReservationsApi {
                                 reservationId,
                                 userId,
                                 reservation.vehicleId(),
-                                reservation.stationId());
+                                reservation.stationId(),
+                                false);
 
                 publishReservationAction(
                                 "PICKUP_RESERVATION_REQUEST",
@@ -233,20 +279,36 @@ public class ReservationsApi {
                 String userId = jwtService
                                 .authenticate(authorizationHeader)
                                 .userId();
-                ;
+
                 ReservationResponse reservation = getOwnedReservation(reservationId, userId);
 
-                if (!"ACTIVE".equals(reservation.status())) {
+                if (!"ACTIVE".equals(reservation.status()) &&
+                                !"PICKED_UP".equals(reservation.status())) {
                         throw new WebApplicationException(
                                         "Reservation cannot be returned from status: " + reservation.status(),
                                         Response.Status.CONFLICT);
+                }
+
+                if (!fleetClient.isVehicleAtDestination(reservationId)) {
+                        reservationEventService.publish(
+                                        "reservation-" + reservationId,
+                                        new ReservationEvent(
+                                                        reservationId,
+                                                        "VEHICLE_NOT_AT_DESTINATION",
+                                                        "Impossibile procedere alla restituzione: " +
+                                                                        "il veicolo non si trova presso la stazione di destinazione."));
+
+                        return Response.accepted(new ReservationStatusResponse(
+                                        reservationId,
+                                        "RETURN_REJECTED_NOT_AT_DESTINATION")).build();
                 }
 
                 ReservationActionRequest returnRequest = new ReservationActionRequest(
                                 reservationId,
                                 userId,
                                 reservation.vehicleId(),
-                                reservation.stationId());
+                                reservation.stationId(),
+                                false);
 
                 publishReservationAction(
                                 "RESERVATION_RETURN_REQUEST",
@@ -266,7 +328,6 @@ public class ReservationsApi {
                 String authenticatedUserId = jwtService
                                 .authenticate(authorizationHeader)
                                 .userId();
-                ;
 
                 if (!authenticatedUserId.equals(userId)) {
                         throw new WebApplicationException("Forbidden", Response.Status.FORBIDDEN);
@@ -285,6 +346,20 @@ public class ReservationsApi {
                 }
 
                 return reservation;
+        }
+
+        private Instant validateScheduledStart(long scheduledStartEpochMs) {
+                Instant now = Instant.now();
+                Instant scheduledStart = Instant.ofEpochMilli(scheduledStartEpochMs);
+
+                if (scheduledStart.isBefore(now.minus(SCHEDULE_CLOCK_TOLERANCE)) ||
+                                scheduledStart.isAfter(now.plus(MAX_RESERVATION_ADVANCE))) {
+                        throw new WebApplicationException(
+                                        "Reservation start must be between now and 30 minutes from now",
+                                        Response.Status.BAD_REQUEST);
+                }
+
+                return scheduledStart;
         }
 
         private void publishReservationAction(

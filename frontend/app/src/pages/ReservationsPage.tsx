@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "../components/AuthContext";
 import ReservationCard from "../components/ReservationCard";
@@ -16,10 +16,11 @@ export default function ReservationsPage() {
     const [reservations, setReservations] = useState<ReservationData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const refreshTimers = useRef<number[]>([]);
 
     const { listenReservationEvents } = useReservationEvents();
 
-    const loadReservations = useCallback(async () => {
+    const loadReservations = useCallback(async (showLoading = false) => {
         if (!user) {
             setReservations([]);
             setLoading(false);
@@ -27,7 +28,9 @@ export default function ReservationsPage() {
         }
 
         try {
-            setLoading(true);
+            if (showLoading) {
+                setLoading(true);
+            }
 
             const data = await getReservations(user);
 
@@ -48,8 +51,14 @@ export default function ReservationsPage() {
     }, [user]);
 
     useEffect(() => {
-        void loadReservations();
+        void loadReservations(true);
     }, [loadReservations]);
+
+    useEffect(() => {
+        return () => {
+            refreshTimers.current.forEach(window.clearTimeout);
+        };
+    }, []);
 
     useEffect(() => {
         const handleReservationsChanged = () => {
@@ -102,11 +111,32 @@ export default function ReservationsPage() {
     async function pickupReservation(
         reservation: ReservationData
     ): Promise<void> {
-        await executeReservationAction(
-            reservation,
-            "pickup",
-            "Pickup richiesto"
-        );
+        let eventSource: EventSource;
+
+        try {
+            eventSource = await listenReservationEvents(
+                reservation.reservationId
+            );
+
+            const sent = await executeReservationAction(
+                reservation,
+                "pickup",
+                "Pickup richiesto"
+            );
+
+            if (!sent) {
+                eventSource.close();
+            }
+        } catch (err) {
+            console.error("Errore notifiche prenotazione:", err);
+
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Impossibile ascoltare le notifiche della prenotazione.";
+
+            alert(message);
+        }
     }
 
     async function cancelReservation(
@@ -122,17 +152,31 @@ export default function ReservationsPage() {
     async function returnReservation(
         reservation: ReservationData
     ): Promise<void> {
-        const eventSource = listenReservationEvents(reservation.reservationId);
+        let eventSource: EventSource;
 
         try {
-            await executeReservationAction(
+            eventSource = await listenReservationEvents(
+                reservation.reservationId
+            );
+
+            const sent = await executeReservationAction(
                 reservation,
                 "return",
                 "Richiesta di riconsegna inviata"
             );
+
+            if (!sent) {
+                eventSource.close();
+            }
         } catch (err) {
-            eventSource.close();
-            throw err;
+            console.error("Errore notifiche riconsegna:", err);
+
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Impossibile ascoltare le notifiche di riconsegna.";
+
+            alert(message);
         }
     }
 
@@ -140,10 +184,10 @@ export default function ReservationsPage() {
         reservation: ReservationData,
         action: "pickup" | "cancel" | "return",
         successMessage: string
-    ): Promise<void> {
+    ): Promise<boolean> {
         if (!user) {
             alert("Devi effettuare il login.");
-            return;
+            return false;
         }
 
         try {
@@ -157,7 +201,10 @@ export default function ReservationsPage() {
 
             if (action !== "return") {
                 await loadReservations();
+                scheduleReservationRefreshes();
             }
+
+            return true;
         } catch (err) {
             console.error("Errore operazione prenotazione:", err);
 
@@ -173,7 +220,7 @@ export default function ReservationsPage() {
                 alert(
                     "Non sei autorizzato a modificare questa prenotazione."
                 );
-                return;
+                return false;
             }
 
             if (
@@ -183,7 +230,7 @@ export default function ReservationsPage() {
                 alert(
                     "Operazione non consentita nello stato attuale della prenotazione."
                 );
-                return;
+                return false;
             }
 
             if (
@@ -193,12 +240,21 @@ export default function ReservationsPage() {
                 alert(
                     "Il servizio di orchestrazione Camunda non è disponibile."
                 );
-                return;
+                return false;
             }
 
             alert(message);
-            throw err;
+            return false;
         }
+    }
+
+    function scheduleReservationRefreshes(): void {
+        refreshTimers.current.forEach(window.clearTimeout);
+        refreshTimers.current = [750, 2000, 5000].map((delay) =>
+            window.setTimeout(() => {
+                void loadReservations();
+            }, delay)
+        );
     }
 
     if (loading) {

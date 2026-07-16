@@ -7,6 +7,7 @@ import me.msaproject.simulatorservice.client.GraphHopperClient;
 import me.msaproject.simulatorservice.client.MonitoringClient;
 import me.msaproject.simulatorservice.dto.RouteData;
 import me.msaproject.simulatorservice.dto.RoutePoint;
+import me.msaproject.simulatorservice.dto.SimulationSummary;
 import me.msaproject.simulatorservice.dto.StartSimulationRequest;
 import me.msaproject.simulatorservice.dto.VehicleBatteryEvent;
 import me.msaproject.simulatorservice.dto.VehicleTrackingEvent;
@@ -34,7 +35,7 @@ public class SimulationService {
 
     public void start(StartSimulationRequest request) {
         System.out.println("Start called for " + request.vehicleId());
-        stop(request.vehicleId());
+        discardSimulation(request.vehicleId());
 
         RouteData routeData = graphHopperClient.getRoute(
                 request.fromLat(),
@@ -62,7 +63,9 @@ public class SimulationService {
         tasks.put(request.vehicleId(), future);
     }
 
-    public void stop(String vehicleId) {
+    public SimulationSummary stop(String vehicleId) {
+
+        SimulationState state = simulations.remove(vehicleId);
 
         ScheduledFuture<?> future = tasks.remove(vehicleId);
 
@@ -70,8 +73,38 @@ public class SimulationService {
             future.cancel(true);
         }
 
-        simulations.remove(vehicleId);
+        if (state == null) {
+            throw new IllegalStateException("No active simulation for vehicle " + vehicleId);
+        }
+
+        double elapsedSeconds = Math.max(
+                0,
+                (Instant.now().toEpochMilli() - state.startedAt().toEpochMilli()) / 1000.0);
+        double travelledMeters = Math.min(
+                elapsedSeconds * state.speedMetersPerSecond(),
+                state.totalDistanceMeters());
+        double batteryPct = Math.max(
+                0,
+                state.initialBatteryPct()
+                        - (travelledMeters / 1000.0) * BATTERY_CONSUMPTION_PER_KM);
+
         System.out.println("Task ended for " + vehicleId);
+
+        return new SimulationSummary(
+                vehicleId,
+                Math.max(1, (int) Math.ceil(elapsedSeconds / 60.0)),
+                travelledMeters / 1000.0,
+                batteryPct);
+    }
+
+    private void discardSimulation(String vehicleId) {
+        ScheduledFuture<?> future = tasks.remove(vehicleId);
+
+        if (future != null) {
+            future.cancel(true);
+        }
+
+        simulations.remove(vehicleId);
     }
 
     public boolean isActive(String vehicleId) {

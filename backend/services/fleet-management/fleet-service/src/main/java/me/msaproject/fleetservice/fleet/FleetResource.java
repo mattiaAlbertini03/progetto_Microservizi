@@ -29,14 +29,10 @@ public class FleetResource {
     }
 
     @POST
-    @Path("/{reservationId}/end")
+    @Path("/{reservationId}/stop")
     public Response stopSimulation(@PathParam("reservationId") String reservationId) {
 
-        fleetService.stopSimulation(reservationId);
-
-        return Response.ok(Map.of(
-                "reservationId", reservationId,
-                "status", "simulation_stopped")).build();
+        return Response.ok(fleetService.stopSimulation(reservationId)).build();
     }
 
     @GET

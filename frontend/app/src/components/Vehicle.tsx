@@ -3,6 +3,7 @@ import type { VehicleData } from "../types/domain";
 type VehicleProps = {
     vehicle: VehicleData;
     onReserve?: (vehicle: VehicleData) => void | Promise<void>;
+    onQrPickup?: (vehicle: VehicleData) => void | Promise<void>;
 };
 
 function canReserveVehicle(vehicle: VehicleData) {
@@ -10,7 +11,7 @@ function canReserveVehicle(vehicle: VehicleData) {
         || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80);
 }
 
-export default function Vehicle({ vehicle, onReserve }: VehicleProps) {
+export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps) {
     const iconByType: Record<string, string> = {
         CAR: "🚗",
         SCOOTER: "🛵",
@@ -50,14 +51,25 @@ export default function Vehicle({ vehicle, onReserve }: VehicleProps) {
                 </div>
             </div>
 
-            {onReserve && (
-                <button
-                    disabled={!canReserve}
-                    onClick={() => onReserve(vehicle)}
-                >
-                    Prenota
-                </button>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {onReserve && (
+                    <button
+                        disabled={!canReserve}
+                        onClick={() => onReserve(vehicle)}
+                    >
+                        Prenota
+                    </button>
+                )}
+
+                {onQrPickup && (
+                    <button
+                        disabled={!canReserve}
+                        onClick={() => onQrPickup(vehicle)}
+                    >
+                        Scansiona QR
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

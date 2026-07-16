@@ -88,7 +88,8 @@ export function getVehiclesByStation(
 export async function createReservation(
     user: User,
     vehicleId: string,
-    stationId: string
+    stationId: string,
+    scheduledStartEpochMs: number
 ): Promise<{ requestId: string }> {
     return request<{ requestId: string }>("/reservations", {
         method: "POST",
@@ -100,6 +101,28 @@ export async function createReservation(
             userId: user.id,
             vehicleId,
             stationId,
+            scheduledStartEpochMs,
+        }),
+    });
+}
+
+export async function createQrReservation(
+    user: User,
+    vehicleId: string,
+    stationId: string,
+    qrCode: string
+): Promise<{ requestId: string }> {
+    return request<{ requestId: string }>("/reservations/qr-pickup", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+            userId: user.id,
+            vehicleId,
+            stationId,
+            qrCode,
         }),
     });
 }

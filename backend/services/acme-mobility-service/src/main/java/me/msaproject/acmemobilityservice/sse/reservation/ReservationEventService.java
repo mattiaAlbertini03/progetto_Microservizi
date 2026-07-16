@@ -23,6 +23,22 @@ public class ReservationEventService {
         subscribers
                 .computeIfAbsent(topicId, key -> new CopyOnWriteArrayList<>())
                 .add(sink);
+
+        try {
+            // Commit the SSE response immediately so EventSource can report that
+            // the subscription is open before the workflow publishes an update.
+            sink.send(
+                    sse.newEventBuilder()
+                            .comment("connected")
+                            .reconnectDelay(3_000)
+                            .build());
+        } catch (Exception exception) {
+            removeSubscriber(topicId, sink);
+            try {
+                sink.close();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public void publish(String topicId, Object event) {
@@ -54,6 +70,20 @@ public class ReservationEventService {
 
         if (sinks.isEmpty()) {
             subscribers.remove(topicId);
+        }
+    }
+
+    private void removeSubscriber(String topicId, SseEventSink sink) {
+        List<SseEventSink> sinks = subscribers.get(topicId);
+
+        if (sinks == null) {
+            return;
+        }
+
+        sinks.remove(sink);
+
+        if (sinks.isEmpty()) {
+            subscribers.remove(topicId, sinks);
         }
     }
 }

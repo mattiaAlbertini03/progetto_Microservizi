@@ -34,4 +34,7 @@ export type ReservationData = {
     vehicleId: string;
     stationId: string;
     status: string;
+    createdAtEpochMs: number;
+    scheduledStartEpochMs: number;
+    pickupDeadlineEpochMs: number;
 };

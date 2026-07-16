@@ -4,5 +4,6 @@ public record ReservationActionRequest(
         String reservationId,
         String userId,
         String vehicleId,
-        String stationId
+        String stationId,
+        boolean lateCancellation
 ) {}

@@ -118,7 +118,10 @@ public class ReservationResource {
                 reservation.userId(),
                 reservation.vehicleId(),
                 reservation.stationId(),
-                reservation.status());
+                reservation.status(),
+                reservation.createdAtEpochMs(),
+                reservation.scheduledStartEpochMs(),
+                reservation.pickupDeadlineEpochMs());
     }
 
     private ReservationStatusResponse toStatusResponse(
