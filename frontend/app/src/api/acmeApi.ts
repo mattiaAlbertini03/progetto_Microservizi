@@ -6,6 +6,8 @@ import type {
     StationData,
     User,
     SignupData,
+    BankAccount,
+    FakeCardData,
     VehicleData,
 } from "../types/domain";
 
@@ -119,6 +121,34 @@ export async function changePassword(
         }
         throw new Error(message);
     }
+}
+
+export function getBankAccount(user: User): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account", {
+        headers: { Authorization: `Bearer ${user.token}` },
+    });
+}
+
+export function connectBankAccount(user: User, card: FakeCardData): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account/connect", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(card),
+    });
+}
+
+export function rechargeBankAccount(user: User, amount: number): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account/recharge", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ amount }),
+    });
 }
 
 export function getStations(): Promise<StationData[]> {

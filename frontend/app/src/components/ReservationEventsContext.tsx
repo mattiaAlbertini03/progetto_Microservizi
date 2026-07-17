@@ -51,7 +51,16 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
             const data = JSON.parse((event as MessageEvent).data);
 
             switch (data.status) {
+                case "BANK_CONNECTION_REQUIRED":
+                    localStorage.setItem("acme-pending-bank-request", requestId);
+                    notify(data.message ?? "Collega il conto dal profilo per continuare.", "info");
+                    window.dispatchEvent(new CustomEvent("bank-connection-required", {
+                        detail: { requestId },
+                    }));
+                    break;
+
                 case "RESERVED":
+                    localStorage.removeItem("acme-pending-bank-request");
                     notify("Prenotazione confermata", "success");
 
                     if (data.reservationId) {

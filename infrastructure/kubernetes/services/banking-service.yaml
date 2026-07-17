@@ -21,6 +21,15 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+            - containerPort: 8000
+          env:
+            - { name: BANK_DB_HOST, value: "banking-db.acme-persistence" }
+            - { name: BANK_DB_PORT, value: "5432" }
+            - { name: BANK_DB_NAME, value: "banking" }
+            - name: BANK_DB_USER
+              valueFrom: { secretKeyRef: { name: banking-db-client-secret, key: username } }
+            - name: BANK_DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: banking-db-client-secret, key: password } }
 ---
 apiVersion: v1
 kind: Service
@@ -36,4 +45,7 @@ spec:
     - name: soap
       port: 8080
       targetPort: 8080
+    - name: rest
+      port: 8000
+      targetPort: 8000
   type: ClusterIP

@@ -5,6 +5,8 @@ set -Eeuo pipefail
 RESERVATION_DB_PASSWORD="demo"
 AUTH_DB_PASSWORD="demo"
 LOGISTICS_DB_PASSWORD="demo"
+BANKING_DB_PASSWORD="demo"
+STATIONS_DB_PASSWORD="demo"
 
 PROFILE="${MINIKUBE_PROFILE:-asm}"
 MINIKUBE_MEMORY_MB="${MINIKUBE_MEMORY_MB:-16384}"
@@ -29,6 +31,8 @@ SECRETS_DIR="$ROOT_DIR/infrastructure/kubernetes/secrets"
 RESERVATION_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/reservation-db.yaml"
 AUTH_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/auth-db.yaml"
 LOGISTICS_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/logistics-db.yaml"
+BANKING_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/banking-db.yaml"
+STATIONS_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/stations-db.yaml"
 
 SERVICES=(
     auth-service
@@ -511,6 +515,14 @@ main() {
         "${LOGISTICS_DB_USER:-logistics_user}" \
         "${LOGISTICS_DB_PASSWORD:-}" \
         "$LOGISTICS_DB_MANIFEST"
+    install_database banking banking \
+        "${BANKING_DB_USER:-banking_user}" \
+        "${BANKING_DB_PASSWORD:-}" \
+        "$BANKING_DB_MANIFEST"
+    install_database stations stations \
+        "${STATIONS_DB_USER:-stations_user}" \
+        "${STATIONS_DB_PASSWORD:-}" \
+        "$STATIONS_DB_MANIFEST"
 
     install_camunda
 

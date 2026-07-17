@@ -6,6 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.msaproject.acmemobilityservice.client.LogisticsClient;
+import me.msaproject.acmemobilityservice.client.BankingClient;
 import me.msaproject.acmemobilityservice.client.ReservationsClient;
 import me.msaproject.acmemobilityservice.dto.reservation.QrPickupRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationCreationRequest;
@@ -15,11 +16,14 @@ import me.msaproject.acmemobilityservice.dto.reservation.ReservationResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationStatusResponse;
 import me.msaproject.acmemobilityservice.auth.AuthenticatedUser;
 import me.msaproject.acmemobilityservice.auth.JwtService;
+import me.msaproject.acmemobilityservice.auth.PendingBankConnectionService;
+import me.msaproject.acmemobilityservice.dto.bank.BankAccountResponse;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 @Path("/reservations")
@@ -41,6 +45,12 @@ public class ReservationsApi {
 
         @Inject
         LogisticsClient logisticsClient;
+
+        @Inject
+        BankingClient bankingClient;
+
+        @Inject
+        PendingBankConnectionService pendingBankConnections;
 
         @Inject
         JwtService jwtService;
@@ -74,17 +84,23 @@ public class ReservationsApi {
                                 request.stationId(),
                                 scheduledStart.toEpochMilli());
 
+                BankAccountResponse bankAccount = bankingClient.getAccount(userId);
+                if (!bankAccount.connected()) {
+                        pendingBankConnections.register(requestId, userId);
+                }
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
-                                "accountId", "demo-account");
+                                "accountId", bankAccount.connected() ? bankAccount.accountId() : userId);
 
                 try {
                         startReservationProcess(
                                         createRequest,
                                         "ONLINE",
-                                        bankLoginPayload);
+                                        bankLoginPayload,
+                                        bankAccount.bankSessionId());
 
                 } catch (Exception exception) {
+                        pendingBankConnections.remove(requestId);
                         LOGGER.log(System.Logger.Level.ERROR,
                                         "Unable to start reservation process " + requestId,
                                         exception);
@@ -147,17 +163,23 @@ public class ReservationsApi {
                                 request.stationId(),
                                 scheduledStart.toEpochMilli());
 
+                BankAccountResponse bankAccount = bankingClient.getAccount(userId);
+                if (!bankAccount.connected()) {
+                        pendingBankConnections.register(requestId, userId);
+                }
                 Map<String, Object> bankLoginPayload = Map.of(
                                 "username", username,
-                                "accountId", "demo-account");
+                                "accountId", bankAccount.connected() ? bankAccount.accountId() : userId);
 
                 try {
                         startReservationProcess(
                                         qrPickupRequest,
                                         "QR_PICKUP",
-                                        bankLoginPayload);
+                                        bankLoginPayload,
+                                        bankAccount.bankSessionId());
 
                 } catch (Exception exception) {
+                        pendingBankConnections.remove(requestId);
                         LOGGER.log(System.Logger.Level.ERROR,
                                         "Unable to start QR pickup process " + requestId,
                                         exception);
@@ -182,27 +204,33 @@ public class ReservationsApi {
         private void startReservationProcess(
                         ReservationCreationRequest request,
                         String reservationType,
-                        Map<String, Object> bankLoginPayload) {
+                        Map<String, Object> bankLoginPayload,
+                        String bankSessionId) {
 
                 String vehicleName = logisticsClient.getVehicle(request.vehicleId()).name();
+
+                Map<String, Object> variables = new HashMap<>(Map.of(
+                                "reservationRequest", request,
+                                "reservationType", reservationType,
+                                "bankLoginPayload", bankLoginPayload,
+                                "username", bankLoginPayload.get("username"),
+                                "vehicleName", vehicleName,
+                                "scheduledStartAt", Instant
+                                                .ofEpochMilli(request.scheduledStartEpochMs())
+                                                .toString(),
+                                "pickupDeadlineAt", Instant
+                                                .ofEpochMilli(request.scheduledStartEpochMs())
+                                                .plus(PICKUP_GRACE_PERIOD)
+                                                .toString()));
+                if (bankSessionId != null && !bankSessionId.isBlank()) {
+                        variables.put("bankSessionId", bankSessionId);
+                }
 
                 camundaClient
                                 .newCreateInstanceCommand()
                                 .bpmnProcessId("process")
                                 .latestVersion()
-                                .variables(Map.of(
-                                                "reservationRequest", request,
-                                                "reservationType", reservationType,
-                                                "bankLoginPayload", bankLoginPayload,
-                                                "username", bankLoginPayload.get("username"),
-                                                "vehicleName", vehicleName,
-                                                "scheduledStartAt", Instant
-                                                                .ofEpochMilli(request.scheduledStartEpochMs())
-                                                                .toString(),
-                                                "pickupDeadlineAt", Instant
-                                                                .ofEpochMilli(request.scheduledStartEpochMs())
-                                                                .plus(PICKUP_GRACE_PERIOD)
-                                                                .toString()))
+                                .variables(variables)
                                 .send()
                                 .join();
         }

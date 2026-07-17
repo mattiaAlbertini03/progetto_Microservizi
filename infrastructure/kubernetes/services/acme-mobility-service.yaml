@@ -28,6 +28,8 @@ spec:
 
             - name: AUTH_SERVICE_URL
               value: "http://auth-service.acme:8080"
+            - name: BANKING_SERVICE_URL
+              value: "http://banking-service.acme:8000"
 
             - name: FLEET_SERVICE_URL
               value: "http://fleet-service.acme:8080"

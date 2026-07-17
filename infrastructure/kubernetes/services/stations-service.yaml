@@ -24,6 +24,14 @@ spec:
               containerPort: 8080
             - name: rest
               containerPort: 8000
+          env:
+            - { name: STATIONS_DB_HOST, value: "stations-db.acme-persistence" }
+            - { name: STATIONS_DB_PORT, value: "5432" }
+            - { name: STATIONS_DB_NAME, value: "stations" }
+            - name: STATIONS_DB_USER
+              valueFrom: { secretKeyRef: { name: stations-db-client-secret, key: username } }
+            - name: STATIONS_DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: stations-db-client-secret, key: password } }
 ---
 apiVersion: v1
 kind: Service

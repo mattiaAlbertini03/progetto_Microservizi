@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions targetNamespace="acme.banking.wsdl" xmlns:xsd1="acme.banking.xsd" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="acme.banking.wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+<wsdl:definitions targetNamespace="urn:acme:banking.wsdl" xmlns:xsd1="urn:acme:banking.xsd" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:acme:banking.wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
   <wsdl:types>
-    <xs:schema targetNamespace="acme.banking.xsd" xmlns:sch="acme.banking.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="logout"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="logoutResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="accountId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="balance" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="username" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="charge"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="amount" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="chargeResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="holdDeposit"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="amount" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="holdDepositResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="login"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="accountId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="username" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="loginResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="releaseDeposit"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="releaseDepositResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element></xs:schema>
+    <xs:schema targetNamespace="urn:acme:banking.xsd" xmlns:sch="urn:acme:banking.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="logout"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="logoutResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="accountId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="balance" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="username" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="charge"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="amount" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="chargeResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="holdDeposit"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="amount" type="xs:double"/><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="holdDepositResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element><xs:element name="login"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="accountId" type="xs:string"/><xs:element maxOccurs="1" minOccurs="1" name="username" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="loginResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="releaseDeposit"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="sessionId" type="xs:string"/></xs:sequence></xs:complexType></xs:element><xs:element name="releaseDepositResponse"><xs:complexType><xs:sequence><xs:element maxOccurs="1" minOccurs="1" name="success" type="xs:boolean"/></xs:sequence></xs:complexType></xs:element></xs:schema>
   </wsdl:types>
-  <wsdl:message name="LoginRequest">
-    <wsdl:part name="body" element="xsd1:login">
+  <wsdl:message name="SessionRequest">
+    <wsdl:part name="body" element="xsd1:releaseDeposit">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="OperationResult">
     <wsdl:part name="body" element="xsd1:releaseDepositResponse">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="LoginRequest">
+    <wsdl:part name="body" element="xsd1:login">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="MonetaryOperationRequest">
     <wsdl:part name="body" element="xsd1:holdDeposit">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="SessionRequest">
-    <wsdl:part name="body" element="xsd1:releaseDeposit">
+  <wsdl:message name="LogoutResponse">
+    <wsdl:part name="body" element="xsd1:logoutResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="LoginResponse">
     <wsdl:part name="body" element="xsd1:loginResponse">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="LogoutResponse">
-    <wsdl:part name="body" element="xsd1:logoutResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:portType name="MyInput">

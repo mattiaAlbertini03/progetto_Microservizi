@@ -35,7 +35,7 @@
     "type": "CAR",
     "lat": 44.493673,
     "lon": 11.341753,
-    "status": "ON_HOLD",
+    "status": "AVAILABLE",
     "batteryPct": 91,
     "qrCode": "ACME-QR-vehicle-4"
   },

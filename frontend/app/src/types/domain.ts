@@ -16,6 +16,23 @@ export type SignupData = {
     password: string;
 };
 
+export type BankAccount = {
+    connected: boolean;
+    userId?: string;
+    username?: string;
+    accountId?: string;
+    balance?: number;
+    bankSessionId?: string;
+};
+
+export type FakeCardData = {
+    cardNumber: string;
+    cardHolder: string;
+    expiry: string;
+    cvv: string;
+    reservationRequestId?: string;
+};
+
 export type StationData = {
     id: string;
     name: string;

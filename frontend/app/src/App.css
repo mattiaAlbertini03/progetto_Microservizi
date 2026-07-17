@@ -372,6 +372,42 @@
   grid-column: 2;
 }
 
+.profile-bank {
+  grid-column: 1 / -1;
+}
+
+.profile-bank h2 {
+  margin: 4px 0 18px;
+}
+
+.balance-value {
+  margin: 8px 0;
+  color: var(--ink);
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.muted-text {
+  color: var(--muted);
+}
+
+.demo-card-note {
+  padding: 12px 14px;
+  border-radius: 13px;
+  color: #72520d;
+  background: #fff8df;
+  font-size: 0.88rem;
+}
+
+.card-fields-row,
+.recharge-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+}
+
 .profile-password h2 {
   margin: 4px 0 20px;
 }
@@ -527,6 +563,15 @@
 
   .profile-password {
     grid-column: auto;
+  }
+
+  .profile-bank {
+    grid-column: auto;
+  }
+
+  .card-fields-row,
+  .recharge-form {
+    grid-template-columns: 1fr;
   }
 
   .profile-hero,
