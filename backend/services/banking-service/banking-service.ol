@@ -151,6 +151,16 @@ main {
         if (#accountRows.row == 1) { createSession }
     }]
 
+    [ checkFunds(request)(response) {
+        query@Database(
+            "SELECT EXISTS(SELECT 1 FROM accounts a JOIN bank_sessions s ON s.user_id=a.user_id WHERE s.session_id=:session_id AND a.balance>=:amount) AS enough" {
+                .session_id = request.sessionId,
+                .amount = request.amount
+            }
+        )(fundRows);
+        response.success = #fundRows.row == 1 && fundRows.row[0].enough
+    }]
+
     [ charge(request)(response) {
         if (request.amount > 0.0) {
             update@Database(

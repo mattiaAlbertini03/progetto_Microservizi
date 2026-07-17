@@ -5,7 +5,7 @@ import { useAuth } from "./AuthContext";
 type AuthMode = "login" | "signup" | "forgot";
 
 export default function LoginModal() {
-    const { isLoginOpen, closeLogin, login } = useAuth();
+    const { isLoginOpen, authEntryMode, closeLogin, login } = useAuth();
     const [mode, setMode] = useState<AuthMode>("login");
     const [identifier, setIdentifier] = useState("demo");
     const [username, setUsername] = useState("");
@@ -14,6 +14,13 @@ export default function LoginModal() {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isLoginOpen) return;
+        setMode(authEntryMode);
+        setError(null);
+        setMessage(null);
+    }, [authEntryMode, isLoginOpen]);
 
     useEffect(() => {
         if (!isLoginOpen) return;
@@ -114,9 +121,10 @@ export default function LoginModal() {
                 {message && <div className="success-message" role="status">{message}</div>}
 
                 <div className="auth-switches">
-                    {mode !== "login" && <button type="button" className="text-button" onClick={() => selectMode("login")}>Torna al login</button>}
+                    {mode === "signup" && <button type="button" className="text-button" onClick={() => selectMode("login")}>Hai già un account? Accedi</button>}
+                    {mode === "forgot" && <button type="button" className="text-button" onClick={() => selectMode("login")}>Torna al login</button>}
                     {mode === "login" && <>
-                        <button type="button" className="text-button" onClick={() => selectMode("signup")}>Registrati</button>
+                        <button type="button" className="text-button" onClick={() => selectMode("signup")}>Non hai un account? Registrati</button>
                         <button type="button" className="text-button" onClick={() => selectMode("forgot")}>Password dimenticata?</button>
                     </>}
                 </div>

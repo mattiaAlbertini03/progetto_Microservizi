@@ -101,6 +101,17 @@ public class BankingApi {
         if (request.amount() <= 0 || request.amount() > 500) {
             throw new WebApplicationException("Recharge must be between 0 and 500", Response.Status.BAD_REQUEST);
         }
-        return Response.ok(bankingClient.recharge(user.userId(), request.amount())).build();
+        var account = bankingClient.recharge(user.userId(), request.amount());
+
+        if (request.reservationId() != null && !request.reservationId().isBlank()) {
+            camundaClient.newPublishMessageCommand()
+                    .messageName("ACCOUNT_RECHARGED")
+                    .correlationKey(request.reservationId())
+                    .variables(Map.of("rechargedBalance", account.balance()))
+                    .send()
+                    .join();
+        }
+
+        return Response.ok(account).build();
     }
 }

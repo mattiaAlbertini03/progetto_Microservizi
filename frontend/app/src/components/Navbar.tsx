@@ -16,7 +16,7 @@ function mobileNavClass({ isActive }: { isActive: boolean }) {
 }
 
 export default function Navbar() {
-    const { user, openLogin, logout } = useAuth();
+    const { user, openLogin, openSignup, logout } = useAuth();
     const initial = user?.name.trim().charAt(0).toUpperCase() || "A";
 
     return (
@@ -50,9 +50,10 @@ export default function Navbar() {
                             </button>
                         </>
                     ) : (
-                        <button className="button button--accent" onClick={openLogin}>
-                            Accedi
-                        </button>
+                        <>
+                            <button className="button button--ghost" onClick={openLogin}>Accedi</button>
+                            <button className="button button--accent" onClick={openSignup}>Registrati</button>
+                        </>
                     )}
                 </div>
 
@@ -62,9 +63,7 @@ export default function Navbar() {
                             {initial}
                         </Link>
                     ) : (
-                        <button className="button button--accent" onClick={openLogin}>
-                            Accedi
-                        </button>
+                        <button className="button button--accent" onClick={openSignup}>Registrati</button>
                     )}
                 </div>
             </header>
@@ -77,10 +76,16 @@ export default function Navbar() {
                     </NavLink>
                 ))}
                 {!user && (
-                    <button className="mobile-nav-link" onClick={openLogin}>
-                        <span className="mobile-nav-icon" aria-hidden="true">●</span>
-                        Accedi
-                    </button>
+                    <>
+                        <button className="mobile-nav-link" onClick={openLogin}>
+                            <span className="mobile-nav-icon" aria-hidden="true">●</span>
+                            Accedi
+                        </button>
+                        <button className="mobile-nav-link" onClick={openSignup}>
+                            <span className="mobile-nav-icon" aria-hidden="true">＋</span>
+                            Registrati
+                        </button>
+                    </>
                 )}
             </nav>
         </>

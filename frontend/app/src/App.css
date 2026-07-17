@@ -252,6 +252,7 @@
   padding: 20px;
   background: rgba(4, 25, 17, 0.68);
   backdrop-filter: blur(8px);
+  animation: modal-backdrop-in 220ms ease-out both;
 }
 
 .login-card {
@@ -261,6 +262,7 @@
   border-radius: 26px;
   background: white;
   box-shadow: var(--shadow-lg);
+  animation: modal-card-in 320ms cubic-bezier(.18, .89, .32, 1.18) both;
 }
 
 .login-heading {
@@ -408,6 +410,20 @@
   align-items: end;
 }
 
+.recharge-form {
+  grid-template-columns: minmax(180px, 1fr) auto;
+  max-width: 520px;
+}
+
+.recharge-form .field {
+  margin-bottom: 0;
+}
+
+.recharge-form .button {
+  min-height: 48px;
+  white-space: nowrap;
+}
+
 .profile-password h2 {
   margin: 4px 0 20px;
 }
@@ -509,7 +525,7 @@
   }
 
   .mobile-nav--guest {
-    grid-template-columns: repeat(2, minmax(0, 140px));
+    grid-template-columns: repeat(3, minmax(0, 140px));
     justify-content: center;
   }
 
@@ -572,6 +588,10 @@
   .card-fields-row,
   .recharge-form {
     grid-template-columns: 1fr;
+  }
+
+  .recharge-form .button {
+    width: 100%;
   }
 
   .profile-hero,
@@ -1491,6 +1511,16 @@
 @keyframes notification-pop {
   from { transform: scale(.55) rotate(-12deg); }
   to { transform: scale(1) rotate(0); }
+}
+
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-card-in {
+  from { opacity: 0; transform: translateY(20px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

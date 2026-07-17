@@ -55,6 +55,7 @@ type AccountResponse: void {
 interface BankService {
     RequestResponse:
         login(LoginRequest)(LoginResponse),
+        checkFunds(MonetaryOperationRequest)(OperationResult),
         holdDeposit(MonetaryOperationRequest)(OperationResult),
         charge(MonetaryOperationRequest)(OperationResult),
         releaseDeposit(SessionRequest)(OperationResult),

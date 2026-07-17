@@ -169,7 +169,19 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
                     );
                     break;
 
+                case "NOT_ENOUGH_FUNDS":
+                    localStorage.setItem("acme-pending-recharge", reservationId);
+                    notify(
+                        data.message ?? "Saldo insufficiente. Ricarica il conto dal profilo.",
+                        "error"
+                    );
+                    window.dispatchEvent(new CustomEvent("bank-recharge-required", {
+                        detail: { reservationId },
+                    }));
+                    break;
+
                 case "RETURN_CONFIRMED":
+                    localStorage.removeItem("acme-pending-recharge");
                     window.clearInterval(parkedReminderIntervals.current[reservationId]);
                     delete parkedReminderIntervals.current[reservationId];
                     notify(data.message, "success");

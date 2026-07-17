@@ -14,9 +14,11 @@ import type { LoginCredentials, User } from "../types/domain";
 type AuthContextType = {
     user: User | null;
     isLoginOpen: boolean;
+    authEntryMode: "login" | "signup";
     login: (credentials: LoginCredentials) => Promise<void>;
     logout: () => void;
     openLogin: () => void;
+    openSignup: () => void;
     closeLogin: () => void;
 };
 
@@ -47,6 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [authEntryMode, setAuthEntryMode] = useState<"login" | "signup">("login");
+
+    const openAuth = useCallback((mode: "login" | "signup") => {
+        setAuthEntryMode(mode);
+        setIsLoginOpen(true);
+    }, []);
 
     async function login(credentials: LoginCredentials) {
         const loggedUser = await loginUser(credentials);
@@ -64,12 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const handleExpiredSession = () => {
             logout();
-            setIsLoginOpen(true);
+            openAuth("login");
         };
 
         window.addEventListener(AUTH_EXPIRED_EVENT, handleExpiredSession);
         return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleExpiredSession);
-    }, [logout]);
+    }, [logout, openAuth]);
 
     useEffect(() => {
         if (!user) {
@@ -84,20 +92,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const timeoutId = window.setTimeout(() => {
             logout();
-            setIsLoginOpen(true);
+            openAuth("login");
         }, Math.max(0, expiresAt - Date.now()));
 
         return () => window.clearTimeout(timeoutId);
-    }, [logout, user]);
+    }, [logout, openAuth, user]);
 
     return (
         <AuthContext.Provider
             value={{
                 user,
                 isLoginOpen,
+                authEntryMode,
                 login,
                 logout,
-                openLogin: () => setIsLoginOpen(true),
+                openLogin: () => openAuth("login"),
+                openSignup: () => openAuth("signup"),
                 closeLogin: () => setIsLoginOpen(false),
             }}
         >

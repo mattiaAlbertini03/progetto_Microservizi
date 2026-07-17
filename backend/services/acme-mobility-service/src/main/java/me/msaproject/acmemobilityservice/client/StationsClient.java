@@ -4,11 +4,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
 import me.msaproject.acmemobilityservice.dto.station.StationResponse;
 import me.msaproject.acmemobilityservice.dto.station.StationsResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class StationsClient {
@@ -30,9 +32,9 @@ public class StationsClient {
     public List<StationResponse> getStations() {
         StationsResponse response = client
                 .target(stationServiceUrl)
-                .path("stations")
+                .path("listStations")
                 .request()
-                .get(StationsResponse.class);
+                .post(Entity.json(Map.of()), StationsResponse.class);
 
         return response.stations();
     }
@@ -40,9 +42,8 @@ public class StationsClient {
     public StationResponse getStation(String stationId) {
         return client
                 .target(stationServiceUrl)
-                .path("stations")
-                .path(stationId)
+                .path("getStation")
                 .request()
-                .get(StationResponse.class);
+                .post(Entity.json(Map.of("id", stationId)), StationResponse.class);
     }
 }

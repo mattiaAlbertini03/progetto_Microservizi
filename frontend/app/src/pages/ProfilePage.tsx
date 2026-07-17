@@ -105,7 +105,9 @@ export default function ProfilePage() {
         setBankError(null);
         setBankLoading(true);
         try {
-            setBankAccount(await rechargeBankAccount(user!, Number(rechargeAmount)));
+            const reservationId = localStorage.getItem("acme-pending-recharge") ?? undefined;
+            setBankAccount(await rechargeBankAccount(user!, Number(rechargeAmount), reservationId));
+            localStorage.removeItem("acme-pending-recharge");
         } catch (error) {
             console.error(error);
             setBankError("Ricarica non riuscita.");

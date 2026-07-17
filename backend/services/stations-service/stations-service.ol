@@ -15,11 +15,6 @@ inputPort WebInput {
     Location: "socket://0.0.0.0:8000/"
     Protocol: http {
         .format = "json"
-        .osc << {
-            listStations << { .alias = "stations" .method = "get" }
-            getStation << { .alias = "stations/%!{id}" .method = "get" }
-        }
-        .default = "default"
     }
     Interfaces: StationRestService
 }
@@ -91,8 +86,7 @@ main {
     [ openSession(request)(response) {
         response.sessionId = new;
         update@Database(
-            "INSERT INTO station_sessions(session_id,station_id) " +
-            "SELECT :session_id,:station_id WHERE EXISTS (SELECT 1 FROM stations WHERE id=:station_id)" {
+            "INSERT INTO station_sessions(session_id,station_id) SELECT :session_id,:station_id WHERE EXISTS (SELECT 1 FROM stations WHERE id=:station_id)" {
                 .session_id = response.sessionId,
                 .station_id = request.stationId
             }
