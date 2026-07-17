@@ -60,7 +60,10 @@ export default function Station({
     const [scheduledStart, setScheduledStart] = useState(
         roundUpToSlot(now + 10 * 60_000)
     );
-    const rentableVehicleCount = vehicles?.filter(
+    const visibleVehicles = vehicles?.filter(
+        (vehicle) => vehicle.status !== "IN_USE"
+    );
+    const rentableVehicleCount = visibleVehicles?.filter(
         (vehicle) => vehicle.batteryPct >= 80
             && (vehicle.status === "AVAILABLE" || vehicle.status === "CHARGING")
     ).length ?? 0;
@@ -86,7 +89,7 @@ export default function Station({
                 <div>
                     <p className="eyebrow">Stazione ACMEMobility</p>
                     <h2>{station.name}</h2>
-                    <p>{rentableVehicleCount} disponibili · {vehicles?.length ?? 0} in stazione</p>
+                    <p>{rentableVehicleCount} disponibili · {visibleVehicles?.length ?? 0} in stazione</p>
                 </div>
             </header>
 
@@ -121,13 +124,13 @@ export default function Station({
                 </div>
             )}
 
-            {!loading && vehicles?.length === 0 && (
+            {!loading && visibleVehicles?.length === 0 && (
                 <div className="vehicle-empty">Nessun veicolo presente in questa stazione.</div>
             )}
 
             {!loading && (
                 <div className="vehicle-list">
-                    {vehicles?.map((vehicle) => (
+                    {visibleVehicles?.map((vehicle) => (
                     <Vehicle
                         key={vehicle.id}
                         vehicle={vehicle}
