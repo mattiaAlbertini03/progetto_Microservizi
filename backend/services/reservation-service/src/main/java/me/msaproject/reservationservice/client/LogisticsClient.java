@@ -53,6 +53,7 @@ public class LogisticsClient {
 
     public void returnVehicle(String vehicleId, ReservationCompletionRequest completion) {
         VehicleReturnRequest vehicleReturn = new VehicleReturnRequest(
+                completion.stationId(),
                 completion.lat(),
                 completion.lon(),
                 completion.batteryPct());

@@ -457,7 +457,7 @@
           <zeebe:input source="=false" target="storeResponse" />
           <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
           <zeebe:input source="=20" target="readTimeoutInSeconds" />
-          <zeebe:input source="={&#10;  kilometers: kilometers,&#10;  paymentAmount: finalAmount,&#10;  lat: vehiclePosition.lat,&#10;  lon: vehiclePosition.lon,&#10;  batteryPct: finalBatteryPct&#10;}" target="body" />
+          <zeebe:input source="={&#10;  kilometers: kilometers,&#10;  paymentAmount: finalAmount,&#10;  stationId: destinationStationId,&#10;  lat: vehiclePosition.lat,&#10;  lon: vehiclePosition.lon,&#10;  batteryPct: finalBatteryPct&#10;}" target="body" />
           <zeebe:input source="=false" target="ignoreNullValues" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>

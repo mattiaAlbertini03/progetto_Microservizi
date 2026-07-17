@@ -56,6 +56,7 @@ flowchart LR
 | Tracking/Battery services | Publish vehicle telemetry to Kafka |
 | Query service | Builds the read model consumed by Fleet and the visualizer |
 | Charge worker | Calculates the final amount from time, distance, and battery level |
+| Simulation visualizer | Combines polled position/battery data with calculated trip SSE events |
 | Stations service | Jolie SOAP station sessions plus a REST station catalogue |
 | Banking service | Jolie SOAP demo banking, deposit, charge, and release operations |
 | Camunda | Runs the executable rental BPMN process |
@@ -74,6 +75,8 @@ flowchart LR
 7. The simulator returns the authoritative minutes, kilometres, and battery percentage.
 8. The worker calculates the rental charge. A 10% penalty is added if battery is below 15%.
 9. The final amount is charged, the deposit is released, and the app receives the result through SSE.
+
+While the trip is active, a parallel BPMN monitoring loop refreshes the vehicle status every two seconds. The simulator reports authoritative elapsed minutes and travelled kilometres through Fleet; the charge worker calculates the running amount; and ACMEMobility forwards that snapshot to the simulation visualizer as a `simulation-update` SSE event. Position and battery remain eventually consistent read-model data supplied by the Query service.
 
 Cancellation is free until exactly five minutes before the scheduled start. A later cancellation, or failure to pick up within the grace period, converts €10 into a charge.
 

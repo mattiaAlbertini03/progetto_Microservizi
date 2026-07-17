@@ -7,8 +7,8 @@ type VehicleProps = {
 };
 
 function canReserveVehicle(vehicle: VehicleData) {
-    return vehicle.status === "AVAILABLE"
-        || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80);
+    return vehicle.batteryPct >= 80
+        && (vehicle.status === "AVAILABLE" || vehicle.status === "CHARGING");
 }
 
 export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps) {
@@ -20,8 +20,6 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
 
     const canReserve = !!onReserve && canReserveVehicle(vehicle);
     const statusLabels: Record<string, string> = {
-        AVAILABLE: "Disponibile",
-        CHARGING: "In ricarica",
         ON_HOLD: "Prenotato",
         IN_USE: "In uso",
         MAINTENANCE: "Manutenzione",
@@ -35,14 +33,26 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
     const batteryTone = vehicle.batteryPct < 20 ? "low" : vehicle.batteryPct < 55 ? "medium" : "high";
 
     return (
-        <article className="vehicle-card">
+        <article className={`vehicle-card${canReserveVehicle(vehicle) ? "" : " vehicle-card--unavailable"}`}>
             <div className="vehicle-summary">
                 <div className="vehicle-icon">{iconByType[vehicle.type] ?? "🚘"}</div>
                 <div className="vehicle-identity">
                     <div>
                         <strong>{vehicle.name}</strong>
-                        <span className={`status-badge status-badge--${canReserveVehicle(vehicle) ? "available" : "busy"}`}>
-                            {statusLabels[vehicle.status] ?? vehicle.status}
+                        <span className="vehicle-statuses">
+                            {vehicle.status === "CHARGING" && (
+                                <span className="status-badge status-badge--charging">In ricarica</span>
+                            )}
+                            {(vehicle.status === "AVAILABLE" || vehicle.status === "CHARGING") && (
+                                <span className={`status-badge status-badge--${canReserveVehicle(vehicle) ? "available" : "busy"}`}>
+                                    {canReserveVehicle(vehicle) ? "Disponibile" : "Non disponibile"}
+                                </span>
+                            )}
+                            {vehicle.status !== "AVAILABLE" && vehicle.status !== "CHARGING" && (
+                                <span className="status-badge status-badge--busy">
+                                    {statusLabels[vehicle.status] ?? vehicle.status}
+                                </span>
+                            )}
                         </span>
                     </div>
                     <small>{typeLabels[vehicle.type] ?? vehicle.type}</small>
@@ -51,6 +61,11 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
                         <div className="battery-track"><i style={{ width: `${Math.max(0, Math.min(100, vehicle.batteryPct))}%` }} /></div>
                         <strong>{Math.round(vehicle.batteryPct)}%</strong>
                     </div>
+                    {vehicle.status === "CHARGING" && vehicle.batteryPct < 80 && (
+                        <small className="vehicle-unavailable-reason">
+                            In ricarica · disponibile per il noleggio dall'80%
+                        </small>
+                    )}
                 </div>
             </div>
 

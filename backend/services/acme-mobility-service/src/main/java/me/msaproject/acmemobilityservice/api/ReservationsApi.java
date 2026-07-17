@@ -27,6 +27,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReservationsApi {
 
+        private static final System.Logger LOGGER = System.getLogger(ReservationsApi.class.getName());
         private static final Duration MAX_RESERVATION_ADVANCE = Duration.ofMinutes(30);
         private static final Duration SCHEDULE_CLOCK_TOLERANCE = Duration.ofMinutes(1);
         private static final Duration FREE_CANCELLATION_MARGIN = Duration.ofMinutes(5);
@@ -84,7 +85,9 @@ public class ReservationsApi {
                                         bankLoginPayload);
 
                 } catch (Exception exception) {
-                        exception.printStackTrace();
+                        LOGGER.log(System.Logger.Level.ERROR,
+                                        "Unable to start reservation process " + requestId,
+                                        exception);
 
                         return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                                         .entity(Map.of(
@@ -155,7 +158,9 @@ public class ReservationsApi {
                                         bankLoginPayload);
 
                 } catch (Exception exception) {
-                        exception.printStackTrace();
+                        LOGGER.log(System.Logger.Level.ERROR,
+                                        "Unable to start QR pickup process " + requestId,
+                                        exception);
 
                         return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                                         .entity(Map.of(

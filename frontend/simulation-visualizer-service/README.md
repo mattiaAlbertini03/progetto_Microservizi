@@ -1,158 +1,62 @@
-# Simulation Visualizer
+# Simulation visualizer
 
-## Overview
-The Simulation Visualizer is a React-based frontend used to monitor vehicles in real time.
+The simulation visualizer is the read-only dashboard opened from an active reservation. It combines vehicle telemetry from two sources:
 
-It:
-- fetches vehicle data from the Query Service
-- displays vehicles on a map (Leaflet)
-- updates positions periodically
-- allows selecting a vehicle
+- polling provides position and battery data from the Query service;
+- Server-Sent Events (SSE) provide reservation metadata, travelled kilometres, and the current charge from ACMEMobility.
 
----
+The page expects `reservationId` and `vehicleId` query parameters:
 
-## Architecture
+```text
+http://localhost:5174/?reservationId=<reservation-id>&vehicleId=<vehicle-id>
+```
 
-Browser → Nginx → Query Service → Kafka → Simulator
+## Data flow
 
-### Components
-- React (Vite)
-- Leaflet
-- Nginx (reverse proxy)
+```mermaid
+flowchart LR
+    Simulator -->|tracking and battery events| Kafka
+    Kafka --> Query[Query service]
+    Query -->|GET /vehicles/:vehicleId| Visualizer
 
----
+    Simulator -->|kilometres and elapsed time| Fleet
+    Fleet --> BPMN[Camunda process]
+    BPMN -->|calculate-charge job| Worker[Charge worker]
+    BPMN -->|POST telemetry event| ACME[ACMEMobility]
+    ACME -->|SSE simulation-update| Visualizer
+```
 
-## API
+The simulator's travelled metres are authoritative. Fleet converts them to kilometres, the BPMN process maps `kilometers` and `minutesUsed`, and the charge worker calculates the displayed amount. The process publishes a new visualizer event every two seconds while the trip-monitoring subprocess is active.
 
-All backend calls go through:
+## Proxied endpoints
 
-/api
+The browser only calls same-origin paths. Vite provides the proxies in development and nginx provides them in Kubernetes.
 
-Endpoints:
-- GET /api/vehicles
-- GET /api/vehicles/{id}
+| Browser path | Target | Purpose |
+| --- | --- | --- |
+| `/api/vehicles/{vehicleId}` | Query service | Position and battery polling |
+| `/events/simulation-visualiser/{reservationId}/events` | ACMEMobility | Calculated trip SSE stream |
 
----
+The SSE proxy disables response buffering so each event reaches the browser immediately.
 
-## Development (Local)
-
-Install:
+## Development
 
 ```bash
 npm install
-```
-
-Configure proxy (vite.config.ts):
-
-```ts
-server: {
-  proxy: {
-    "/api": {
-      target: "http://localhost:8083",
-      changeOrigin: true,
-      rewrite: (path) => path.replace(/^\/api/, "")
-    }
-  }
-}
-```
-
-Run:
-
-```bash
 npm run dev
 ```
 
----
+The development proxies expect the Query service on `localhost:8083` and ACMEMobility on `localhost:8080`.
 
-## Build
+## Verification
 
 ```bash
+npm run lint
 npm run build
 ```
 
-Output: dist/
-
----
-
-## Docker
-
-Build:
+For Kubernetes deployment, use the repository scripts from the project root:
 
 ```bash
-docker build -t simulation-visualizer-service:latest .
+./scripts/deploy-service.sh simulation-visualizer-service
 ```
-
----
-
-## Nginx Configuration
-
-```nginx
-server {
-    listen 80;
-
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://query-service.acme-fleet.svc.cluster.local:8080/;
-    }
-}
-```
-
----
-
-## Kubernetes
-
-Build:
-
-```bash
-eval $(minikube docker-env)
-docker build -t simulation-visualizer-service:latest .
-```
-
-Deploy:
-
-```bash
-kubectl apply -f k8s/
-```
-
-Restart:
-
-```bash
-kubectl rollout restart deployment/simulation-visualizer-service -n acme-fleet
-```
-
----
-
-## Debugging
-
-Test API via browser:
-
-http://<visualizer-url>/api/vehicles
-
-Check nginx config:
-
-```bash
-kubectl exec -it -n acme-fleet deploy/simulation-visualizer-service -- sh
-cat /etc/nginx/conf.d/default.conf
-```
-
-Test backend:
-
-```bash
-apk add curl
-curl http://query-service.acme-fleet.svc.cluster.local:8080/vehicles
-```
-
----
-
-## Notes
-
-- Vite proxy works only in development
-- Nginx handles API routing in production
-- API base path must be /api
-- Uses polling for updates

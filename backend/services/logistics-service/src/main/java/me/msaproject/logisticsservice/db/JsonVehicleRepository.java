@@ -55,7 +55,7 @@ public class JsonVehicleRepository implements VehicleRepository {
 
     @Override
     public void sync() {
-        // TODO:
-        // sincronizzazione futura con database reale
+        // The JSON-backed demo repository keeps all runtime changes in memory.
+        // A persistent repository can implement this hook when one is introduced.
     }
 }

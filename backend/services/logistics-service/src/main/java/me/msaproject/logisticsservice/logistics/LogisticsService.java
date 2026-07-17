@@ -48,7 +48,6 @@ public class LogisticsService {
         return vehicleRepository.getVehicles()
                 .values()
                 .stream()
-                .filter(vehicle -> canBeRented(vehicle))
                 .filter(vehicle -> isAtPosition(vehicle, lat, lon))
                 .map(this::toResponse)
                 .toList();
@@ -116,8 +115,12 @@ public class LogisticsService {
                     "Vehicle cannot be returned from status: " + vehicle.status());
         }
 
-        var station = stationsClient.findStationNear(request.lat(), request.lon())
-                .orElseThrow(() -> new IllegalStateException("Vehicle is not near a station"));
+        // Fleet already resolved and validated the destination station before the
+        // return workflow reached this service. Use that stable identity instead
+        // of re-inferring it from an eventually consistent tracking position.
+        var station = stationsClient.findStationById(request.stationId())
+                .or(() -> stationsClient.findStationNear(request.lat(), request.lon()))
+                .orElseThrow(() -> new IllegalStateException("Return station not found"));
         Vehicle updated = new Vehicle(
                 vehicle.id(), vehicle.name(), vehicle.type(), station.lat(), station.lon(),
                 VehicleStatus.AVAILABLE,

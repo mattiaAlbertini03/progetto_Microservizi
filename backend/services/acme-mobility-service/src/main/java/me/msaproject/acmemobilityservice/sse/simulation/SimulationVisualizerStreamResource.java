@@ -16,6 +16,7 @@ public class SimulationVisualizerStreamResource {
     @Inject
     SimulationVisualizerEventService eventService;
 
+    /** Keeps the visualizer subscribed to calculated trip telemetry. */
     @GET
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void listen(
@@ -24,11 +25,12 @@ public class SimulationVisualizerStreamResource {
         eventService.subscribe(reservationId, sink);
     }
 
+    /** Receives a BPMN telemetry update and forwards it to the active browser. */
     @POST
     public Response publish(
             @PathParam("reservationId") String reservationId,
             SimulationVisualizerEvent event) {
-        if (!reservationId.equals(event.reservationId())) {
+        if (event == null || !reservationId.equals(event.reservationId())) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("reservationId does not match path").build();
         }

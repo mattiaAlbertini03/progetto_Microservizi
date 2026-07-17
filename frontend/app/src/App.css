@@ -807,6 +807,25 @@
   background: white;
 }
 
+.vehicle-card--unavailable {
+  border-color: #d8ddda;
+  background: #f3f5f4;
+  color: #727b77;
+  filter: saturate(0.45);
+}
+
+.vehicle-card--unavailable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.vehicle-unavailable-reason {
+  display: block;
+  margin-top: 7px;
+  color: #727b77;
+  font-size: 0.66rem;
+}
+
 .vehicle-summary {
   display: flex;
   align-items: center;
@@ -858,6 +877,14 @@
   font-weight: 800;
 }
 
+.vehicle-statuses {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
 .status-badge--available {
   color: #12623e;
   background: var(--accent-soft);
@@ -866,6 +893,11 @@
 .status-badge--busy {
   color: #6a746f;
   background: #edf1ee;
+}
+
+.status-badge--charging {
+  color: #875a10;
+  background: #fff0c7;
 }
 
 .battery-row {

@@ -60,6 +60,10 @@ export default function Station({
     const [scheduledStart, setScheduledStart] = useState(
         roundUpToSlot(now + 10 * 60_000)
     );
+    const rentableVehicleCount = vehicles?.filter(
+        (vehicle) => vehicle.batteryPct >= 80
+            && (vehicle.status === "AVAILABLE" || vehicle.status === "CHARGING")
+    ).length ?? 0;
     const timeSlots = buildTimeSlots(now);
     const selectedSlot = timeSlots.some(
         (slot) => slot.value === scheduledStart
@@ -82,7 +86,7 @@ export default function Station({
                 <div>
                     <p className="eyebrow">Stazione ACMEMobility</p>
                     <h2>{station.name}</h2>
-                    <p>{vehicles?.filter((vehicle) => vehicle.status === "AVAILABLE" || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80)).length ?? 0} mezzi disponibili</p>
+                    <p>{rentableVehicleCount} disponibili · {vehicles?.length ?? 0} in stazione</p>
                 </div>
             </header>
 
@@ -107,7 +111,7 @@ export default function Station({
             )}
 
             <div className="vehicle-list-heading">
-                <strong>Mezzi disponibili</strong>
+                <strong>Mezzi in stazione</strong>
                 <span>Aggiornamento live</span>
             </div>
 
@@ -118,7 +122,7 @@ export default function Station({
             )}
 
             {!loading && vehicles?.length === 0 && (
-                <div className="vehicle-empty">Nessun veicolo disponibile in questa stazione.</div>
+                <div className="vehicle-empty">Nessun veicolo presente in questa stazione.</div>
             )}
 
             {!loading && (

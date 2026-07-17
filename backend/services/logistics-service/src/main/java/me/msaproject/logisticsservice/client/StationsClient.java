@@ -59,6 +59,16 @@ public class StationsClient {
                 .findFirst();
     }
 
+    public Optional<StationResponse> findStationById(String stationId) {
+        if (stationId == null || stationId.isBlank()) {
+            return Optional.empty();
+        }
+
+        return getStations().stations().stream()
+                .filter(station -> station.id().equals(stationId))
+                .findFirst();
+    }
+
     private double distanceMeters(double lat1, double lon1, double lat2, double lon2) {
         double earthRadius = 6_371_000;
         double latDelta = Math.toRadians(lat2 - lat1);

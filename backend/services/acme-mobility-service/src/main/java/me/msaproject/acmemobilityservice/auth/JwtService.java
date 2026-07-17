@@ -89,7 +89,6 @@ public class JwtService {
         } catch (WebApplicationException exception) {
             throw exception;
         } catch (Exception exception) {
-            exception.printStackTrace();
             throw unauthorized("Invalid authorization token");
         }
     }

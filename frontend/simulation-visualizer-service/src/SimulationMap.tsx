@@ -13,7 +13,9 @@ import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const API_BASE = "/api";
+const EVENTS_BASE = "/events";
 const POLL_MS = 2000;
+const DEFAULT_MAP_CENTER: LatLngExpression = [44.4949, 11.3426];
 
 type VehicleResponse = {
     vehicleId: string;
@@ -66,7 +68,7 @@ export default function SimulationMap() {
         }
 
         const source = new EventSource(
-            `/events/simulation-visualiser/${encodeURIComponent(reservationId)}/events`
+            `${EVENTS_BASE}/simulation-visualiser/${encodeURIComponent(reservationId)}/events`
         );
         source.addEventListener("simulation-update", (event) => {
             const update = JSON.parse((event as MessageEvent).data) as SimulationUpdate;
@@ -128,7 +130,7 @@ export default function SimulationMap() {
     }, [vehicleId]);
 
     const center = useMemo<LatLngExpression>(
-        () => vehicle ? [vehicle.lat, vehicle.lon] : [44.4949, 11.3426],
+        () => vehicle ? [vehicle.lat, vehicle.lon] : DEFAULT_MAP_CENTER,
         [vehicle]
     );
     const battery = Math.max(0, Math.min(100, vehicle?.batteryPercent ?? 0));
@@ -185,8 +187,14 @@ export default function SimulationMap() {
                     </section>
 
                     <div className="telemetry-grid">
-                        <div className="telemetry-stat"><span>Distanza percorsa</span><strong>{tripUpdate ? `${tripUpdate.distance.toFixed(2)} km` : "—"}</strong></div>
-                        <div className="telemetry-stat"><span>Importo corrente</span><strong>{tripUpdate ? `€ ${tripUpdate.amount.toFixed(2)}` : "—"}</strong></div>
+                        <div className="telemetry-stat">
+                            <span>Distanza percorsa</span>
+                            <strong>{tripUpdate ? `${tripUpdate.distance.toFixed(2)} km` : "—"}</strong>
+                        </div>
+                        <div className="telemetry-stat">
+                            <span>Importo corrente</span>
+                            <strong>{tripUpdate ? `€ ${tripUpdate.amount.toFixed(2)}` : "—"}</strong>
+                        </div>
                     </div>
 
                     <p className="polling-note"><i className="pulse-icon" /> Aggiornamento automatico ogni {POLL_MS / 1000} secondi</p>
