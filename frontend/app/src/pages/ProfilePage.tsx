@@ -3,6 +3,7 @@ import {
     changePassword,
     connectBankAccount,
     getBankAccount,
+    loginBankAccount,
     rechargeBankAccount,
 } from "../api/acmeApi";
 import { useAuth } from "../components/AuthContext";
@@ -31,7 +32,12 @@ export default function ProfilePage() {
         if (!user) return;
         let cancelled = false;
         setBankLoading(true);
-        getBankAccount(user).then((account) => {
+        getBankAccount(user).then(async (account) => {
+            const reservationRequestId = localStorage.getItem("acme-pending-bank-request");
+            if (account.connected && reservationRequestId) {
+                account = await loginBankAccount(user, reservationRequestId);
+                localStorage.removeItem("acme-pending-bank-request");
+            }
             if (!cancelled) setBankAccount(account);
         }).catch((error) => {
             console.error(error);
@@ -41,6 +47,31 @@ export default function ProfilePage() {
         });
         return () => { cancelled = true; };
     }, [user]);
+
+    useEffect(() => {
+        if (!user || !bankAccount?.connected) return;
+
+        const resumeBankLogin = (event: Event) => {
+            const requestId = (event as CustomEvent<{ requestId?: string }>).detail?.requestId;
+            if (!requestId) return;
+
+            setBankLoading(true);
+            setBankError(null);
+            void loginBankAccount(user, requestId)
+                .then((account) => {
+                    setBankAccount(account);
+                    localStorage.removeItem("acme-pending-bank-request");
+                })
+                .catch((error) => {
+                    console.error(error);
+                    setBankError("Accesso bancario non riuscito; la prenotazione resta in attesa.");
+                })
+                .finally(() => setBankLoading(false));
+        };
+
+        window.addEventListener("bank-connection-required", resumeBankLogin);
+        return () => window.removeEventListener("bank-connection-required", resumeBankLogin);
+    }, [user, bankAccount?.connected]);
 
     if (!user) return null;
 

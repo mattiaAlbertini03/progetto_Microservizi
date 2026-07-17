@@ -140,6 +140,17 @@ export function connectBankAccount(user: User, card: FakeCardData): Promise<Bank
     });
 }
 
+export function loginBankAccount(user: User, reservationRequestId: string): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ reservationRequestId }),
+    });
+}
+
 export function rechargeBankAccount(
     user: User,
     amount: number,

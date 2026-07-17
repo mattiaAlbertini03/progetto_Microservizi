@@ -59,6 +59,7 @@ interface StationSoapService {
 
 interface StationRestService {
     RequestResponse:
+        stations(EmptyRequest)(StationsResponse),
         listStations(EmptyRequest)(StationsResponse),
         getStation(GetStationRequest)(Station)
 }

@@ -61,6 +61,16 @@ init {
 }
 
 main {
+    [ stations(request)(response) {
+        query@Database("SELECT id,name,lat,lon FROM stations ORDER BY id")(rows);
+        for (i = 0, i < #rows.row, i++) {
+            response.stations[i].id = rows.row[i].id;
+            response.stations[i].name = rows.row[i].name;
+            response.stations[i].lat = rows.row[i].lat;
+            response.stations[i].lon = rows.row[i].lon
+        }
+    }]
+
     [ listStations(request)(response) {
         query@Database("SELECT id,name,lat,lon FROM stations ORDER BY id")(rows);
         for (i = 0, i < #rows.row, i++) {

@@ -17,6 +17,7 @@ import java.util.List;
 public class LogisticsService {
 
     private static final int MIN_RENTABLE_BATTERY_PCT = 80;
+    private static final System.Logger LOGGER = System.getLogger(LogisticsService.class.getName());
 
     private final VehicleRepository vehicleRepository;
 
@@ -69,6 +70,12 @@ public class LogisticsService {
 
     public VehicleStatusResponse holdVehicle(String vehicleId) {
         Vehicle vehicle = findVehicleOrThrow(vehicleId);
+
+        // Camunda may retry after losing an HTTP response. A completed hold is
+        // therefore a successful no-op instead of a false availability error.
+        if (vehicle.status() == VehicleStatus.ON_HOLD) {
+            return toStatusResponse(vehicle);
+        }
 
         if (!canBeRented(vehicle)) {
             throw new IllegalStateException(
@@ -181,7 +188,7 @@ public class LogisticsService {
     public List<Vehicle> getVehiclesNeedingCharge() {
         return vehicleRepository.findAll()
                 .stream()
-                .filter(vehicle -> vehicle.batteryPct() < 100)
+                .filter(vehicle -> vehicle.batteryPct() < MIN_RENTABLE_BATTERY_PCT)
                 .filter(vehicle -> vehicle.status() == VehicleStatus.AVAILABLE)
                 .toList();
     }
@@ -212,10 +219,20 @@ public class LogisticsService {
 
         vehicleRepository.save(updated);
 
-        stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
-                .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
+        notifyStationBestEffort(updated);
 
         return updated;
+    }
+
+    private void notifyStationBestEffort(Vehicle vehicle) {
+        try {
+            stationsClient.findStationIdByPosition(vehicle.lat(), vehicle.lon())
+                    .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, vehicle.id()));
+        } catch (RuntimeException exception) {
+            LOGGER.log(System.Logger.Level.WARNING,
+                    "Vehicle state persisted but station notification failed for " + vehicle.id(),
+                    exception);
+        }
     }
 
     private VehicleResponse toResponse(Vehicle vehicle) {
@@ -252,8 +269,7 @@ public class LogisticsService {
 
         vehicleRepository.save(updated);
 
-        stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
-                .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
+        notifyStationBestEffort(updated);
 
         return toResponse(updated);
     }

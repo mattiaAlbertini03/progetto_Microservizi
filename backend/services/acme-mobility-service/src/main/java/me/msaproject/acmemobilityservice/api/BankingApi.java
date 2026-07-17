@@ -16,6 +16,7 @@ import me.msaproject.acmemobilityservice.auth.JwtService;
 import me.msaproject.acmemobilityservice.auth.PendingBankConnectionService;
 import me.msaproject.acmemobilityservice.client.BankingClient;
 import me.msaproject.acmemobilityservice.dto.bank.CardRegistrationRequest;
+import me.msaproject.acmemobilityservice.dto.bank.BankLoginRequest;
 import me.msaproject.acmemobilityservice.dto.bank.RechargeRequest;
 
 import java.util.Map;
@@ -75,20 +76,31 @@ public class BankingApi {
         }
 
         if (request.reservationRequestId() != null && !request.reservationRequestId().isBlank()) {
-            pendingBankConnections.requireNotOwnedByAnotherUser(
-                    request.reservationRequestId(), user.userId());
-            camundaClient.newPublishMessageCommand()
-                    .messageName("BANK_LOGIN_DATA")
-                    .correlationKey(request.reservationRequestId())
-                    .variables(Map.of("bankLoginPayload", Map.of(
-                            "username", user.username(),
-                            "accountId", account.accountId())))
-                    .send()
-                    .join();
-            pendingBankConnections.consume(request.reservationRequestId(), user.userId());
+            publishBankLogin(request.reservationRequestId(), user, account.accountId());
         }
 
         return Response.status(Response.Status.CREATED).entity(account).build();
+    }
+
+    @POST
+    @Path("/login")
+    public Response login(
+            BankLoginRequest request,
+            @HeaderParam("Authorization") String authorizationHeader
+    ) {
+        AuthenticatedUser user = jwtService.authenticate(authorizationHeader);
+        if (request == null || request.reservationRequestId() == null
+                || request.reservationRequestId().isBlank()) {
+            throw new WebApplicationException("Reservation request id is required", Response.Status.BAD_REQUEST);
+        }
+
+        var account = bankingClient.getAccount(user.userId());
+        if (!account.connected() || account.accountId() == null || account.accountId().isBlank()) {
+            throw new WebApplicationException("Connect a bank account first", Response.Status.CONFLICT);
+        }
+
+        publishBankLogin(request.reservationRequestId(), user, account.accountId());
+        return Response.ok(account).build();
     }
 
     @POST
@@ -113,5 +125,30 @@ public class BankingApi {
         }
 
         return Response.ok(account).build();
+    }
+
+    private void publishBankLogin(
+            String reservationRequestId,
+            AuthenticatedUser user,
+            String accountId
+    ) {
+        pendingBankConnections.requireNotOwnedByAnotherUser(reservationRequestId, user.userId());
+        try {
+            camundaClient.newPublishMessageCommand()
+                    .messageName("BANK_LOGIN_DATA")
+                    .correlationKey(reservationRequestId)
+                    .timeToLive(java.time.Duration.ofMinutes(10))
+                    .variables(Map.of("bankLoginPayload", Map.of(
+                            "username", user.username(),
+                            "accountId", accountId)))
+                    .send()
+                    .join();
+        } catch (RuntimeException exception) {
+            throw new WebApplicationException(
+                    "Unable to resume the pending reservation process",
+                    exception,
+                    Response.Status.SERVICE_UNAVAILABLE);
+        }
+        pendingBankConnections.consume(reservationRequestId, user.userId());
     }
 }
