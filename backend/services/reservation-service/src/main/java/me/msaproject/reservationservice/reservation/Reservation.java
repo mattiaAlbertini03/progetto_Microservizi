@@ -1,5 +1,7 @@
 package me.msaproject.reservationservice.reservation;
 
+import java.math.BigDecimal;
+
 public record Reservation(
         String reservationId,
         String userId,
@@ -10,6 +12,6 @@ public record Reservation(
         long scheduledStartEpochMs,
         long pickupDeadlineEpochMs,
         Double totalKilometers,
-        Double paymentAmount,
+        BigDecimal paymentAmount,
         Long completedAtEpochMs
 ) {}

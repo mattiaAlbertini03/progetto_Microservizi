@@ -25,6 +25,18 @@ spec:
                 secretKeyRef:
                   name: jwt-secret
                   key: JWT_SECRET
+            - name: AUTH_DB_URL
+              value: "jdbc:postgresql://auth-db.acme-persistence:5432/auth"
+            - name: AUTH_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-client-secret
+                  key: username
+            - name: AUTH_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-client-secret
+                  key: password
 ---
 apiVersion: v1
 kind: Service

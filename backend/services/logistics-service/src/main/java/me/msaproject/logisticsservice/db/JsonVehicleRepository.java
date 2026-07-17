@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ApplicationScoped
+// @ApplicationScoped
 public class JsonVehicleRepository implements VehicleRepository {
 
     private final Map<String, Vehicle> vehicles;
@@ -49,13 +49,17 @@ public class JsonVehicleRepository implements VehicleRepository {
     }
 
     @Override
-    public Map<String, Vehicle> getVehicles() {
-        return vehicles;
+    public List<Vehicle> findAll() {
+        return List.copyOf(vehicles.values());
     }
 
     @Override
-    public void sync() {
-        // The JSON-backed demo repository keeps all runtime changes in memory.
-        // A persistent repository can implement this hook when one is introduced.
+    public java.util.Optional<Vehicle> findById(String vehicleId) {
+        return java.util.Optional.ofNullable(vehicles.get(vehicleId));
+    }
+
+    @Override
+    public void save(Vehicle vehicle) {
+        vehicles.put(vehicle.id(), vehicle);
     }
 }

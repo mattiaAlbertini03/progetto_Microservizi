@@ -6,6 +6,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: acme-persistence
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: orchestration
 ---
 apiVersion: v1

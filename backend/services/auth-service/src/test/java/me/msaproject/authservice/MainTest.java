@@ -2,12 +2,14 @@ package me.msaproject.authservice;
 
 import io.helidon.microprofile.testing.junit5.HelidonTest;
 import io.helidon.microprofile.testing.junit5.AddConfig;
+import io.helidon.microprofile.testing.junit5.AddBean;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
+import me.msaproject.authservice.db.InMemoryUsersRepository;
 
 import java.util.UUID;
 
@@ -16,8 +18,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @HelidonTest
+@AddBean(InMemoryUsersRepository.class)
 @AddConfig(key = "jwt.secret", value = "test-only-secret-that-is-at-least-thirty-two-bytes")
 @AddConfig(key = "jwt.issuer", value = "auth-service")
+@AddConfig(key = "auth-db.password", value = "test-only")
 class MainTest {
 
     @Inject

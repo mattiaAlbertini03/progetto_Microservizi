@@ -5,32 +5,44 @@ metadata:
   namespace: acme
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: reservation-service
+
   template:
     metadata:
       labels:
         app: reservation-service
+
     spec:
       containers:
         - name: reservation-service
           image: reservation-service:latest
           imagePullPolicy: Never
+
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+
           env:
             - name: LOGISTICS_SERVICE_URL
               value: "http://logistics-service.acme:8080"
-            - name: RESERVATIONS_DATA_FILE
-              value: "/data/reservations.json"
-          volumeMounts:
-            - name: reservation-data
-              mountPath: /data
-      volumes:
-        - name: reservation-data
-          persistentVolumeClaim:
-            claimName: reservation-service-data
+
+            - name: RESERVATION_DB_URL
+              value: "jdbc:postgresql://reservation-db.acme-persistence:5432/reservations"
+
+            - name: RESERVATION_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-db-client-secret
+                  key: username
+
+            - name: RESERVATION_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: reservation-db-client-secret
+                  key: password
 
 ---
 apiVersion: v1
@@ -41,20 +53,8 @@ metadata:
 spec:
   selector:
     app: reservation-service
+
   ports:
     - name: http
       port: 8080
       targetPort: 8080
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: reservation-service-data
-  namespace: acme
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi

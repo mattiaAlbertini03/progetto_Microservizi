@@ -26,6 +26,19 @@ spec:
             - name: ACME_MOBILITY_SERVICE_URL
               value: "http://acme-mobility-service.acme:8080"
 
+            - name: LOGISTICS_DB_URL
+              value: "jdbc:postgresql://logistics-db.acme-persistence:5432/logistics"
+            - name: LOGISTICS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-db-client-secret
+                  key: username
+            - name: LOGISTICS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logistics-db-client-secret
+                  key: password
+
 ---
 apiVersion: v1
 kind: Service

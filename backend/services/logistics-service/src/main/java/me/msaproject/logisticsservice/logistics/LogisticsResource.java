@@ -70,6 +70,15 @@ public class LogisticsResource {
         }
 
         @POST
+        @Path("/{vehicleId}/update-status")
+        public Response updateVehicleStatus(
+                        @PathParam("vehicleId") String vehicleId,
+                        me.msaproject.logisticsservice.dto.logistics.VehicleUpdateStatusRequest request) {
+
+                return Response.ok(logisticsService.updateVehicleStatus(vehicleId, request)).build();
+        }
+
+        @POST
         @Path("/{vehicleId}/start-charging")
         public Response startCharging(
                         @PathParam("vehicleId") String vehicleId) {

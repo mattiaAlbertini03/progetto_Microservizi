@@ -1,10 +1,13 @@
 package me.msaproject.reservationservice;
 
+import io.helidon.microprofile.testing.junit5.AddBean;
+import io.helidon.microprofile.testing.junit5.AddConfig;
 import io.helidon.microprofile.testing.junit5.HelidonTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
+import me.msaproject.reservationservice.db.InMemoryReservationRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -15,6 +18,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @HelidonTest
+@AddBean(InMemoryReservationRepository.class)
+@AddConfig(key = "reservation-db.password", value = "test-only")
 class MainTest {
 
     @Inject

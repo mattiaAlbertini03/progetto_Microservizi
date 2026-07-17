@@ -1,18 +1,22 @@
 package me.msaproject.logisticsservice;
 
 import io.helidon.microprofile.testing.junit5.AddConfig;
+import io.helidon.microprofile.testing.junit5.AddBean;
 import io.helidon.microprofile.testing.junit5.HelidonTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
+import me.msaproject.logisticsservice.db.InMemoryVehicleRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @HelidonTest
+@AddBean(InMemoryVehicleRepository.class)
 @AddConfig(key = "logistics.workers.enabled", value = "false")
+@AddConfig(key = "logistics-db.password", value = "test-only")
 class MainTest {
 
     @Inject

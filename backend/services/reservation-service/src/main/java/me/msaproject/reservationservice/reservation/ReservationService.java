@@ -9,9 +9,11 @@ import me.msaproject.reservationservice.dto.ReservationCreationRequest;
 import me.msaproject.reservationservice.dto.ReservationResponse;
 import me.msaproject.reservationservice.dto.ReservationCompletionRequest;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -55,8 +57,7 @@ public class ReservationService {
                 scheduledStart.plus(PICKUP_GRACE_PERIOD).toEpochMilli(),
                 null, null, null);
 
-        reservationRepository.getReservations().put(reservationId, reservation);
-        reservationRepository.sync();
+        reservationRepository.save(reservation);
 
         return reservation;
     }
@@ -143,9 +144,9 @@ public class ReservationService {
                 reservation.reservationId(), reservation.userId(), reservation.vehicleId(),
                 reservation.stationId(), "COMPLETED", reservation.createdAtEpochMs(),
                 reservation.scheduledStartEpochMs(), reservation.pickupDeadlineEpochMs(),
-                completion.kilometers(), completion.paymentAmount(), Instant.now().toEpochMilli());
-        reservationRepository.getReservations().put(reservation.reservationId(), updated);
-        reservationRepository.sync();
+                completion.kilometers(), BigDecimal.valueOf(completion.paymentAmount()),
+                Instant.now().toEpochMilli());
+        reservationRepository.save(updated);
 
         return new ReservationEvent(
                 reservationId,
@@ -158,15 +159,13 @@ public class ReservationService {
     }
 
     private Reservation findReservationOrThrow(String reservationId) {
-        Reservation reservation = reservationRepository
-                .getReservations()
-                .get(reservationId);
+        Optional<Reservation> reservation = reservationRepository.findById(reservationId);
 
-        if (reservation == null) {
+        if (reservation.isEmpty()) {
             throw new IllegalArgumentException("Reservation not found: " + reservationId);
         }
 
-        return reservation;
+        return reservation.get();
     }
 
     private void updateReservationStatus(Reservation old, String status) {
@@ -185,14 +184,12 @@ public class ReservationService {
                 old.pickupDeadlineEpochMs(),
                 old.totalKilometers(), old.paymentAmount(), old.completedAtEpochMs());
 
-        reservationRepository.getReservations().put(old.reservationId(), updated);
-        reservationRepository.sync();
+        reservationRepository.save(updated);
     }
 
     public List<ReservationResponse> getReservationsByUserId(String userId) {
 
-        return reservationRepository.getReservations()
-                .values()
+        return reservationRepository.findAll()
                 .stream()
                 .filter(reservation -> reservation.userId().equals(userId))
                 .map(reservation -> new ReservationResponse(

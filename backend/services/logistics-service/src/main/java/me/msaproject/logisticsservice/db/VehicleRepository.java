@@ -1,12 +1,15 @@
 package me.msaproject.logisticsservice.db;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
 import me.msaproject.logisticsservice.logistics.Vehicle;
 
 public interface VehicleRepository {
 
-    Map<String, Vehicle> getVehicles();
+    List<Vehicle> findAll();
 
-    void sync();
+    Optional<Vehicle> findById(String vehicleId);
+
+    void save(Vehicle vehicle);
 }

@@ -8,6 +8,7 @@ import me.msaproject.logisticsservice.db.VehicleRepository;
 import me.msaproject.logisticsservice.dto.logistics.VehicleResponse;
 import me.msaproject.logisticsservice.dto.logistics.VehicleStatus;
 import me.msaproject.logisticsservice.dto.logistics.VehicleStatusResponse;
+import me.msaproject.logisticsservice.dto.logistics.VehicleUpdateStatusRequest;
 import me.msaproject.logisticsservice.dto.logistics.VehicleReturnRequest;
 
 import java.util.List;
@@ -31,8 +32,7 @@ public class LogisticsService {
     StationsClient stationsClient;
 
     public List<VehicleResponse> getVehicles() {
-        return vehicleRepository.getVehicles()
-                .values()
+        return vehicleRepository.findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -45,8 +45,7 @@ public class LogisticsService {
     }
 
     public List<VehicleResponse> getVehiclesByPosition(double lat, double lon) {
-        return vehicleRepository.getVehicles()
-                .values()
+        return vehicleRepository.findAll()
                 .stream()
                 .filter(vehicle -> isAtPosition(vehicle, lat, lon))
                 .map(this::toResponse)
@@ -125,8 +124,7 @@ public class LogisticsService {
                 vehicle.id(), vehicle.name(), vehicle.type(), station.lat(), station.lon(),
                 VehicleStatus.AVAILABLE,
                 Math.max(0, Math.min(100, request.batteryPct())), vehicle.qrCode());
-        vehicleRepository.getVehicles().put(vehicle.id(), updated);
-        vehicleRepository.sync();
+        vehicleRepository.save(updated);
         vehicleEventClient.notifyVehicleUpdated(station.id(), updated.id());
 
         return toStatusResponse(updated);
@@ -174,16 +172,14 @@ public class LogisticsService {
                 newBatteryPct,
                 vehicle.qrCode());
 
-        vehicleRepository.getVehicles().put(vehicleId, updated);
-        vehicleRepository.sync();
+        vehicleRepository.save(updated);
 
         stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
                 .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
     }
 
     public List<Vehicle> getVehiclesNeedingCharge() {
-        return vehicleRepository.getVehicles()
-                .values()
+        return vehicleRepository.findAll()
                 .stream()
                 .filter(vehicle -> vehicle.batteryPct() < 100)
                 .filter(vehicle -> vehicle.status() == VehicleStatus.AVAILABLE)
@@ -191,21 +187,16 @@ public class LogisticsService {
     }
 
     public List<Vehicle> getChargingVehicles() {
-        return vehicleRepository.getVehicles()
-                .values()
+        return vehicleRepository.findAll()
                 .stream()
                 .filter(vehicle -> vehicle.status() == VehicleStatus.CHARGING)
                 .toList();
     }
 
     private Vehicle findVehicleOrThrow(String vehicleId) {
-        Vehicle vehicle = vehicleRepository.getVehicles().get(vehicleId);
-
-        if (vehicle == null) {
-            throw new IllegalArgumentException("Vehicle not found: " + vehicleId);
-        }
-
-        return vehicle;
+        return vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Vehicle not found: " + vehicleId));
     }
 
     private Vehicle updateStatus(Vehicle vehicle, VehicleStatus status) {
@@ -219,8 +210,7 @@ public class LogisticsService {
                 vehicle.batteryPct(),
                 vehicle.qrCode());
 
-        vehicleRepository.getVehicles().put(vehicle.id(), updated);
-        vehicleRepository.sync();
+        vehicleRepository.save(updated);
 
         stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
                 .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
@@ -245,5 +235,26 @@ public class LogisticsService {
                 vehicle.id(),
                 vehicle.status(),
                 vehicle.batteryPct());
+    }
+
+    public Object updateVehicleStatus(String vehicleId, VehicleUpdateStatusRequest request) {
+        Vehicle vehicle = findVehicleOrThrow(vehicleId);
+
+        Vehicle updated = new Vehicle(
+                vehicle.id(),
+                vehicle.name(),
+                vehicle.type(),
+                request.lat(),
+                request.lon(),
+                vehicle.status(),
+                request.batteryPct(),
+                vehicle.qrCode());
+
+        vehicleRepository.save(updated);
+
+        stationsClient.findStationIdByPosition(updated.lat(), updated.lon())
+                .ifPresent(stationId -> vehicleEventClient.notifyVehicleUpdated(stationId, updated.id()));
+
+        return toResponse(updated);
     }
 }

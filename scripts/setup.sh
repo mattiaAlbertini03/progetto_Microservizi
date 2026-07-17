@@ -2,6 +2,10 @@
 
 set -Eeuo pipefail
 
+RESERVATION_DB_PASSWORD="demo"
+AUTH_DB_PASSWORD="demo"
+LOGISTICS_DB_PASSWORD="demo"
+
 PROFILE="${MINIKUBE_PROFILE:-asm}"
 MINIKUBE_MEMORY_MB="${MINIKUBE_MEMORY_MB:-16384}"
 MINIKUBE_CPUS="${MINIKUBE_CPUS:-8}"
@@ -9,6 +13,7 @@ MINIKUBE_CPUS="${MINIKUBE_CPUS:-8}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 ACME_NAMESPACE="acme"
+PERSISTENCE_NAMESPACE="acme-persistence"
 ORCHESTRATION_NAMESPACE="orchestration"
 KAFKA_NAMESPACE="kafka"
 
@@ -21,6 +26,9 @@ STRIMZI_KAFKA_URL="${STRIMZI_KAFKA_URL:-https://strimzi.io/examples/latest/kafka
 
 TOPICS_DIR="$ROOT_DIR/infrastructure/kubernetes/topics"
 SECRETS_DIR="$ROOT_DIR/infrastructure/kubernetes/secrets"
+RESERVATION_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/reservation-db.yaml"
+AUTH_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/auth-db.yaml"
+LOGISTICS_DB_MANIFEST="$ROOT_DIR/infrastructure/kubernetes/databases/logistics-db.yaml"
 
 SERVICES=(
     auth-service
@@ -291,6 +299,11 @@ ensure_namespaces() {
         -o yaml |
         kubectl apply -f -
 
+    kubectl create namespace "$PERSISTENCE_NAMESPACE" \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+
     kubectl create namespace "$ORCHESTRATION_NAMESPACE" \
         --dry-run=client \
         -o yaml |
@@ -300,6 +313,70 @@ ensure_namespaces() {
         --dry-run=client \
         -o yaml |
         kubectl apply -f -
+}
+
+install_reservation_database() {
+    local username="${RESERVATION_DB_USER:-reservation_user}"
+    local password="${RESERVATION_DB_PASSWORD:-}"
+
+    [[ -n "$password" ]] ||
+        die "RESERVATION_DB_PASSWORD must be set"
+
+    kubectl create secret generic reservation-db-secret \
+        -n "$PERSISTENCE_NAMESPACE" \
+        --from-literal=POSTGRES_DB=reservations \
+        --from-literal=POSTGRES_USER="$username" \
+        --from-literal=POSTGRES_PASSWORD="$password" \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+
+    kubectl create secret generic reservation-db-client-secret \
+        -n "$ACME_NAMESPACE" \
+        --from-literal=username="$username" \
+        --from-literal=password="$password" \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+
+    kubectl apply -f "$RESERVATION_DB_MANIFEST"
+
+    kubectl rollout status statefulset/reservation-db \
+        -n "$PERSISTENCE_NAMESPACE" \
+        --timeout=300s
+}
+
+install_database() {
+    local service="$1"
+    local database="$2"
+    local username="$3"
+    local password="$4"
+    local manifest="$5"
+
+    [[ -n "$password" ]] || die "${service^^}_DB_PASSWORD must be set"
+
+    kubectl create secret generic "$service-db-secret" \
+        -n "$PERSISTENCE_NAMESPACE" \
+        --from-literal=POSTGRES_DB="$database" \
+        --from-literal=POSTGRES_USER="$username" \
+        --from-literal=POSTGRES_PASSWORD="$password" \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+
+    kubectl create secret generic "$service-db-client-secret" \
+        -n "$ACME_NAMESPACE" \
+        --from-literal=username="$username" \
+        --from-literal=password="$password" \
+        --dry-run=client \
+        -o yaml |
+        kubectl apply -f -
+
+    kubectl apply -f "$manifest"
+
+    kubectl rollout status "statefulset/$service-db" \
+        -n "$PERSISTENCE_NAMESPACE" \
+        --timeout=300s
 }
 
 install_camunda() {
@@ -425,6 +502,15 @@ main() {
     ensure_minikube
     ensure_namespaces
     apply_shared_resources
+    install_reservation_database
+    install_database auth auth \
+        "${AUTH_DB_USER:-auth_user}" \
+        "${AUTH_DB_PASSWORD:-}" \
+        "$AUTH_DB_MANIFEST"
+    install_database logistics logistics \
+        "${LOGISTICS_DB_USER:-logistics_user}" \
+        "${LOGISTICS_DB_PASSWORD:-}" \
+        "$LOGISTICS_DB_MANIFEST"
 
     install_camunda
 

@@ -1,12 +1,17 @@
 package me.msaproject.reservationservice.db;
 
-import java.util.Map;
-
 import me.msaproject.reservationservice.reservation.Reservation;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository {
 
-    Map<String, Reservation> getReservations();
+    List<Reservation> findAll();
 
-    void sync();
+    Optional<Reservation> findById(String reservationId);
+
+    void save(Reservation reservation);
+
+    void deleteById(String reservationId);
 }

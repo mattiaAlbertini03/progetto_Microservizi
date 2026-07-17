@@ -1,13 +1,11 @@
 package me.msaproject.authservice.db;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import me.msaproject.authservice.auth.User;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ApplicationScoped
 public class JsonUsersRepository implements UsersRepository {
 
     private final Map<String, User> usersById = new ConcurrentHashMap<>();
