@@ -12,11 +12,14 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class TokenService {
@@ -68,5 +71,34 @@ public class TokenService {
                                         "Could not generate authentication token",
                                         exception);
                 }
+        }
+
+        public String authenticateUserId(String authorizationHeader) {
+                if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                        throw unauthorized("Missing authorization token");
+                }
+
+                try {
+                        SignedJWT jwt = SignedJWT.parse(authorizationHeader.substring("Bearer ".length()).trim());
+                        boolean valid = JWSAlgorithm.HS256.equals(jwt.getHeader().getAlgorithm())
+                                        && jwt.verify(new MACVerifier(secret.getBytes(StandardCharsets.UTF_8)))
+                                        && issuer.equals(jwt.getJWTClaimsSet().getIssuer())
+                                        && jwt.getJWTClaimsSet().getExpirationTime() != null
+                                        && jwt.getJWTClaimsSet().getExpirationTime().toInstant().isAfter(Instant.now());
+                        String userId = jwt.getJWTClaimsSet().getSubject();
+
+                        if (!valid || userId == null || userId.isBlank()) {
+                                throw unauthorized("Invalid authorization token");
+                        }
+                        return userId;
+                } catch (WebApplicationException exception) {
+                        throw exception;
+                } catch (Exception exception) {
+                        throw unauthorized("Invalid authorization token");
+                }
+        }
+
+        private WebApplicationException unauthorized(String message) {
+                return new WebApplicationException(message, Response.Status.UNAUTHORIZED);
         }
 }

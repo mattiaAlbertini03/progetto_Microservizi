@@ -24,6 +24,13 @@ public class InMemoryUsersRepository implements UsersRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return users.values().stream()
+                .filter(user -> user.email().equalsIgnoreCase(email))
+                .findFirst();
+    }
+
+    @Override
     public Optional<User> findById(String id) {
         return Optional.ofNullable(users.get(id));
     }
@@ -41,6 +48,6 @@ public class InMemoryUsersRepository implements UsersRepository {
 
     @Override
     public boolean existsByEmail(String email) {
-        return users.values().stream().anyMatch(user -> user.email().equals(email));
+        return findByEmail(email).isPresent();
     }
 }

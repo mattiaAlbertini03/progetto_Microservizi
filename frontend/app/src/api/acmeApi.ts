@@ -5,6 +5,7 @@ import type {
     ReservationData,
     StationData,
     User,
+    SignupData,
     VehicleData,
 } from "../types/domain";
 
@@ -17,14 +18,15 @@ type ApiErrorResponse = {
 
 async function request<T>(
     path: string,
-    options?: RequestInit
+    options?: RequestInit,
+    notifyOnUnauthorized = true
 ): Promise<T> {
     const response = await fetch(`${ACME_API_URL}${path}`, options);
 
     if (!response.ok) {
         let errorMessage = `HTTP ${response.status}`;
 
-        if (response.status === 401) {
+        if (response.status === 401 && notifyOnUnauthorized) {
             notifyAuthExpired();
             errorMessage = "Sessione non valida o token scaduto. Effettua nuovamente il login.";
         }
@@ -63,7 +65,7 @@ export async function loginUser(
             "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
-    });
+    }, false);
 
     return {
         id: data.userId,
@@ -71,6 +73,52 @@ export async function loginUser(
         email: data.email ?? `${data.username}@acme.local`,
         token: data.token,
     };
+}
+
+export function signupUser(data: SignupData): Promise<{
+    userId: string;
+    username: string;
+    email: string;
+}> {
+    return request("/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    }, false);
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+    const response = await fetch(`${ACME_API_URL}/auth/password/forgot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+}
+
+export async function changePassword(
+    user: User,
+    currentPassword: string,
+    newPassword: string
+): Promise<void> {
+    const response = await fetch(`${ACME_API_URL}/auth/password/change`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!response.ok) {
+        let message = `HTTP ${response.status}`;
+        try {
+            const body = await response.json() as ApiErrorResponse;
+            message = body.message ?? message;
+        } catch {
+            // Empty or non-JSON error response.
+        }
+        throw new Error(message);
+    }
 }
 
 export function getStations(): Promise<StationData[]> {

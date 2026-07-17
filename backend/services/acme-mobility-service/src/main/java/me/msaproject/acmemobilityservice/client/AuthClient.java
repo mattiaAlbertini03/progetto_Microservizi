@@ -5,10 +5,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
 import me.msaproject.acmemobilityservice.dto.auth.AuthUserResponse;
 import me.msaproject.acmemobilityservice.dto.auth.LoginRequest;
 import me.msaproject.acmemobilityservice.dto.auth.LoginResponse;
 import me.msaproject.acmemobilityservice.dto.auth.SignupRequest;
+import me.msaproject.acmemobilityservice.dto.auth.ChangePasswordRequest;
+import me.msaproject.acmemobilityservice.dto.auth.ForgotPasswordRequest;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -44,5 +48,31 @@ public class AuthClient {
                 .path("signup")
                 .request()
                 .post(Entity.json(request), AuthUserResponse.class);
+    }
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        try (Response response = client.target(authServiceUrl)
+                .path("auth/password/forgot")
+                .request()
+                .post(Entity.json(request))) {
+            requireSuccess(response);
+        }
+    }
+
+    public void changePassword(String authorizationHeader, ChangePasswordRequest request) {
+        try (Response response = client.target(authServiceUrl)
+                .path("auth/password/change")
+                .request()
+                .header("Authorization", authorizationHeader)
+                .post(Entity.json(request))) {
+            requireSuccess(response);
+        }
+    }
+
+    private void requireSuccess(Response response) {
+        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            String message = response.hasEntity() ? response.readEntity(String.class) : "Authentication request failed";
+            throw new WebApplicationException(message, response.getStatus());
+        }
     }
 }

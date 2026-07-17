@@ -333,6 +333,30 @@
   margin-top: 24px;
 }
 
+.auth-switches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.text-button {
+  padding: 4px 0;
+  border: 0;
+  color: var(--brand);
+  background: transparent;
+  font-weight: 750;
+}
+
+.success-message {
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: #0b653d;
+  background: #eaf8f0;
+  font-size: 0.9rem;
+}
+
 .profile-grid {
   display: grid;
   grid-template-columns: minmax(260px, 0.8fr) minmax(340px, 1.2fr);
@@ -342,6 +366,14 @@
 .profile-hero,
 .profile-details {
   padding: 28px;
+}
+
+.profile-password {
+  grid-column: 2;
+}
+
+.profile-password h2 {
+  margin: 4px 0 20px;
 }
 
 .profile-avatar {
@@ -491,6 +523,10 @@
 
   .profile-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-password {
+    grid-column: auto;
   }
 
   .profile-hero,

@@ -30,6 +30,14 @@ public class JsonUsersRepository implements UsersRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return usersById.values()
+                .stream()
+                .filter(user -> user.email().equalsIgnoreCase(email))
+                .findFirst();
+    }
+
+    @Override
     public Optional<User> findById(String id) {
         return Optional.ofNullable(usersById.get(id));
     }
@@ -47,8 +55,6 @@ public class JsonUsersRepository implements UsersRepository {
 
     @Override
     public boolean existsByEmail(String email) {
-        return usersById.values()
-                .stream()
-                .anyMatch(user -> user.email().equals(email));
+        return findByEmail(email).isPresent();
     }
 }

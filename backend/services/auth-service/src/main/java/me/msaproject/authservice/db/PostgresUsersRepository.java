@@ -31,6 +31,12 @@ public class PostgresUsersRepository implements UsersRepository {
             WHERE id = ?
             """;
 
+    private static final String FIND_BY_EMAIL_SQL = """
+            SELECT id, username, password, email
+            FROM users
+            WHERE LOWER(email) = LOWER(?)
+            """;
+
     private static final String SAVE_SQL = """
             INSERT INTO users (id, username, password, email)
             VALUES (?, ?, ?, ?)
@@ -100,6 +106,11 @@ public class PostgresUsersRepository implements UsersRepository {
     @Override
     public Optional<User> findById(String id) {
         return findOne(FIND_BY_ID_SQL, id);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return findOne(FIND_BY_EMAIL_SQL, email);
     }
 
     @Override
