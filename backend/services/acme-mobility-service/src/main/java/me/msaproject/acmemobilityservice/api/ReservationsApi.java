@@ -5,19 +5,16 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import me.msaproject.acmemobilityservice.client.FleetClient;
 import me.msaproject.acmemobilityservice.client.LogisticsClient;
 import me.msaproject.acmemobilityservice.client.ReservationsClient;
 import me.msaproject.acmemobilityservice.dto.reservation.QrPickupRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationCreationRequest;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationActionRequest;
-import me.msaproject.acmemobilityservice.dto.reservation.ReservationEvent;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationRequestStatusResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationResponse;
 import me.msaproject.acmemobilityservice.dto.reservation.ReservationStatusResponse;
 import me.msaproject.acmemobilityservice.auth.AuthenticatedUser;
 import me.msaproject.acmemobilityservice.auth.JwtService;
-import me.msaproject.acmemobilityservice.sse.reservation.ReservationEventService;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -43,12 +40,6 @@ public class ReservationsApi {
 
         @Inject
         LogisticsClient logisticsClient;
-
-        @Inject
-        FleetClient fleetClient;
-
-        @Inject
-        ReservationEventService reservationEventService;
 
         @Inject
         JwtService jwtService;
@@ -188,6 +179,8 @@ public class ReservationsApi {
                         String reservationType,
                         Map<String, Object> bankLoginPayload) {
 
+                String vehicleName = logisticsClient.getVehicle(request.vehicleId()).name();
+
                 camundaClient
                                 .newCreateInstanceCommand()
                                 .bpmnProcessId("process")
@@ -196,6 +189,8 @@ public class ReservationsApi {
                                                 "reservationRequest", request,
                                                 "reservationType", reservationType,
                                                 "bankLoginPayload", bankLoginPayload,
+                                                "username", bankLoginPayload.get("username"),
+                                                "vehicleName", vehicleName,
                                                 "scheduledStartAt", Instant
                                                                 .ofEpochMilli(request.scheduledStartEpochMs())
                                                                 .toString(),
@@ -287,20 +282,6 @@ public class ReservationsApi {
                         throw new WebApplicationException(
                                         "Reservation cannot be returned from status: " + reservation.status(),
                                         Response.Status.CONFLICT);
-                }
-
-                if (!fleetClient.isVehicleAtDestination(reservationId)) {
-                        reservationEventService.publish(
-                                        "reservation-" + reservationId,
-                                        new ReservationEvent(
-                                                        reservationId,
-                                                        "VEHICLE_NOT_AT_DESTINATION",
-                                                        "Impossibile procedere alla restituzione: " +
-                                                                        "il veicolo non si trova presso la stazione di destinazione."));
-
-                        return Response.accepted(new ReservationStatusResponse(
-                                        reservationId,
-                                        "RETURN_REJECTED_NOT_AT_DESTINATION")).build();
                 }
 
                 ReservationActionRequest returnRequest = new ReservationActionRequest(

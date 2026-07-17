@@ -1,5 +1,6 @@
 package me.msaproject.acmeworkerservice.workers;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.client.CamundaClient;
 import org.slf4j.Logger;
@@ -145,6 +146,7 @@ public class CalculateChargeWorker implements AcmeWorker {
                 return number.doubleValue();
         }
 
+        @JsonIgnoreProperties(ignoreUnknown = true)
         private record ReservationDto(
                         String reservationId,
                         String userId,

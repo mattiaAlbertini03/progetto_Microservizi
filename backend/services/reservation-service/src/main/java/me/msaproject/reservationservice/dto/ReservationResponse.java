@@ -8,5 +8,8 @@ public record ReservationResponse(
         String status,
         long createdAtEpochMs,
         long scheduledStartEpochMs,
-        long pickupDeadlineEpochMs
+        long pickupDeadlineEpochMs,
+        Double totalKilometers,
+        Double paymentAmount,
+        Long completedAtEpochMs
 ) {}

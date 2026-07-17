@@ -12,8 +12,8 @@ public class VehicleChargingWorker implements Runnable {
     private static final Logger LOG =
             LoggerFactory.getLogger(VehicleChargingWorker.class);
 
-    private static final int CHARGE_INCREMENT = 2;
-    private static final long CHARGE_INTERVAL_MS = 30000;
+    private static final int CHARGE_INCREMENT = 1;
+    private static final long CHARGE_INTERVAL_MS = 60_000;
 
     private final LogisticsService logisticsService;
 

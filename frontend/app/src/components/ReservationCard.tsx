@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { getVehicle } from "../api/acmeApi";
 import type { ReservationData } from "../types/domain";
 
 type Props = {
@@ -32,12 +34,23 @@ export default function ReservationCard({
     onReturn,
     onTrack,
 }: Props) {
+    const [vehicleName, setVehicleName] = useState(reservation.vehicleId);
     const canCancel = reservation.status === "PENDING" || reservation.status === "RESERVED";
     const canPickup = reservation.status === "RESERVED";
     const isPickedUp = reservation.status === "ACTIVE" || reservation.status === "PICKED_UP";
     const scheduledStart = reservation.scheduledStartEpochMs
         ? new Date(reservation.scheduledStartEpochMs)
         : null;
+    const completedAt = reservation.completedAtEpochMs
+        ? new Date(reservation.completedAtEpochMs)
+        : null;
+
+    useEffect(() => {
+        void getVehicle(reservation.vehicleId)
+            .then((vehicle) => setVehicleName(vehicle.name))
+            .catch(() => setVehicleName(reservation.vehicleId));
+    }, [reservation.vehicleId]);
+
 
     return (
         <article className="reservation-card panel">
@@ -47,10 +60,18 @@ export default function ReservationCard({
                     <span className={`reservation-status reservation-status--${statusTone(reservation.status)}`}>
                         {statusLabels[reservation.status] ?? reservation.status}
                     </span>
-                    <h2>{reservation.vehicleId}</h2>
+                    <h2>{vehicleName}</h2>
                     <p>Stazione {reservation.stationId}</p>
                 </div>
             </div>
+
+            {reservation.status === "COMPLETED" && (
+                <div className="reservation-completion-data">
+                    <div><span>Distanza</span><strong>{reservation.totalKilometers?.toFixed(2) ?? "—"} km</strong></div>
+                    <div><span>Pagamento</span><strong>{reservation.paymentAmount != null ? `€ ${reservation.paymentAmount.toFixed(2)}` : "—"}</strong></div>
+                    <div><span>Completata</span><strong>{completedAt?.toLocaleDateString("it-IT") ?? "—"}</strong><small>{completedAt?.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}</small></div>
+                </div>
+            )}
 
             <div className="reservation-timeline">
                 <div>

@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.Response;
 import me.msaproject.fleetservice.dto.StartSimulationRequest;
 import me.msaproject.fleetservice.dto.StopSimulationRequest;
 import me.msaproject.fleetservice.dto.SimulationSummary;
+import me.msaproject.fleetservice.dto.SimulationStatusResponse;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -59,6 +60,24 @@ public class SimulatorClient {
             );
 
             return response.readEntity(SimulationSummary.class);
+        }
+    }
+
+    public void rechargeAndResume(String vehicleId) {
+        try (Response response = client.target(simulatorServiceUrl).path("simulations")
+                .path(vehicleId).path("recharge-and-resume").request().post(Entity.json(null))) {
+            checkResponse(response, "Failed to recharge vehicle " + vehicleId);
+        }
+    }
+
+    public SimulationStatusResponse getStatus(String vehicleId) {
+        try (Response response = client.target(simulatorServiceUrl)
+                .path("simulations")
+                .path(vehicleId)
+                .request()
+                .get()) {
+            checkResponse(response, "Failed to get simulation status for vehicle " + vehicleId);
+            return response.readEntity(SimulationStatusResponse.class);
         }
     }
 

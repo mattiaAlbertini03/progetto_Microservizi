@@ -14,6 +14,7 @@ KAFKA_NAMESPACE="kafka"
 
 CAMUNDA_RELEASE="camunda"
 CAMUNDA_VALUES="$ROOT_DIR/infrastructure/helm/camunda-values.yaml"
+CAMUNDA_CHART_VERSION="${CAMUNDA_CHART_VERSION:-14.6.1}"
 
 STRIMZI_INSTALL_URL="${STRIMZI_INSTALL_URL:-https://strimzi.io/install/latest?namespace=kafka}"
 STRIMZI_KAFKA_URL="${STRIMZI_KAFKA_URL:-https://strimzi.io/examples/latest/kafka/kafka-single-node.yaml}"
@@ -316,6 +317,7 @@ install_camunda() {
 
     helm upgrade --install "$CAMUNDA_RELEASE" \
         camunda/camunda-platform \
+        --version "$CAMUNDA_CHART_VERSION" \
         -n "$ORCHESTRATION_NAMESPACE" \
         -f "$CAMUNDA_VALUES" \
         --wait=hookOnly

@@ -3,6 +3,7 @@ package me.msaproject.acmeworkerservice;
 import io.camunda.client.CamundaClient;
 import me.msaproject.acmeworkerservice.camunda.CamundaClientFactory;
 import me.msaproject.acmeworkerservice.workers.CalculateChargeWorker;
+import me.msaproject.acmeworkerservice.workers.StopAndChargeWorker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ public final class Main {
         LOG.info("Connected to Camunda");
 
         new CalculateChargeWorker(camundaClient).open();
+        new StopAndChargeWorker(camundaClient).open();
 
         LOG.info("All workers started");
 

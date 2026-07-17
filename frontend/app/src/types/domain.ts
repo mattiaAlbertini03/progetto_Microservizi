@@ -15,11 +15,11 @@ export type StationData = {
     name: string;
     lat: number;
     lon: number;
-    capacity: number;
 };
 
 export type VehicleData = {
     id: string;
+    name: string;
     type: "CAR" | "SCOOTER" | "KICKSCOOTER" | string;
     lat?: number | null;
     lon?: number | null;
@@ -37,4 +37,7 @@ export type ReservationData = {
     createdAtEpochMs: number;
     scheduledStartEpochMs: number;
     pickupDeadlineEpochMs: number;
+    totalKilometers?: number | null;
+    paymentAmount?: number | null;
+    completedAtEpochMs?: number | null;
 };

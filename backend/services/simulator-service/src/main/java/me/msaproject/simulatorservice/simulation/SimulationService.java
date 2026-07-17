@@ -8,6 +8,7 @@ import me.msaproject.simulatorservice.client.MonitoringClient;
 import me.msaproject.simulatorservice.dto.RouteData;
 import me.msaproject.simulatorservice.dto.RoutePoint;
 import me.msaproject.simulatorservice.dto.SimulationSummary;
+import me.msaproject.simulatorservice.dto.SimulationStatusResponse;
 import me.msaproject.simulatorservice.dto.StartSimulationRequest;
 import me.msaproject.simulatorservice.dto.VehicleBatteryEvent;
 import me.msaproject.simulatorservice.dto.VehicleTrackingEvent;
@@ -20,7 +21,8 @@ import java.util.concurrent.*;
 public class SimulationService {
 
     private static final long TICK_SECONDS = 5;
-    private static final double BATTERY_CONSUMPTION_PER_KM = 1.0;
+    private static final double SAFETY_BATTERY_PCT = 5.0;
+    private static final double RESUME_BATTERY_PCT = 25.0;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(8);
 
@@ -49,7 +51,8 @@ public class SimulationService {
                 request.initialBatteryPct(),
                 Instant.now(),
                 routeData.points(),
-                routeData.distanceMeters());
+                routeData.distanceMeters(),
+                ThreadLocalRandom.current().nextDouble(0.0, Math.max(0.01, request.initialBatteryPct())));
 
         simulations.put(request.vehicleId(), state);
 
@@ -80,13 +83,8 @@ public class SimulationService {
         double elapsedSeconds = Math.max(
                 0,
                 (Instant.now().toEpochMilli() - state.startedAt().toEpochMilli()) / 1000.0);
-        double travelledMeters = Math.min(
-                elapsedSeconds * state.speedMetersPerSecond(),
-                state.totalDistanceMeters());
-        double batteryPct = Math.max(
-                0,
-                state.initialBatteryPct()
-                        - (travelledMeters / 1000.0) * BATTERY_CONSUMPTION_PER_KM);
+        double travelledMeters = state.travelledMeters();
+        double batteryPct = state.currentBatteryPct();
 
         System.out.println("Task ended for " + vehicleId);
 
@@ -94,7 +92,8 @@ public class SimulationService {
                 vehicleId,
                 Math.max(1, (int) Math.ceil(elapsedSeconds / 60.0)),
                 travelledMeters / 1000.0,
-                batteryPct);
+                batteryPct,
+                state.minimumBatteryPct());
     }
 
     private void discardSimulation(String vehicleId) {
@@ -111,7 +110,27 @@ public class SimulationService {
         return simulations.containsKey(vehicleId);
     }
 
-    private void tick(SimulationState state) {
+    public SimulationStatusResponse getStatus(String vehicleId) {
+        SimulationState state = simulations.get(vehicleId);
+        boolean active = state != null;
+        boolean moving = active
+                && !state.arrived()
+                && state.rechargeUntilEpochMs() == 0;
+        double kilometers = active ? state.travelledMeters() / 1000.0 : 0.0;
+        int minutesUsed = active
+                ? Math.max(1, (int) Math.ceil(
+                        (Instant.now().toEpochMilli() - state.startedAt().toEpochMilli()) / 60_000.0))
+                : 0;
+
+        return new SimulationStatusResponse(
+                vehicleId,
+                active,
+                moving ? "MOVING" : "STOPPED",
+                kilometers,
+                minutesUsed);
+    }
+
+    private synchronized void tick(SimulationState state) {
         try {
             System.out.println("Tick started for " + state.vehicleId());
 
@@ -121,37 +140,32 @@ public class SimulationService {
             }
 
             long now = Instant.now().toEpochMilli();
-            double elapsedSeconds = (now - state.startedAt().toEpochMilli()) / 1000.0;
+            if (state.rechargeUntilEpochMs() > 0) {
+                publishState(state, now);
+                return;
+            }
 
-            double travelledMeters = elapsedSeconds * state.speedMetersPerSecond();
+            double elapsedSeconds = Math.max(0, (now - state.lastTickEpochMs()) / 1000.0);
+            state.setLastTickEpochMs(now);
+            double travelledMeters = Math.min(
+                    state.totalDistanceMeters(),
+                    state.travelledMeters() + elapsedSeconds * state.speedMetersPerSecond());
+            double travelledThisTick = travelledMeters - state.travelledMeters();
+            state.setTravelledMeters(travelledMeters);
+            state.setCurrentBatteryPct(Math.max(0,
+                    state.currentBatteryPct() - travelledThisTick * state.batteryDrainPerMeter()));
             double progress = Math.min(travelledMeters / state.totalDistanceMeters(), 1.0);
 
-            RoutePoint position = interpolateAlongRoute(state.route(), progress);
+            publishState(state, now);
 
-            double travelledKm = Math.min(travelledMeters, state.totalDistanceMeters()) / 1000.0;
-            double battery = Math.max(
-                    0,
-                    state.initialBatteryPct() - travelledKm * BATTERY_CONSUMPTION_PER_KM);
-
-            System.out.println("About to send tracking for " + state.vehicleId()
-                    + " lat=" + position.lat() + " lon=" + position.lon());
-            System.out.println("About to send battery for " + state.vehicleId() + " battery=" + battery);
-
-            VehicleTrackingEvent tracking = new VehicleTrackingEvent(
-                    state.vehicleId(),
-                    position.lat(),
-                    position.lon(),
-                    now);
-
-            VehicleBatteryEvent batteryEvent = new VehicleBatteryEvent(
-                    state.vehicleId(),
-                    battery,
-                    now);
-
-            monitoringClient.sendTracking(tracking);
-            monitoringClient.sendBattery(batteryEvent);
-
-            System.out.println("Events sent for " + state.vehicleId());
+            if (!state.safetyRechargeTriggered()
+                    && state.currentBatteryPct() <= SAFETY_BATTERY_PCT
+                    && progress < 1.0) {
+                state.setSafetyRechargeTriggered(true);
+                state.setRechargeUntilEpochMs(Long.MAX_VALUE);
+                System.out.println("Vehicle paused at safety threshold: " + state.vehicleId());
+                return;
+            }
 
             if (progress >= 1.0) {
                 state.setArrived(true);
@@ -160,6 +174,25 @@ public class SimulationService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void rechargeAndResume(String vehicleId) {
+        SimulationState state = simulations.get(vehicleId);
+        if (state == null) throw new IllegalStateException("No active simulation for vehicle " + vehicleId);
+        state.setCurrentBatteryPct(RESUME_BATTERY_PCT);
+        state.setRechargeUntilEpochMs(0);
+        state.setLastTickEpochMs(Instant.now().toEpochMilli());
+        System.out.println("Vehicle recharged and resumed: " + vehicleId);
+    }
+
+    private void publishState(SimulationState state, long now) {
+        double progress = state.totalDistanceMeters() == 0 ? 1
+                : Math.min(state.travelledMeters() / state.totalDistanceMeters(), 1.0);
+        RoutePoint position = interpolateAlongRoute(state.route(), progress);
+        monitoringClient.sendTracking(new VehicleTrackingEvent(
+                state.vehicleId(), position.lat(), position.lon(), now));
+        monitoringClient.sendBattery(new VehicleBatteryEvent(
+                state.vehicleId(), state.currentBatteryPct(), now));
     }
 
     private RoutePoint interpolateAlongRoute(java.util.List<RoutePoint> route, double progress) {

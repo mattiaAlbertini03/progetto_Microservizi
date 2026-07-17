@@ -6,6 +6,9 @@ public record FleetStatusResponse(
         double lat,
         double lon,
         int batteryPercent,
+        String movementStatus,
+        double kilometers,
+        int minutesUsed,
         long trackingTimestampEpochMs,
         long batteryTimestampEpochMs
 ) {

@@ -1,6 +1,8 @@
 package me.msaproject.acmemobilityservice.dto.reservation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record ReservationResponse(
         String reservationId,
         String userId,
@@ -9,5 +11,8 @@ public record ReservationResponse(
         String status,
         long createdAtEpochMs,
         long scheduledStartEpochMs,
-        long pickupDeadlineEpochMs
+        long pickupDeadlineEpochMs,
+        Double totalKilometers,
+        Double paymentAmount,
+        Long completedAtEpochMs
 ) {}

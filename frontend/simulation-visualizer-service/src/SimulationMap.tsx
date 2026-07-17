@@ -24,6 +24,14 @@ type VehicleResponse = {
     batteryTimestampEpochMs: number;
 };
 
+type SimulationUpdate = {
+    reservationId: string;
+    amount: number;
+    distance: number;
+    vehicleName: string;
+    username: string;
+};
+
 const markerIcon = L.divIcon({
     className: "vehicle-marker-shell",
     html: '<div class="vehicle-marker">🚙</div>',
@@ -48,7 +56,28 @@ export default function SimulationMap() {
     const vehicleId = queryParams.get("vehicleId");
     const [vehicle, setVehicle] = useState<VehicleResponse | null>(null);
     const [history, setHistory] = useState<LatLngExpression[]>([]);
+    const [tripUpdate, setTripUpdate] = useState<SimulationUpdate | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!reservationId) {
+            setTripUpdate(null);
+            return;
+        }
+
+        const source = new EventSource(
+            `/events/simulation-visualiser/${encodeURIComponent(reservationId)}/events`
+        );
+        source.addEventListener("simulation-update", (event) => {
+            const update = JSON.parse((event as MessageEvent).data) as SimulationUpdate;
+            setTripUpdate(update);
+        });
+        source.onerror = () => {
+            console.error("Errore SSE visualizzatore; riconnessione automatica in corso.");
+        };
+
+        return () => source.close();
+    }, [reservationId]);
 
     useEffect(() => {
         if (!vehicleId) {
@@ -103,9 +132,13 @@ export default function SimulationMap() {
         [vehicle]
     );
     const battery = Math.max(0, Math.min(100, vehicle?.batteryPercent ?? 0));
-    const updatedAt = vehicle
-        ? new Date(vehicle.trackingTimestampEpochMs).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-        : "In attesa";
+    const batteryTone = !vehicle
+        ? "normal"
+        : battery < 5
+            ? "critical"
+            : battery < 20
+                ? "warning"
+                : "normal";
     const connectionState = error ? "error" : vehicle ? "live" : "waiting";
 
     return (
@@ -130,7 +163,11 @@ export default function SimulationMap() {
                     <div className="trip-reference">
                         <div className="reference-row">
                             <span>Veicolo</span>
-                            <strong>{vehicleId ?? "Non specificato"}</strong>
+                            <strong>{tripUpdate?.vehicleName ?? vehicleId ?? "Non specificato"}</strong>
+                        </div>
+                        <div className="reference-row">
+                            <span>Utente</span>
+                            <strong>{tripUpdate?.username ?? "In attesa…"}</strong>
                         </div>
                         <div className="reference-row">
                             <span>Prenotazione</span>
@@ -138,7 +175,7 @@ export default function SimulationMap() {
                         </div>
                     </div>
 
-                    <section className="battery-card">
+                    <section className={`battery-card battery-card--${batteryTone}`}>
                         <div className="battery-card-header">
                             <span>Batteria residua</span>
                             <strong>{vehicle ? `${Math.round(battery)}%` : "—"}</strong>
@@ -148,10 +185,8 @@ export default function SimulationMap() {
                     </section>
 
                     <div className="telemetry-grid">
-                        <div className="telemetry-stat"><span>Ultimo dato</span><strong>{updatedAt}</strong></div>
-                        <div className="telemetry-stat"><span>Punti percorso</span><strong>{history.length}</strong></div>
-                        <div className="telemetry-stat"><span>Latitudine</span><strong>{vehicle ? vehicle.lat.toFixed(5) : "—"}</strong></div>
-                        <div className="telemetry-stat"><span>Longitudine</span><strong>{vehicle ? vehicle.lon.toFixed(5) : "—"}</strong></div>
+                        <div className="telemetry-stat"><span>Distanza percorsa</span><strong>{tripUpdate ? `${tripUpdate.distance.toFixed(2)} km` : "—"}</strong></div>
+                        <div className="telemetry-stat"><span>Importo corrente</span><strong>{tripUpdate ? `€ ${tripUpdate.amount.toFixed(2)}` : "—"}</strong></div>
                     </div>
 
                     <p className="polling-note"><i className="pulse-icon" /> Aggiornamento automatico ogni {POLL_MS / 1000} secondi</p>
@@ -176,9 +211,10 @@ export default function SimulationMap() {
                         {vehicle && (
                             <Marker position={[vehicle.lat, vehicle.lon]} icon={markerIcon}>
                                 <Popup>
-                                    <strong>{vehicle.vehicleId}</strong><br />
+                                    <strong>{tripUpdate?.vehicleName ?? vehicle.vehicleId}</strong><br />
+                                    {tripUpdate?.username ?? "Utente in attesa"}<br />
                                     Batteria {Math.round(vehicle.batteryPercent)}%<br />
-                                    {vehicle.lat.toFixed(5)}, {vehicle.lon.toFixed(5)}
+                                    {tripUpdate ? `${tripUpdate.distance.toFixed(2)} km · € ${tripUpdate.amount.toFixed(2)}` : "Calcolo corsa in corso"}
                                 </Popup>
                             </Marker>
                         )}

@@ -7,6 +7,8 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import me.msaproject.reservationservice.dto.ReservationCompletionRequest;
+import me.msaproject.reservationservice.dto.VehicleReturnRequest;
 
 @ApplicationScoped
 public class LogisticsClient {
@@ -49,12 +51,16 @@ public class LogisticsClient {
         );
     }
 
-    public void returnVehicle(String vehicleId) {
-        executeVehicleAction(
-                vehicleId,
-                "return",
-                "Failed to return vehicle " + vehicleId
-        );
+    public void returnVehicle(String vehicleId, ReservationCompletionRequest completion) {
+        VehicleReturnRequest vehicleReturn = new VehicleReturnRequest(
+                completion.lat(),
+                completion.lon(),
+                completion.batteryPct());
+
+        try (Response response = client.target(logisticsServiceUrl).path("vehicles").path(vehicleId)
+                .path("return").request().post(Entity.json(vehicleReturn))) {
+            checkResponse(response, "Failed to return vehicle " + vehicleId);
+        }
     }
 
     private void executeVehicleAction(

@@ -188,6 +188,18 @@
   transition: width 400ms ease;
 }
 
+.battery-card--warning .battery-card-header strong { color: #d66a00; }
+
+.battery-card--warning .battery-meter i {
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+}
+
+.battery-card--critical .battery-card-header strong { color: #dc2626; }
+
+.battery-card--critical .battery-meter i {
+  background: linear-gradient(90deg, #ef4444, #b91c1c);
+}
+
 .battery-card small { color: var(--muted); font-size: 0.68rem; }
 
 .telemetry-grid {

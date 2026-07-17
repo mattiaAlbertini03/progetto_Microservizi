@@ -7,6 +7,8 @@ import {
 } from "react";
 
 import { ACME_API_URL } from "../App";
+import { useNotifications } from "./NotificationsContext";
+import { showBrowserNotification } from "../browserNotifications";
 
 type ReservationEventsContextType = {
     listenReservationRequest: (requestId: string, stationId?: string) => void;
@@ -16,13 +18,19 @@ type ReservationEventsContextType = {
 const ReservationEventsContext =
     createContext<ReservationEventsContextType | null>(null);
 
+const PARKED_REMINDER_INTERVAL_MS = 60_000;
+
 export function ReservationEventsProvider({ children }: { children: ReactNode }) {
     const sources = useRef<Record<string, EventSource>>({});
+    const parkedReminderIntervals = useRef<Record<string, number>>({});
+    const notify = useNotifications();
 
     useEffect(() => {
         return () => {
             Object.values(sources.current).forEach((source) => source.close());
+            Object.values(parkedReminderIntervals.current).forEach(window.clearInterval);
             sources.current = {};
+            parkedReminderIntervals.current = {};
         };
     }, []);
 
@@ -44,7 +52,7 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
 
             switch (data.status) {
                 case "RESERVED":
-                    alert("Prenotazione confermata");
+                    notify("Prenotazione confermata", "success");
 
                     if (data.reservationId) {
                         void listenReservationEvents(data.reservationId).catch(
@@ -72,7 +80,7 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
                     break;
 
                 case "FAILED":
-                    alert(data.message ?? "Prenotazione fallita");
+                    notify(data.message ?? "Prenotazione fallita", "error");
 
                     source.close();
                     delete sources.current[key];
@@ -107,36 +115,55 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
 
             switch (data.status) {
                 case "DEPOSIT_HELD":
-                    alert(
+                    notify(
                         data.message ??
-                            "Il deposito è stato trattenuto con successo."
+                            "Il deposito è stato trattenuto con successo.", "success"
                     );
                     break;
 
                 case "RETURN_REQUEST_ACCEPTED":
-                    alert(data.message ?? "Richiesta di riconsegna accettata.");
+                    notify(data.message ?? "Richiesta di riconsegna accettata.", "success");
                     break;
 
-                case "VEHICLE_NOT_AT_DESTINATION":
-                    alert(data.message);
+                case "VEHICLE_AT_STATION":
+                    if (data.movementStatus !== "STOPPED") {
+                        window.clearInterval(parkedReminderIntervals.current[reservationId]);
+                        delete parkedReminderIntervals.current[reservationId];
+                        break;
+                    }
+                    if (!parkedReminderIntervals.current[reservationId]) {
+                        parkedReminderIntervals.current[reservationId] = window.setInterval(() => {
+                            const message = "Il veicolo è parcheggiato presso la stazione di destinazione. Ricordati di completare la riconsegna.";
+                            showBrowserNotification("Riconsegna ACMEMobility", message);
+                            notify(message, "info");
+                        }, PARKED_REMINDER_INTERVAL_MS);
+                    }
+                    break;
+
+                case "VEHICLE_NOT_AT_STATION":
+                    window.clearInterval(parkedReminderIntervals.current[reservationId]);
+                    delete parkedReminderIntervals.current[reservationId];
+                    notify(data.message, "error");
                     break;
 
                 case "LOW_BATTERY_PENALTY_APPLIED":
-                    alert(
+                    notify(
                         data.message ??
-                            "Batteria sotto il 15%: applicata una penale del 10%."
+                            "Batteria sotto il 15%: applicata una penale del 10%.", "error"
                     );
                     break;
 
                 case "DEPOSIT_RELEASED":
-                    alert(
+                    notify(
                         data.message ??
-                            "Il deposito è stato rilasciato con successo."
+                            "Il deposito è stato rilasciato con successo.", "success"
                     );
                     break;
 
                 case "RETURN_CONFIRMED":
-                    alert(data.message);
+                    window.clearInterval(parkedReminderIntervals.current[reservationId]);
+                    delete parkedReminderIntervals.current[reservationId];
+                    notify(data.message, "success");
 
                     window.dispatchEvent(
                         new CustomEvent("reservations-changed")
@@ -147,7 +174,7 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
                     break;
 
                 case "RETURN_FAILED":
-                    alert(data.message);
+                    notify(data.message, "error");
 
                     eventSource.close();
                     delete sources.current[key];

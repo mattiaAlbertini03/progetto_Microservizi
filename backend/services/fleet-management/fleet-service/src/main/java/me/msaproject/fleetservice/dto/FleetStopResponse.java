@@ -5,5 +5,6 @@ public record FleetStopResponse(
         String vehicleId,
         int minutesUsed,
         double kilometers,
-        double batteryPct
+        double batteryPct,
+        double minimumBatteryPct
 ) {}

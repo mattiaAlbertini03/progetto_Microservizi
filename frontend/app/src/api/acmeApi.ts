@@ -1,4 +1,5 @@
 import { ACME_API_URL } from "../App";
+import { notifyAuthExpired } from "../authSession";
 import type {
     LoginCredentials,
     ReservationData,
@@ -24,6 +25,7 @@ async function request<T>(
         let errorMessage = `HTTP ${response.status}`;
 
         if (response.status === 401) {
+            notifyAuthExpired();
             errorMessage = "Sessione non valida o token scaduto. Effettua nuovamente il login.";
         }
 
@@ -83,6 +85,10 @@ export function getVehiclesByStation(
             stationId
         )}`
     );
+}
+
+export function getVehicle(vehicleId: string): Promise<VehicleData> {
+    return request<VehicleData>(`/logistics/vehicles/${encodeURIComponent(vehicleId)}`);
 }
 
 export async function createReservation(

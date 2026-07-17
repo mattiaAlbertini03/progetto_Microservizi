@@ -45,12 +45,22 @@ public class FleetResource {
     }
 
     @GET
-    @Path("/{reservationId}/at-destination")
-    public Response isVehicleAtDestination(
-            @PathParam("reservationId") String reservationId) {
-
-        boolean atDestination = fleetService.isVehicleAtDestination(reservationId);
-
-        return Response.ok(atDestination).build();
+    @Path("/{reservationId}/at-station")
+    public Response isVehicleAtStation(@PathParam("reservationId") String reservationId) {
+        return Response.ok(fleetService.isVehicleAtStation(reservationId)).build();
     }
+
+    @GET
+    @Path("/{reservationId}/at-destination")
+    public Response isVehicleAtDestination(@PathParam("reservationId") String reservationId) {
+        return isVehicleAtStation(reservationId);
+    }
+
+    @POST
+    @Path("/{reservationId}/recharge-and-resume")
+    public Response rechargeAndResume(@PathParam("reservationId") String reservationId) {
+        fleetService.rechargeAndResume(reservationId);
+        return Response.ok(Map.of("status", "resumed", "batteryPct", 25)).build();
+    }
+
 }

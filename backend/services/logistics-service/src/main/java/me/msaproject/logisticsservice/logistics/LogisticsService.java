@@ -8,11 +8,14 @@ import me.msaproject.logisticsservice.db.VehicleRepository;
 import me.msaproject.logisticsservice.dto.logistics.VehicleResponse;
 import me.msaproject.logisticsservice.dto.logistics.VehicleStatus;
 import me.msaproject.logisticsservice.dto.logistics.VehicleStatusResponse;
+import me.msaproject.logisticsservice.dto.logistics.VehicleReturnRequest;
 
 import java.util.List;
 
 @ApplicationScoped
 public class LogisticsService {
+
+    private static final int MIN_RENTABLE_BATTERY_PCT = 80;
 
     private final VehicleRepository vehicleRepository;
 
@@ -36,9 +39,9 @@ public class LogisticsService {
     }
 
     private boolean canBeRented(Vehicle vehicle) {
-        return vehicle.status() == VehicleStatus.AVAILABLE
-                || (vehicle.status() == VehicleStatus.CHARGING
-                        && vehicle.batteryPct() >= 80);
+        return vehicle.batteryPct() >= MIN_RENTABLE_BATTERY_PCT
+                && (vehicle.status() == VehicleStatus.AVAILABLE
+                        || vehicle.status() == VehicleStatus.CHARGING);
     }
 
     public List<VehicleResponse> getVehiclesByPosition(double lat, double lon) {
@@ -105,7 +108,7 @@ public class LogisticsService {
         return toStatusResponse(updated);
     }
 
-    public VehicleStatusResponse returnVehicle(String vehicleId) {
+    public VehicleStatusResponse returnVehicle(String vehicleId, VehicleReturnRequest request) {
         Vehicle vehicle = findVehicleOrThrow(vehicleId);
 
         if (vehicle.status() != VehicleStatus.IN_USE) {
@@ -113,7 +116,15 @@ public class LogisticsService {
                     "Vehicle cannot be returned from status: " + vehicle.status());
         }
 
-        Vehicle updated = updateStatus(vehicle, VehicleStatus.AVAILABLE);
+        var station = stationsClient.findStationNear(request.lat(), request.lon())
+                .orElseThrow(() -> new IllegalStateException("Vehicle is not near a station"));
+        Vehicle updated = new Vehicle(
+                vehicle.id(), vehicle.name(), vehicle.type(), station.lat(), station.lon(),
+                VehicleStatus.AVAILABLE,
+                Math.max(0, Math.min(100, request.batteryPct())), vehicle.qrCode());
+        vehicleRepository.getVehicles().put(vehicle.id(), updated);
+        vehicleRepository.sync();
+        vehicleEventClient.notifyVehicleUpdated(station.id(), updated.id());
 
         return toStatusResponse(updated);
     }
@@ -152,6 +163,7 @@ public class LogisticsService {
 
         Vehicle updated = new Vehicle(
                 vehicle.id(),
+                vehicle.name(),
                 vehicle.type(),
                 vehicle.lat(),
                 vehicle.lon(),
@@ -196,6 +208,7 @@ public class LogisticsService {
     private Vehicle updateStatus(Vehicle vehicle, VehicleStatus status) {
         Vehicle updated = new Vehicle(
                 vehicle.id(),
+                vehicle.name(),
                 vehicle.type(),
                 vehicle.lat(),
                 vehicle.lon(),
@@ -215,6 +228,7 @@ public class LogisticsService {
     private VehicleResponse toResponse(Vehicle vehicle) {
         return new VehicleResponse(
                 vehicle.id(),
+                vehicle.name(),
                 vehicle.type(),
                 vehicle.lat(),
                 vehicle.lon(),

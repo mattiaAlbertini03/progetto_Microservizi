@@ -15,6 +15,7 @@ import {
     getVehiclesByStation,
 } from "../api/acmeApi";
 import type { StationData, VehicleData } from "../types/domain";
+import { useNotifications } from "../components/NotificationsContext";
 
 const stationIcon = L.divIcon({
     className: "station-marker-shell",
@@ -43,6 +44,7 @@ export default function MapPage() {
     const [loadingStationId, setLoadingStationId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const { listenReservationRequest } = useReservationEvents();
+    const notify = useNotifications();
 
     const selectedStation = useMemo(
         () => stations.find((station) => station.id === selectedStationId) ?? null,
@@ -54,6 +56,10 @@ export default function MapPage() {
             try {
                 const data = await getStations();
                 setStations(data);
+                await Promise.all(data.map(async (station) => {
+                    const vehicles = await getVehiclesByStation(station.id);
+                    setVehiclesByStation((previous) => ({ ...previous, [station.id]: vehicles }));
+                }));
                 setError(null);
             } catch (err) {
                 console.error(err);
@@ -121,10 +127,10 @@ export default function MapPage() {
                 scheduledStartEpochMs
             );
             listenReservationRequest(data.requestId, station.id);
-            alert("Richiesta di prenotazione inviata");
+            notify("Richiesta di prenotazione inviata", "success");
         } catch (err) {
             console.error("Errore durante la prenotazione:", err);
-            alert(err instanceof Error ? err.message : "Errore durante la prenotazione");
+            notify(err instanceof Error ? err.message : "Errore durante la prenotazione", "error");
         }
     }
 
@@ -145,10 +151,10 @@ export default function MapPage() {
                 scannedCode
             );
             listenReservationRequest(data.requestId, station.id);
-            alert("Richiesta di ritiro tramite QR inviata");
+            notify("Richiesta di ritiro tramite QR inviata", "success");
         } catch (err) {
             console.error("Errore durante il ritiro tramite QR:", err);
-            alert(err instanceof Error ? err.message : "Errore durante il ritiro QR");
+            notify(err instanceof Error ? err.message : "Errore durante il ritiro QR", "error");
         }
     }
 
@@ -172,7 +178,7 @@ export default function MapPage() {
                         <span className="station-chip-icon">⚡</span>
                         <span>
                             <strong>{station.name}</strong>
-                            <small>{station.capacity} posti</small>
+                            <small>{vehiclesByStation[station.id]?.filter((vehicle) => vehicle.status === "AVAILABLE" || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80)).length ?? "…"} mezzi disponibili</small>
                         </span>
                     </button>
                 ))}

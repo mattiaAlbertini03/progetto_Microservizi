@@ -63,9 +63,10 @@ public class LogisticsResource {
         @POST
         @Path("/{vehicleId}/return")
         public Response returnVehicle(
-                        @PathParam("vehicleId") String vehicleId) {
+                        @PathParam("vehicleId") String vehicleId,
+                        me.msaproject.logisticsservice.dto.logistics.VehicleReturnRequest request) {
 
-                return Response.ok(logisticsService.returnVehicle(vehicleId)).build();
+                return Response.ok(logisticsService.returnVehicle(vehicleId, request)).build();
         }
 
         @POST

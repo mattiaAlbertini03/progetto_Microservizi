@@ -8,6 +8,7 @@ import MapPage from "./pages/MapPage";
 import ReservationsPage from "./pages/ReservationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginModal from "./components/LoginModal";
+import { NotificationsProvider } from "./components/NotificationsContext";
 import "./App.css";
 
 export const ACME_API_URL = "http://192.168.49.2:30080";
@@ -16,7 +17,8 @@ export const SIMULATION_VISUALIZER_URL = "http://192.168.49.2:30081";
 export default function App() {
     return (
         <BrowserRouter>
-            <ReservationEventsProvider>
+            <NotificationsProvider>
+              <ReservationEventsProvider>
                 <div className="app-shell">
                     <Navbar />
                     <LoginModal />
@@ -44,7 +46,8 @@ export default function App() {
                         </Routes>
                     </div>
                 </div>
-            </ReservationEventsProvider>
+              </ReservationEventsProvider>
+            </NotificationsProvider>
         </BrowserRouter>
     );
 }

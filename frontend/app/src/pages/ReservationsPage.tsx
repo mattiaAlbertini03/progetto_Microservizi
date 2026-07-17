@@ -10,6 +10,8 @@ import {
 import type { ReservationData } from "../types/domain";
 import { useReservationEvents } from "../components/ReservationEventsContext";
 import { SIMULATION_VISUALIZER_URL } from "../App";
+import { useNotifications } from "../components/NotificationsContext";
+import { requestBrowserNotificationPermission } from "../browserNotifications";
 
 export default function ReservationsPage() {
     const { user } = useAuth();
@@ -20,6 +22,7 @@ export default function ReservationsPage() {
     const refreshTimers = useRef<number[]>([]);
 
     const { listenReservationEvents } = useReservationEvents();
+    const notify = useNotifications();
 
     const loadReservations = useCallback(async (showLoading = false) => {
         if (!user) {
@@ -54,6 +57,22 @@ export default function ReservationsPage() {
     useEffect(() => {
         void loadReservations(true);
     }, [loadReservations]);
+
+    useEffect(() => {
+        reservations
+            .filter((reservation) => reservation.status === "ACTIVE" || reservation.status === "PICKED_UP")
+            .forEach((reservation) => {
+                void listenReservationEvents(reservation.reservationId).catch((err) =>
+                    console.error("Errore sottoscrizione eventi prenotazione:", err));
+            });
+    }, [listenReservationEvents, reservations]);
+
+    async function enableBrowserNotifications() {
+        const permission = await requestBrowserNotificationPermission();
+        if (permission === "granted") notify("Notifiche del browser attivate.", "success");
+        else if (permission === "unsupported") notify("Questo browser non supporta le notifiche di sistema.", "error");
+        else notify("Permesso per le notifiche non concesso.", "error");
+    }
 
     useEffect(() => {
         return () => {
@@ -93,7 +112,7 @@ export default function ReservationsPage() {
         reservation: ReservationData
     ): void {
         if (!SIMULATION_VISUALIZER_URL) {
-            alert("Il visualizzatore della simulazione non è configurato.");
+            notify("Il visualizzatore della simulazione non è configurato.", "error");
             return;
         }
 
@@ -121,8 +140,7 @@ export default function ReservationsPage() {
 
             const sent = await executeReservationAction(
                 reservation,
-                "pickup",
-                "Pickup richiesto"
+                "pickup"
             );
 
             if (!sent) {
@@ -136,7 +154,7 @@ export default function ReservationsPage() {
                     ? err.message
                     : "Impossibile ascoltare le notifiche della prenotazione.";
 
-            alert(message);
+            notify(message, "error");
         }
     }
 
@@ -145,8 +163,7 @@ export default function ReservationsPage() {
     ): Promise<void> {
         await executeReservationAction(
             reservation,
-            "cancel",
-            "Annullamento richiesto"
+            "cancel"
         );
     }
 
@@ -162,8 +179,7 @@ export default function ReservationsPage() {
 
             const sent = await executeReservationAction(
                 reservation,
-                "return",
-                "Richiesta di riconsegna inviata"
+                "return"
             );
 
             if (!sent) {
@@ -177,17 +193,16 @@ export default function ReservationsPage() {
                     ? err.message
                     : "Impossibile ascoltare le notifiche di riconsegna.";
 
-            alert(message);
+            notify(message, "error");
         }
     }
 
     async function executeReservationAction(
         reservation: ReservationData,
-        action: "pickup" | "cancel" | "return",
-        successMessage: string
+        action: "pickup" | "cancel" | "return"
     ): Promise<boolean> {
         if (!user) {
-            alert("Devi effettuare il login.");
+            notify("Devi effettuare il login.", "error");
             return false;
         }
 
@@ -197,8 +212,6 @@ export default function ReservationsPage() {
                 reservation.reservationId,
                 action
             );
-
-            alert(successMessage);
 
             if (action !== "return") {
                 await loadReservations();
@@ -218,9 +231,7 @@ export default function ReservationsPage() {
                 message === "FORBIDDEN" ||
                 message.startsWith("FORBIDDEN:")
             ) {
-                alert(
-                    "Non sei autorizzato a modificare questa prenotazione."
-                );
+                notify("Non sei autorizzato a modificare questa prenotazione.", "error");
                 return false;
             }
 
@@ -228,9 +239,7 @@ export default function ReservationsPage() {
                 message === "CONFLICT" ||
                 message.startsWith("CONFLICT:")
             ) {
-                alert(
-                    "Operazione non consentita nello stato attuale della prenotazione."
-                );
+                notify("Operazione non consentita nello stato attuale della prenotazione.", "error");
                 return false;
             }
 
@@ -238,13 +247,11 @@ export default function ReservationsPage() {
                 message.includes("CAMUNDA_UNAVAILABLE") ||
                 message.includes("Unable to start")
             ) {
-                alert(
-                    "Il servizio di orchestrazione Camunda non è disponibile."
-                );
+                notify("Il servizio di orchestrazione Camunda non è disponibile.", "error");
                 return false;
             }
 
-            alert(message);
+            notify(message, "error");
             return false;
         }
     }
@@ -291,6 +298,9 @@ export default function ReservationsPage() {
                     <span><strong>{activeCount}</strong> attive</span>
                     <span><strong>{upcomingCount}</strong> in arrivo</span>
                 </div>
+                <button className="button button--secondary" onClick={() => void enableBrowserNotifications()}>
+                    Attiva notifiche
+                </button>
             </header>
 
             {reservations.length === 0 ? (

@@ -82,7 +82,7 @@ export default function Station({
                 <div>
                     <p className="eyebrow">Stazione ACMEMobility</p>
                     <h2>{station.name}</h2>
-                    <p>{vehicles?.length ?? 0} mezzi · {station.capacity} posti totali</p>
+                    <p>{vehicles?.filter((vehicle) => vehicle.status === "AVAILABLE" || (vehicle.status === "CHARGING" && vehicle.batteryPct >= 80)).length ?? 0} mezzi disponibili</p>
                 </div>
             </header>
 

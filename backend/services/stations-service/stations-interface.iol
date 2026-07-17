@@ -43,7 +43,6 @@ type Station: void {
     .name: string
     .lat: double
     .lon: double
-    .capacity: int
 }
 
 type StationsResponse: void {

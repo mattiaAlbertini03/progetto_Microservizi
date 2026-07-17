@@ -1250,3 +1250,141 @@
     max-width: none;
   }
 }
+.toast-region {
+  position: fixed; right: 1.25rem; top: 1.25rem; z-index: 5000;
+  display: grid; gap: .75rem; width: min(24rem, calc(100vw - 2rem));
+}
+.toast {
+  display: grid; grid-template-columns: 2rem 1fr auto; align-items: center; gap: .75rem;
+  padding: .9rem 1rem; border: 1px solid rgba(255,255,255,.12); border-radius: 16px;
+  color: #f7fbff; background: rgba(19,31,43,.96); box-shadow: 0 14px 40px rgba(0,0,0,.3);
+  backdrop-filter: blur(14px); animation: toast-in .2s ease-out;
+}
+.toast > span { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: #3a87f7; font-weight: 800; }
+.toast--success > span { background: #20a875; }
+.toast--error > span { background: #e65757; }
+.toast p { margin: 0; line-height: 1.35; }
+.toast button { border: 0; color: inherit; background: transparent; font-size: 1.4rem; cursor: pointer; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } }
+.reservation-completion-data { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-top: 1rem; }
+.reservation-completion-data > div { display: flex; flex-direction: column; gap: .2rem; padding: .75rem; border-radius: 12px; background: rgba(255,255,255,.045); }
+.reservation-completion-data span, .reservation-completion-data small { color: var(--text-muted); font-size: .75rem; }
+@media (max-width: 560px) { .reservation-completion-data { grid-template-columns: 1fr; } }
+
+/* Small motion details that make the app feel responsive without slowing navigation. */
+.page,
+.map-heading,
+.station-strip {
+  animation: gentle-rise 420ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.station-strip { animation-delay: 80ms; }
+
+.reservation-card {
+  animation: card-pop 420ms cubic-bezier(.2, .8, .2, 1) both;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.reservation-card:nth-child(2) { animation-delay: 60ms; }
+.reservation-card:nth-child(3) { animation-delay: 120ms; }
+.reservation-card:nth-child(4) { animation-delay: 180ms; }
+
+.reservation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.station-sheet {
+  animation: sheet-arrive 360ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.brand-mark {
+  animation: brand-float 3.2s ease-in-out infinite;
+}
+
+.map-live-dot {
+  animation: live-pulse 1.8s ease-out infinite;
+}
+
+.vehicle-card,
+.station-chip {
+  transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
+}
+
+.vehicle-card:hover,
+.station-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(19, 53, 39, 0.13);
+}
+
+.vehicle-card:hover .vehicle-icon,
+.reservation-card:hover .reservation-vehicle-icon {
+  animation: friendly-wiggle 520ms ease;
+}
+
+.station-symbol,
+.station-chip.active .station-chip-icon {
+  animation: tiny-charge 1.8s ease-in-out infinite;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px) scale(.97);
+}
+
+.toast {
+  animation: toast-in 360ms cubic-bezier(.18, .89, .32, 1.28);
+}
+
+.toast > span {
+  animation: notification-pop 460ms 120ms cubic-bezier(.18, .89, .32, 1.35) both;
+}
+
+@keyframes gentle-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes card-pop {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes sheet-arrive {
+  from { opacity: 0; transform: translateY(18px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes brand-float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-3px) rotate(-3deg); }
+}
+
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(39, 187, 105, .42); }
+  65%, 100% { box-shadow: 0 0 0 8px rgba(39, 187, 105, 0); }
+}
+
+@keyframes friendly-wiggle {
+  0%, 100% { transform: rotate(0) scale(1); }
+  30% { transform: rotate(-7deg) scale(1.08); }
+  65% { transform: rotate(6deg) scale(1.08); }
+}
+
+@keyframes tiny-charge {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.06); }
+}
+
+@keyframes notification-pop {
+  from { transform: scale(.55) rotate(-12deg); }
+  to { transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

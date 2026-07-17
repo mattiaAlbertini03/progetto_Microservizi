@@ -4,5 +4,6 @@ public record SimulationSummary(
         String vehicleId,
         int minutesUsed,
         double kilometers,
-        double batteryPct
+        double batteryPct,
+        double minimumBatteryPct
 ) {}

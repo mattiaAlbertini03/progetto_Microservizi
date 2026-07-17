@@ -161,7 +161,7 @@ kubectl exec -it -n kafka <kafka-pod> -- \
 ## Configuration
 
 - TICK_SECONDS
-- BATTERY_CONSUMPTION_PER_KM
+- battery consumption is randomized for each trip; at the 5% safety threshold the simulator pauses and the BPMN boundary flow invokes `stop-and-charge`, which recharges it to 25% and resumes it. The minimum observed level is retained for penalty calculation.
 - GraphHopper URL
 - Kafka bootstrap servers
 

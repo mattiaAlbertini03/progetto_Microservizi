@@ -3,6 +3,7 @@ import me.msaproject.logisticsservice.dto.logistics.VehicleStatus;
 
 public record Vehicle(
         String id,
+        String name,
         String type,
         Double lat,
         Double lon,

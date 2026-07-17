@@ -40,7 +40,7 @@ export default function Vehicle({ vehicle, onReserve, onQrPickup }: VehicleProps
                 <div className="vehicle-icon">{iconByType[vehicle.type] ?? "🚘"}</div>
                 <div className="vehicle-identity">
                     <div>
-                        <strong>{vehicle.id}</strong>
+                        <strong>{vehicle.name}</strong>
                         <span className={`status-badge status-badge--${canReserveVehicle(vehicle) ? "available" : "busy"}`}>
                             {statusLabels[vehicle.status] ?? vehicle.status}
                         </span>

@@ -2,7 +2,6 @@ package me.msaproject.fleetservice.fleet;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,8 +16,6 @@ import me.msaproject.fleetservice.utils.GeoUtils;
 
 @ApplicationScoped
 public class FleetService {
-
-        private final Random random = new Random();
 
         private final Map<String, String> destinationByReservationId = new ConcurrentHashMap<>();
 
@@ -50,7 +47,7 @@ public class FleetService {
                 System.out.println("[Fleet] Selecting destination");
                 Station fromStation = findStation(stations, reservation.stationId());
 
-                Station toStation = pickRandomDestination(stations, fromStation.id());
+                Station toStation = destinationForReservation(stations, fromStation.id(), reservationId);
 
                 destinationByReservationId.put(
                                 reservationId,
@@ -86,7 +83,8 @@ public class FleetService {
                                 reservation.vehicleId(),
                                 summary.minutesUsed(),
                                 summary.kilometers(),
-                                summary.batteryPct());
+                                summary.batteryPct(),
+                                summary.minimumBatteryPct());
         }
 
         public FleetStatusResponse getStatus(String reservationId) {
@@ -94,6 +92,7 @@ public class FleetService {
                 Reservation reservation = reservationClient.getReservation(reservationId);
 
                 VehicleSnapshot snapshot = vehicleQueryClient.getVehicle(reservation.vehicleId());
+                SimulationStatusResponse simulationStatus = simulatorClient.getStatus(reservation.vehicleId());
 
                 return new FleetStatusResponse(
                                 reservationId,
@@ -101,31 +100,39 @@ public class FleetService {
                                 snapshot.lat(),
                                 snapshot.lon(),
                                 snapshot.batteryPercent(),
+                                simulationStatus.movementStatus(),
+                                simulationStatus.kilometers(),
+                                simulationStatus.minutesUsed(),
                                 snapshot.trackingTimestampEpochMs(),
                                 snapshot.batteryTimestampEpochMs());
         }
 
-        public boolean isVehicleAtDestination(String reservationId) {
+        public VehicleAtStationResponse isVehicleAtStation(String reservationId) {
                 Reservation reservation = reservationClient.getReservation(reservationId);
-
+                VehicleTrackingResponse tracking = vehicleQueryClient.getVehicleTracking(reservation.vehicleId());
+                SimulationStatusResponse simulationStatus = simulatorClient.getStatus(reservation.vehicleId());
                 String destinationStationId = destinationByReservationId.get(reservationId);
-
                 if (destinationStationId == null) {
                         throw new IllegalStateException(
-                                        "No destination station found for reservation " + reservationId);
+                                        "Destination not available for reservation: " + reservationId);
                 }
 
-                VehicleTrackingResponse tracking = vehicleQueryClient.getVehicleTracking(reservation.vehicleId());
+                Station destination = findStation(stationClient.getStations(), destinationStationId);
+                boolean atStation = GeoUtils.distanceMeters(
+                                tracking.lat(), tracking.lon(),
+                                destination.lat(), destination.lon()) <= 30.0;
+                boolean stopped = "STOPPED".equals(simulationStatus.movementStatus());
 
-                Station destinationStation = findStation(stationClient.getStations(), destinationStationId);
+                return new VehicleAtStationResponse(
+                                atStation,
+                                stopped,
+                                simulationStatus.movementStatus(),
+                                destination.id());
+        }
 
-                double distanceMeters = GeoUtils.distanceMeters(
-                                tracking.lat(),
-                                tracking.lon(),
-                                destinationStation.lat(),
-                                destinationStation.lon());
-
-                return distanceMeters <= 30.0;
+        public void rechargeAndResume(String reservationId) {
+                Reservation reservation = reservationClient.getReservation(reservationId);
+                simulatorClient.rechargeAndResume(reservation.vehicleId());
         }
 
         private Station findStation(List<Station> stations, String stationId) {
@@ -136,15 +143,11 @@ public class FleetService {
                                                 "Station not found: " + stationId));
         }
 
-        private Station pickRandomDestination(List<Station> stations, String fromStationId) {
+        private Station destinationForReservation(List<Station> stations, String fromStationId, String reservationId) {
                 List<Station> candidates = stations.stream()
                                 .filter(station -> !station.id().equals(fromStationId))
                                 .toList();
-
-                if (candidates.isEmpty()) {
-                        throw new IllegalStateException("No destination stations available");
-                }
-
-                return candidates.get(random.nextInt(candidates.size()));
+                if (candidates.isEmpty()) throw new IllegalStateException("No destination stations available");
+                return candidates.get(Math.floorMod(reservationId.hashCode(), candidates.size()));
         }
 }

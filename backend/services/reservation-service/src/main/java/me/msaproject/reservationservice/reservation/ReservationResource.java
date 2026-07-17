@@ -17,6 +17,7 @@ import me.msaproject.reservationservice.dto.ReservationCreationRequest;
 import me.msaproject.reservationservice.dto.ReservationEvent;
 import me.msaproject.reservationservice.dto.ReservationResponse;
 import me.msaproject.reservationservice.dto.ReservationStatusResponse;
+import me.msaproject.reservationservice.dto.ReservationCompletionRequest;
 
 @Path("/reservations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -86,10 +87,11 @@ public class ReservationResource {
     @POST
     @Path("/{reservationId}/end")
     public Response endReservation(
-            @PathParam("reservationId") String reservationId) {
+            @PathParam("reservationId") String reservationId,
+            ReservationCompletionRequest completion) {
 
         ReservationEvent event =
-                reservationService.endReservation(reservationId);
+                reservationService.endReservation(reservationId, completion);
 
         return Response.ok(toStatusResponse(event)).build();
     }
@@ -121,7 +123,9 @@ public class ReservationResource {
                 reservation.status(),
                 reservation.createdAtEpochMs(),
                 reservation.scheduledStartEpochMs(),
-                reservation.pickupDeadlineEpochMs());
+                reservation.pickupDeadlineEpochMs(),
+                reservation.totalKilometers(), reservation.paymentAmount(),
+                reservation.completedAtEpochMs());
     }
 
     private ReservationStatusResponse toStatusResponse(

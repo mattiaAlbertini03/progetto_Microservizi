@@ -6,6 +6,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import me.msaproject.reservationservice.reservation.Reservation;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,11 +17,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @ApplicationScoped
 public class JsonReservationRepository implements ReservationRepository {
 
+    private static final Path DATA_FILE = Path.of(
+            System.getenv().getOrDefault("RESERVATIONS_DATA_FILE", "/data/reservations.json"));
+
     private final Map<String, Reservation> reservations;
+    private final ObjectMapper mapper;
 
     public JsonReservationRepository() {
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            mapper = new ObjectMapper();
+
+            if (Files.exists(DATA_FILE)) {
+                this.reservations = loadReservations(Files.newInputStream(DATA_FILE));
+                return;
+            }
 
             InputStream inputStream = getClass()
                     .getClassLoader()
@@ -28,16 +41,7 @@ public class JsonReservationRepository implements ReservationRepository {
                 return;
             }
 
-            List<Reservation> loadedReservations = mapper.readValue(
-                    inputStream,
-                    new TypeReference<List<Reservation>>() {}
-            );
-
-            this.reservations = new ConcurrentHashMap<>();
-
-            for (Reservation reservation : loadedReservations) {
-                reservations.put(reservation.reservationId(), reservation);
-            }
+            this.reservations = loadReservations(inputStream);
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to load reservations.json", e);
@@ -50,8 +54,33 @@ public class JsonReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public void sync() {
-        // TODO:
-        // qui in futuro sincronizzerai reservations con un database reale.
+    public synchronized void sync() {
+        try {
+            Files.createDirectories(DATA_FILE.getParent());
+            Path temporaryFile = DATA_FILE.resolveSibling(DATA_FILE.getFileName() + ".tmp");
+            mapper.writeValue(temporaryFile.toFile(), reservations.values());
+            try {
+                Files.move(temporaryFile, DATA_FILE,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporaryFile, DATA_FILE, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to persist reservations", e);
+        }
+    }
+
+    private Map<String, Reservation> loadReservations(InputStream inputStream) throws Exception {
+        try (inputStream) {
+            List<Reservation> loadedReservations = mapper.readValue(
+                    inputStream,
+                    new TypeReference<List<Reservation>>() {});
+            Map<String, Reservation> loaded = new ConcurrentHashMap<>();
+            for (Reservation reservation : loadedReservations) {
+                loaded.put(reservation.reservationId(), reservation);
+            }
+            return loaded;
+        }
     }
 }

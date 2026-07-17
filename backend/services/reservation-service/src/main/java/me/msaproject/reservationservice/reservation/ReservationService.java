@@ -7,6 +7,7 @@ import me.msaproject.reservationservice.db.ReservationRepository;
 import me.msaproject.reservationservice.dto.ReservationEvent;
 import me.msaproject.reservationservice.dto.ReservationCreationRequest;
 import me.msaproject.reservationservice.dto.ReservationResponse;
+import me.msaproject.reservationservice.dto.ReservationCompletionRequest;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -51,7 +52,8 @@ public class ReservationService {
                 "PENDING",
                 now.toEpochMilli(),
                 scheduledStart.toEpochMilli(),
-                scheduledStart.plus(PICKUP_GRACE_PERIOD).toEpochMilli());
+                scheduledStart.plus(PICKUP_GRACE_PERIOD).toEpochMilli(),
+                null, null, null);
 
         reservationRepository.getReservations().put(reservationId, reservation);
         reservationRepository.sync();
@@ -92,7 +94,11 @@ public class ReservationService {
 
         logisticsClient.pickupVehicle(reservation.vehicleId());
 
-        updateReservationStatus(reservation, "ACTIVE");
+        long actualPickupEpochMs = Instant.now().toEpochMilli();
+        updateReservation(
+                reservation,
+                "ACTIVE",
+                Math.min(reservation.scheduledStartEpochMs(), actualPickupEpochMs));
 
         return new ReservationEvent(
                 reservationId,
@@ -121,7 +127,7 @@ public class ReservationService {
                 "Prenotazione annullata");
     }
 
-    public ReservationEvent endReservation(String reservationId) {
+    public ReservationEvent endReservation(String reservationId, ReservationCompletionRequest completion) {
 
         Reservation reservation = findReservationOrThrow(reservationId);
 
@@ -131,9 +137,15 @@ public class ReservationService {
                     "Reservation cannot be ended from status: " + reservation.status());
         }
 
-        logisticsClient.returnVehicle(reservation.vehicleId());
+        logisticsClient.returnVehicle(reservation.vehicleId(), completion);
 
-        updateReservationStatus(reservation, "COMPLETED");
+        Reservation updated = new Reservation(
+                reservation.reservationId(), reservation.userId(), reservation.vehicleId(),
+                reservation.stationId(), "COMPLETED", reservation.createdAtEpochMs(),
+                reservation.scheduledStartEpochMs(), reservation.pickupDeadlineEpochMs(),
+                completion.kilometers(), completion.paymentAmount(), Instant.now().toEpochMilli());
+        reservationRepository.getReservations().put(reservation.reservationId(), updated);
+        reservationRepository.sync();
 
         return new ReservationEvent(
                 reservationId,
@@ -158,6 +170,10 @@ public class ReservationService {
     }
 
     private void updateReservationStatus(Reservation old, String status) {
+        updateReservation(old, status, old.scheduledStartEpochMs());
+    }
+
+    private void updateReservation(Reservation old, String status, long scheduledStartEpochMs) {
         Reservation updated = new Reservation(
                 old.reservationId(),
                 old.userId(),
@@ -165,8 +181,9 @@ public class ReservationService {
                 old.stationId(),
                 status,
                 old.createdAtEpochMs(),
-                old.scheduledStartEpochMs(),
-                old.pickupDeadlineEpochMs());
+                scheduledStartEpochMs,
+                old.pickupDeadlineEpochMs(),
+                old.totalKilometers(), old.paymentAmount(), old.completedAtEpochMs());
 
         reservationRepository.getReservations().put(old.reservationId(), updated);
         reservationRepository.sync();
@@ -186,7 +203,9 @@ public class ReservationService {
                         reservation.status(),
                         reservation.createdAtEpochMs(),
                         reservation.scheduledStartEpochMs(),
-                        reservation.pickupDeadlineEpochMs()))
+                        reservation.pickupDeadlineEpochMs(),
+                        reservation.totalKilometers(), reservation.paymentAmount(),
+                        reservation.completedAtEpochMs()))
                 .toList();
     }
 }

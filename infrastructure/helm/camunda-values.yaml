@@ -40,6 +40,10 @@ elasticsearch:
         memory: 6Gi
 
 orchestration:
+  data:
+    secondaryStorage:
+      type: elasticsearch
+
   exporters:
     rdbms:
       enabled: true

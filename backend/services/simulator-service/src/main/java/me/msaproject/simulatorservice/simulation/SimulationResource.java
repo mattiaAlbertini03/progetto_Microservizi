@@ -40,11 +40,13 @@ public class SimulationResource {
     @GET
     @Path("/{vehicleId}")
     public Response active(@PathParam("vehicleId") String vehicleId) {
+        return Response.ok(simulationService.getStatus(vehicleId)).build();
+    }
 
-        boolean active = simulationService.isActive(vehicleId);
-
-        return Response.ok("""
-                {"vehicleId":"%s","active":%s}
-                """.formatted(vehicleId, active)).build();
+    @POST
+    @Path("/{vehicleId}/recharge-and-resume")
+    public Response rechargeAndResume(@PathParam("vehicleId") String vehicleId) {
+        simulationService.rechargeAndResume(vehicleId);
+        return Response.ok("{\"status\":\"resumed\",\"batteryPct\":25}").build();
     }
 }

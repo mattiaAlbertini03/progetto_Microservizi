@@ -13,7 +13,9 @@ public record ReservationEvent(
         Integer penaltyPercentage,
         Double baseAmount,
         Double finalAmount,
-        Double paymentAmount
+        Double paymentAmount,
+        String stationId,
+        String movementStatus
 ) {
     public ReservationEvent(
             String reservationId,
@@ -23,6 +25,8 @@ public record ReservationEvent(
                 reservationId,
                 status,
                 message,
+                null,
+                null,
                 null,
                 null,
                 null,
