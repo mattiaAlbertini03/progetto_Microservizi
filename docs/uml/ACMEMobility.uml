@@ -19,50 +19,6 @@
       </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_NR3hYDP5EfGqxb1hcs_CXg" client="_BIoesDP5EfGqxb1hcs_CXg" supplier="_FeqDwDP5EfGqxb1hcs_CXg"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_IrbR8G9mEfGmxpKA3ARReA" client="_FeqDwDP5EfGqxb1hcs_CXg" supplier="_X-OhsG8mEfGICvqO2RVgqQ"/>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeAuthApi" name="AuthApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeAuthLogin" name="login"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeAuthSignup" name="signup"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeAuthForgot" name="forgotPassword"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeAuthChange" name="changePassword"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeStationsApi" name="StationsApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeStationsList" name="getStations"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeLogisticsApi" name="LogisticsApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeVehiclesList" name="getVehicles"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeVehicleGet" name="getVehicle"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeReservationsApi" name="ReservationsApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationCreate" name="createReservation"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeQrReservationCreate" name="createQrReservation"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationsList" name="getReservationsForCurrentUser"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationCancel" name="cancelReservation"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationPickup" name="pickupReservation"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationReturn" name="returnReservation"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeBankingApi" name="BankingApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeBankConnect" name="connect"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeBankLogin" name="login"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeBankRecharge" name="recharge"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_acmeEventsApi" name="ReservationEventsApi">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeRequestEvents" name="streamReservationRequestEvents"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeReservationEvents" name="streamReservationEvents"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_acmeSimulationEvents" name="streamSimulationEvents"/>
-      </packagedElement>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeAuthClient" name="AuthClient"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeStationsClient" name="StationsClient"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeLogisticsClient" name="LogisticsClient"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeReservationsClient" name="ReservationsClient"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeBankingClient" name="BankingClient"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_acmeCamundaClient" name="CamundaClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeAuth" client="_acmeAuthApi" supplier="_acmeAuthClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeStations" client="_acmeStationsApi" supplier="_acmeStationsClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeLogistics" client="_acmeLogisticsApi" supplier="_acmeLogisticsClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeReservations" client="_acmeReservationsApi" supplier="_acmeReservationsClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeBanking" client="_acmeBankingApi" supplier="_acmeBankingClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_exposeAcmeEvents" client="_acmeEventsApi" supplier="_acmeCamundaClient"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_reservationsNeedsClients" client="_acmeReservationsClient" supplier="_acmeLogisticsClient _acmeCamundaClient"/>
       <packagedElement xmi:type="uml:Interface" xmi:id="_VzHFQIK_EfGu1OKrE--TnQ" name="BankingAPI">
         <ownedOperation xmi:type="uml:Operation" xmi:id="_jGp-8IK_EfGu1OKrE--TnQ" name="getAccount"/>
         <ownedOperation xmi:type="uml:Operation" xmi:id="_mswi8IK_EfGu1OKrE--TnQ" name="register"/>
@@ -232,12 +188,6 @@
         <ownedOperation xmi:type="uml:Operation" xmi:id="_pjFQAG9cEfGmxpKA3ARReA" name="getChargingVehicles"/>
         <ownedOperation xmi:type="uml:Operation" xmi:id="_pjOLAILFEfGu1OKrE--TnQ" name="updateVehicleStatus"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_vehicleRepository" name="VehicleRepository"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_postgresVehicleRepository" name="PostgresVehicleRepository"/>
-      <packagedElement xmi:type="uml:DataType" xmi:id="_logisticsDatabase" name="Logistics PostgreSQL"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_logisticsUsesRepository" client="_bCZJcGwJEfGPQ9rTkf8qTA" supplier="_vehicleRepository"/>
-      <packagedElement xmi:type="uml:Realization" xmi:id="_postgresVehicleRealizesRepository" client="_postgresVehicleRepository" supplier="_vehicleRepository"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_vehicleRepositoryPersistsToDatabase" name="persists to" client="_postgresVehicleRepository" supplier="_logisticsDatabase"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_uRep4ILFEfGu1OKrE--TnQ" client="_dMfpgGwJEfGPQ9rTkf8qTA" supplier="_bCZJcGwJEfGPQ9rTkf8qTA"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_9vJ40ILFEfGu1OKrE--TnQ" name="VehicleRepository">
         <ownedOperation xmi:type="uml:Operation" xmi:id="_DJpyoILGEfGu1OKrE--TnQ" name="findAll"/>
@@ -300,12 +250,6 @@
         <ownedOperation xmi:type="uml:Operation" xmi:id="_uJyOAG9fEfGmxpKA3ARReA" name="updateReservationStatus"/>
         <ownedOperation xmi:type="uml:Operation" xmi:id="_PdBJQG9gEfGmxpKA3ARReA" name="getReservationsByUserId"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_reservationRepository" name="ReservationRepository"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_postgresReservationRepository" name="PostgresReservationRepository"/>
-      <packagedElement xmi:type="uml:DataType" xmi:id="_reservationDatabase" name="Reservation PostgreSQL"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_reservationUsesRepository" client="_t4ahEG8mEfGICvqO2RVgqQ" supplier="_reservationRepository"/>
-      <packagedElement xmi:type="uml:Realization" xmi:id="_postgresReservationRealizesRepository" client="_postgresReservationRepository" supplier="_reservationRepository"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_reservationRepositoryPersistsToDatabase" name="persists to" client="_postgresReservationRepository" supplier="_reservationDatabase"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_rz0-4ILJEfGu1OKrE--TnQ" client="_YZVwYG8mEfGICvqO2RVgqQ" supplier="_t4ahEG8mEfGICvqO2RVgqQ"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_Cl6aIILLEfGu1OKrE--TnQ" name="ReservationsRepository">
         <ownedOperation xmi:type="uml:Operation" xmi:id="_HJItsILLEfGu1OKrE--TnQ" name="findAll"/>
@@ -337,12 +281,6 @@
         <ownedOperation xmi:type="uml:Operation" xmi:id="__Uj78IK7EfGu1OKrE--TnQ" name="authenticateUserId"/>
         <ownedOperation xmi:type="uml:Operation" xmi:id="_A2JDcIK8EfGu1OKrE--TnQ" name="unauthorized" visibility="private"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_usersRepository" name="UsersRepository"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_postgresUsersRepository" name="PostgresUsersRepository"/>
-      <packagedElement xmi:type="uml:DataType" xmi:id="_authDatabase" name="Auth PostgreSQL"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_authUsesRepository" client="_aF-RUG8mEfGICvqO2RVgqQ" supplier="_usersRepository"/>
-      <packagedElement xmi:type="uml:Realization" xmi:id="_postgresUsersRealizesRepository" client="_postgresUsersRepository" supplier="_usersRepository"/>
-      <packagedElement xmi:type="uml:Dependency" xmi:id="_usersRepositoryPersistsToDatabase" name="persists to" client="_postgresUsersRepository" supplier="_authDatabase"/>
       <packagedElement xmi:type="uml:Class" xmi:id="_oCgDUIK-EfGu1OKrE--TnQ" name="UsersRepository">
         <ownedOperation xmi:type="uml:Operation" xmi:id="_3OjWwIK-EfGu1OKrE--TnQ" name="findByUsername"/>
         <ownedOperation xmi:type="uml:Operation" xmi:id="_5xFk8IK-EfGu1OKrE--TnQ" name="findByEmail"/>
@@ -357,40 +295,40 @@
     <packagedElement xmi:type="uml:Package" xmi:id="_YeS-UG8lEfGICvqO2RVgqQ" name="graphhopper"/>
     <packagedElement xmi:type="uml:Package" xmi:id="_6_hLwHO8EfGaBtASHglMxQ" name="kafka"/>
     <packagedElement xmi:type="uml:Package" xmi:id="_hXeOYILBEfGu1OKrE--TnQ" name="banking-service">
-      <packagedElement xmi:type="uml:Interface" xmi:id="_hXeOYYLBEfGu1OKrE--TnQ" name="AuthResource">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOYoLBEfGu1OKrE--TnQ" name="login"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOY4LBEfGu1OKrE--TnQ" name="signup"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZILBEfGu1OKrE--TnQ" name="forgotPassword"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZYLBEfGu1OKrE--TnQ" name="changePassword"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_hXeOYYLBEfGu1OKrE--TnQ" name="AccountStore">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOYoLBEfGu1OKrE--TnQ" name="findByUserId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOY4LBEfGu1OKrE--TnQ" name="findByAccountId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZILBEfGu1OKrE--TnQ" name="saveAccount"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZYLBEfGu1OKrE--TnQ" name="updateBalance"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOZoLBEfGu1OKrE--TnQ" name="AuthService">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZ4LBEfGu1OKrE--TnQ" name="login"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaILBEfGu1OKrE--TnQ" name="signup"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaYLBEfGu1OKrE--TnQ" name="forgotPassword"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaoLBEfGu1OKrE--TnQ" name="changePassword"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOa4LBEfGu1OKrE--TnQ" name="generateTemporaryPassword" visibility="private"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeObILBEfGu1OKrE--TnQ" name="requireText" visibility="private"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeObYLBEfGu1OKrE--TnQ" name="toResponse" visibility="private"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOZoLBEfGu1OKrE--TnQ" name="PostgresAccountStore">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOZ4LBEfGu1OKrE--TnQ" name="findByUserId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaILBEfGu1OKrE--TnQ" name="findByAccountId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaYLBEfGu1OKrE--TnQ" name="saveAccount"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOaoLBEfGu1OKrE--TnQ" name="updateBalance"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOa4LBEfGu1OKrE--TnQ" name="createSession"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeObILBEfGu1OKrE--TnQ" name="releaseDeposit"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeObYLBEfGu1OKrE--TnQ" name="closeSession"/>
       </packagedElement>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_hXeOboLBEfGu1OKrE--TnQ" client="_hXeOYYLBEfGu1OKrE--TnQ" supplier="_hXeOZoLBEfGu1OKrE--TnQ"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOb4LBEfGu1OKrE--TnQ" name="TokenService" visibility="package">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcILBEfGu1OKrE--TnQ" name="generateToken"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcYLBEfGu1OKrE--TnQ" name="authenticateUserId"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcoLBEfGu1OKrE--TnQ" name="unauthorized" visibility="private"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOb4LBEfGu1OKrE--TnQ" name="BankSession" visibility="package">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcILBEfGu1OKrE--TnQ" name="open"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcYLBEfGu1OKrE--TnQ" name="holdDeposit"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOcoLBEfGu1OKrE--TnQ" name="close"/>
       </packagedElement>
-      <packagedElement xmi:type="uml:Interface" xmi:id="_hXeOc4LBEfGu1OKrE--TnQ" name="UsersRepository"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOdILBEfGu1OKrE--TnQ" name="PostgresUsersRepository"/>
-      <packagedElement xmi:type="uml:DataType" xmi:id="_hXeOdYLBEfGu1OKrE--TnQ" name="Auth PostgreSQL"/>
+      <packagedElement xmi:type="uml:Interface" xmi:id="_hXeOc4LBEfGu1OKrE--TnQ" name="DatabasePort"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOdILBEfGu1OKrE--TnQ" name="JolieDatabaseClient"/>
+      <packagedElement xmi:type="uml:DataType" xmi:id="_hXeOdYLBEfGu1OKrE--TnQ" name="Banking PostgreSQL"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_hXeOdoLBEfGu1OKrE--TnQ" client="_hXeOZoLBEfGu1OKrE--TnQ" supplier="_hXeOc4LBEfGu1OKrE--TnQ"/>
       <packagedElement xmi:type="uml:Realization" xmi:id="_hXeOd4LBEfGu1OKrE--TnQ" client="_hXeOdILBEfGu1OKrE--TnQ" supplier="_hXeOc4LBEfGu1OKrE--TnQ"/>
       <packagedElement xmi:type="uml:Dependency" xmi:id="_hXeOeILBEfGu1OKrE--TnQ" name="persists to" client="_hXeOdILBEfGu1OKrE--TnQ" supplier="_hXeOdYLBEfGu1OKrE--TnQ"/>
-      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOeYLBEfGu1OKrE--TnQ" name="UsersRepository">
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOeoLBEfGu1OKrE--TnQ" name="findByUsername"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOe4LBEfGu1OKrE--TnQ" name="findByEmail"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfILBEfGu1OKrE--TnQ" name="findById"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfYLBEfGu1OKrE--TnQ" name="save"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfoLBEfGu1OKrE--TnQ" name="existsByUsername"/>
-        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOf4LBEfGu1OKrE--TnQ" name="existsByEmail"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_hXeOeYLBEfGu1OKrE--TnQ" name="AccountRepository">
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOeoLBEfGu1OKrE--TnQ" name="findByUserId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOe4LBEfGu1OKrE--TnQ" name="findByAccountId"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfILBEfGu1OKrE--TnQ" name="saveAccount"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfYLBEfGu1OKrE--TnQ" name="updateBalance"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOfoLBEfGu1OKrE--TnQ" name="createSession"/>
+        <ownedOperation xmi:type="uml:Operation" xmi:id="_hXeOf4LBEfGu1OKrE--TnQ" name="closeSession"/>
       </packagedElement>
       <packagedElement xmi:type="uml:Usage" xmi:id="_hXeOgILBEfGu1OKrE--TnQ" client="_hXeOZoLBEfGu1OKrE--TnQ" supplier="_hXeOeYLBEfGu1OKrE--TnQ"/>
       <packagedElement xmi:type="uml:Usage" xmi:id="_hXeOgYLBEfGu1OKrE--TnQ" client="_hXeOZoLBEfGu1OKrE--TnQ" supplier="_hXeOb4LBEfGu1OKrE--TnQ"/>
@@ -489,24 +427,6 @@
   <tiny:ServiceInterface xmi:id="_wbcXsH4-EfG1eYGkX8WnOQ" base_Interface="_RSy6IH49EfG1eYGkX8WnOQ"/>
   <tiny:Capability xmi:id="_yiT9kH4-EfG1eYGkX8WnOQ" base_Class="_TFBFsH49EfG1eYGkX8WnOQ"/>
   <tiny:Capability xmi:id="_c4JnsH7BEfGoZOcDyoTzOA" base_Class="_NjXPAH7BEfGoZOcDyoTzOA"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeAuthApi" base_Interface="_acmeAuthApi"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeStationsApi" base_Interface="_acmeStationsApi"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeLogisticsApi" base_Interface="_acmeLogisticsApi"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeReservationsApi" base_Interface="_acmeReservationsApi"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeBankingApi" base_Interface="_acmeBankingApi"/>
-  <tiny:ServiceInterface xmi:id="_tinyAcmeEventsApi" base_Interface="_acmeEventsApi"/>
-  <tiny:Capability xmi:id="_tinyAcmeAuthClient" base_Class="_acmeAuthClient"/>
-  <tiny:Capability xmi:id="_tinyAcmeStationsClient" base_Class="_acmeStationsClient"/>
-  <tiny:Capability xmi:id="_tinyAcmeLogisticsClient" base_Class="_acmeLogisticsClient"/>
-  <tiny:Capability xmi:id="_tinyAcmeReservationsClient" base_Class="_acmeReservationsClient"/>
-  <tiny:Capability xmi:id="_tinyAcmeBankingClient" base_Class="_acmeBankingClient"/>
-  <tiny:Capability xmi:id="_tinyAcmeCamundaClient" base_Class="_acmeCamundaClient"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeAuth" base_Dependency="_exposeAcmeAuth"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeStations" base_Dependency="_exposeAcmeStations"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeLogistics" base_Dependency="_exposeAcmeLogistics"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeReservations" base_Dependency="_exposeAcmeReservations"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeBanking" base_Dependency="_exposeAcmeBanking"/>
-  <tiny:Expose xmi:id="_tinyExposeAcmeEvents" base_Dependency="_exposeAcmeEvents"/>
   <tiny:Capability xmi:id="_srTacIK-EfGu1OKrE--TnQ" base_Class="_oCgDUIK-EfGu1OKrE--TnQ"/>
   <tiny:ServiceInterface xmi:id="_x8tNMIK_EfGu1OKrE--TnQ" base_Interface="_VzHFQIK_EfGu1OKrE--TnQ"/>
   <tiny:Capability xmi:id="_AK8NgILAEfGu1OKrE--TnQ" base_Class="__TSz0IK_EfGu1OKrE--TnQ"/>
