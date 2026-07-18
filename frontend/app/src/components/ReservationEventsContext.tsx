@@ -52,6 +52,9 @@ export function ReservationEventsProvider({ children }: { children: ReactNode })
 
             switch (data.status) {
                 case "BANK_CONNECTION_REQUIRED":
+                    if (localStorage.getItem("acme-pending-bank-request") === requestId) {
+                        break;
+                    }
                     localStorage.setItem("acme-pending-bank-request", requestId);
                     notify(data.message ?? "Collega il conto dal profilo per continuare.", "info");
                     window.dispatchEvent(new CustomEvent("bank-connection-required", {

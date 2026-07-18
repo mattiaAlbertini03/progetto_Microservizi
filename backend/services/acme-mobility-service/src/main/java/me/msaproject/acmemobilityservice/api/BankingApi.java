@@ -16,7 +16,7 @@ import me.msaproject.acmemobilityservice.auth.JwtService;
 import me.msaproject.acmemobilityservice.auth.PendingBankConnectionService;
 import me.msaproject.acmemobilityservice.client.BankingClient;
 import me.msaproject.acmemobilityservice.dto.bank.CardRegistrationRequest;
-import me.msaproject.acmemobilityservice.dto.bank.BankLoginRequest;
+import me.msaproject.acmemobilityservice.dto.bank.BankReservationAuthorizationRequest;
 import me.msaproject.acmemobilityservice.dto.bank.RechargeRequest;
 
 import java.util.Map;
@@ -27,6 +27,8 @@ import java.time.format.DateTimeParseException;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class BankingApi {
+
+    private static final System.Logger LOGGER = System.getLogger(BankingApi.class.getName());
 
     @Inject BankingClient bankingClient;
     @Inject JwtService jwtService;
@@ -40,8 +42,8 @@ public class BankingApi {
     }
 
     @POST
-    @Path("/connect")
-    public Response connect(
+    @Path("/register")
+    public Response register(
             CardRegistrationRequest request,
             @HeaderParam("Authorization") String authorizationHeader
     ) {
@@ -76,16 +78,16 @@ public class BankingApi {
         }
 
         if (request.reservationRequestId() != null && !request.reservationRequestId().isBlank()) {
-            publishBankLogin(request.reservationRequestId(), user, account.accountId());
+            authorizeReservation(request.reservationRequestId(), user, account.accountId());
         }
 
         return Response.status(Response.Status.CREATED).entity(account).build();
     }
 
     @POST
-    @Path("/login")
-    public Response login(
-            BankLoginRequest request,
+    @Path("/authorize-reservation")
+    public Response authorizeReservation(
+            BankReservationAuthorizationRequest request,
             @HeaderParam("Authorization") String authorizationHeader
     ) {
         AuthenticatedUser user = jwtService.authenticate(authorizationHeader);
@@ -99,7 +101,7 @@ public class BankingApi {
             throw new WebApplicationException("Connect a bank account first", Response.Status.CONFLICT);
         }
 
-        publishBankLogin(request.reservationRequestId(), user, account.accountId());
+        authorizeReservation(request.reservationRequestId(), user, account.accountId());
         return Response.ok(account).build();
     }
 
@@ -127,11 +129,13 @@ public class BankingApi {
         return Response.ok(account).build();
     }
 
-    private void publishBankLogin(
+    private void authorizeReservation(
             String reservationRequestId,
             AuthenticatedUser user,
             String accountId
     ) {
+        LOGGER.log(System.Logger.Level.INFO,
+                "Authorizing bank account for reservation request " + reservationRequestId);
         pendingBankConnections.requireNotOwnedByAnotherUser(reservationRequestId, user.userId());
         try {
             camundaClient.newPublishMessageCommand()
@@ -143,6 +147,8 @@ public class BankingApi {
                             "accountId", accountId)))
                     .send()
                     .join();
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Authorized bank account for reservation request " + reservationRequestId);
         } catch (RuntimeException exception) {
             throw new WebApplicationException(
                     "Unable to resume the pending reservation process",

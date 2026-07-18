@@ -129,8 +129,8 @@ export function getBankAccount(user: User): Promise<BankAccount> {
     });
 }
 
-export function connectBankAccount(user: User, card: FakeCardData): Promise<BankAccount> {
-    return request<BankAccount>("/bank/account/connect", {
+export function registerBankAccount(user: User, card: FakeCardData): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -140,8 +140,8 @@ export function connectBankAccount(user: User, card: FakeCardData): Promise<Bank
     });
 }
 
-export function loginBankAccount(user: User, reservationRequestId: string): Promise<BankAccount> {
-    return request<BankAccount>("/bank/account/login", {
+export function authorizeBankAccountForReservation(user: User, reservationRequestId: string): Promise<BankAccount> {
+    return request<BankAccount>("/bank/account/authorize-reservation", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

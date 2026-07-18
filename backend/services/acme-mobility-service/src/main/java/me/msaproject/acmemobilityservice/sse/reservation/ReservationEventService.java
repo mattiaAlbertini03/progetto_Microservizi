@@ -14,7 +14,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @ApplicationScoped
 public class ReservationEventService {
 
+    private static final System.Logger LOGGER = System.getLogger(ReservationEventService.class.getName());
     private final Map<String, List<SseEventSink>> subscribers = new ConcurrentHashMap<>();
+    private final Map<String, Object> latestEvents = new ConcurrentHashMap<>();
 
     @Context
     Sse sse;
@@ -32,6 +34,13 @@ public class ReservationEventService {
                             .comment("connected")
                             .reconnectDelay(3_000)
                             .build());
+
+            Object latestEvent = latestEvents.get(topicId);
+            if (latestEvent != null) {
+                sendEvent(sink, latestEvent);
+                LOGGER.log(System.Logger.Level.INFO,
+                        "Replayed latest reservation event for " + topicId);
+            }
         } catch (Exception exception) {
             removeSubscriber(topicId, sink);
             try {
@@ -42,9 +51,12 @@ public class ReservationEventService {
     }
 
     public void publish(String topicId, Object event) {
+        latestEvents.put(topicId, event);
         List<SseEventSink> sinks = subscribers.get(topicId);
 
         if (sinks == null) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Stored reservation event for late subscriber on " + topicId);
             return;
         }
 
@@ -52,12 +64,7 @@ public class ReservationEventService {
 
         for (SseEventSink sink : sinks) {
             try {
-                sink.send(
-                        sse.newEventBuilder()
-                                .name("reservation-update")
-                                .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                                .data(event.getClass(), event)
-                                .build());
+                sendEvent(sink, event);
             } catch (Exception e) {
                 try {
                     sink.close();
@@ -71,6 +78,15 @@ public class ReservationEventService {
         if (sinks.isEmpty()) {
             subscribers.remove(topicId);
         }
+    }
+
+    private void sendEvent(SseEventSink sink, Object event) {
+        sink.send(
+                sse.newEventBuilder()
+                        .name("reservation-update")
+                        .mediaType(MediaType.APPLICATION_JSON_TYPE)
+                        .data(event.getClass(), event)
+                        .build());
     }
 
     private void removeSubscriber(String topicId, SseEventSink sink) {

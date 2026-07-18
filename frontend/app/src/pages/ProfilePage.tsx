@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
     changePassword,
-    connectBankAccount,
+    registerBankAccount,
     getBankAccount,
-    loginBankAccount,
+    authorizeBankAccountForReservation,
     rechargeBankAccount,
 } from "../api/acmeApi";
 import { useAuth } from "../components/AuthContext";
@@ -35,7 +35,7 @@ export default function ProfilePage() {
         getBankAccount(user).then(async (account) => {
             const reservationRequestId = localStorage.getItem("acme-pending-bank-request");
             if (account.connected && reservationRequestId) {
-                account = await loginBankAccount(user, reservationRequestId);
+                account = await authorizeBankAccountForReservation(user, reservationRequestId);
                 localStorage.removeItem("acme-pending-bank-request");
             }
             if (!cancelled) setBankAccount(account);
@@ -57,7 +57,7 @@ export default function ProfilePage() {
 
             setBankLoading(true);
             setBankError(null);
-            void loginBankAccount(user, requestId)
+            void authorizeBankAccountForReservation(user, requestId)
                 .then((account) => {
                     setBankAccount(account);
                     localStorage.removeItem("acme-pending-bank-request");
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         setBankLoading(true);
         try {
             const reservationRequestId = localStorage.getItem("acme-pending-bank-request") ?? undefined;
-            const account = await connectBankAccount(user!, {
+            const account = await registerBankAccount(user!, {
                 cardNumber: cardNumber.replace(/\s/g, ""),
                 cardHolder: cardHolder.trim(),
                 expiry,
