@@ -187,7 +187,7 @@ main {
 
     [ releaseDeposit(request)(response) {
         update@Database(
-            "WITH released AS (UPDATE bank_sessions SET held_deposit=0 WHERE session_id=:session_id AND held_deposit>0 RETURNING user_id, held_deposit) UPDATE accounts a SET balance=a.balance+r.held_deposit FROM released r WHERE a.user_id=r.user_id" {
+            "WITH released AS (SELECT user_id, held_deposit FROM bank_sessions WHERE session_id=:session_id AND held_deposit>0), updated_sessions AS (UPDATE bank_sessions s SET held_deposit=0 FROM released r WHERE s.session_id=:session_id AND s.user_id=r.user_id RETURNING s.user_id, r.held_deposit AS amount) UPDATE accounts a SET balance=a.balance+updated_sessions.amount FROM updated_sessions WHERE a.user_id=updated_sessions.user_id" {
                 .session_id = request.sessionId
             }
         )(updatedRows);
