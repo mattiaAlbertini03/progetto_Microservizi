@@ -1,6 +1,6 @@
 # Connectedness and projection analysis
 
-## Course criteria
+## criteria
 
 This analysis follows the calculus and sufficient projection conditions, 
 for two consecutive interactions
@@ -65,21 +65,6 @@ bank logout before the final App notification would satisfy the disjoint rule,
 but would no longer describe the current executable BPMN order.
 
 ## Choices
-
-### What is well-branched in the implementation
-
-Camunda gives `ACME` concrete ownership of the important runtime decisions:
-
-- it receives QR validation before selecting valid or invalid handling;
-- one event-based gateway observes pickup, cancellation, or the deadline;
-- it receives Fleet's destination result before accepting or rejecting return;
-- it receives `batteryPenaltyApplied` from the charge worker before selecting
-  the optional low-battery notification.
-
-Distinct SSE statuses inform the App of observable outcomes. Other services are
-called only after `ACME` has selected the branch, so they never decide
-independently.
-
 ### Where the strict sufficient condition does not hold
 
 The exact implementation choreography is not fully connected:
@@ -102,8 +87,7 @@ simple projection correctness theorem cannot be claimed for the unrefined term.
 
 Request and response operations have distinct names. Repeated interactions are
 correlated by `requestId` during creation and by `reservationId` afterward.
-BPMN message names distinguish pickup, free cancellation, late cancellation and
-return. This prevents concurrent process instances from consuming each other's
+This prevents concurrent process instances from consuming each other's
 messages, assuming one active process instance per correlation key.
 
 ## Conclusion
