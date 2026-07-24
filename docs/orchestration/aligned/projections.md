@@ -7,7 +7,7 @@
 - `;`, `+`, `*`, and `1` retain the meanings defined in `choreography.md`.
 - Guards are local decisions available to the role controlling the branch.
 
-The projections focus on externally visible behavior. Local computation, persistence, retries, and HTTP/SOAP serialization are omitted.
+Square-bracketed branch descriptions are explanatory comments rather than calculus syntax.
 
 ## System
 
@@ -186,8 +186,6 @@ COMPLETE_OR_ACTIVE ::=
     !completeRes@ACME
 ```
 
-The second activation branch is QR pickup: a pending reservation is held and picked up atomically by the Reservation service.
-
 ## Logistics service
 
 ```text
@@ -241,8 +239,6 @@ FLEET ::= (
     ?monitorStopReq@ACME ; !tripSummaryRes@ACME
 )*
 ```
-
-Fleet internally coordinates the simulator, GraphHopper, tracking, battery, Kafka, and query services. Those interactions refine this projection without changing its external interface.
 
 ## Charge worker
 

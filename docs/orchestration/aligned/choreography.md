@@ -2,7 +2,7 @@
 
 ## Formal basis
 
-This document uses the choreography calculus presented in the course material:
+This document uses the choreography calculus: 
 
 ```text
 C ::= o: a -> b      interaction
@@ -12,12 +12,11 @@ C ::= o: a -> b      interaction
     | C*             iteration, zero or more times
     | 1              successful termination
 ```
+Labels in square brackets below are comments that relate a branch to the domain; 
+they are not additional calculus operators.
 
 The calculus specifies communication structure, not payload values or the local
-conditions used to choose a branch. Labels in square brackets below are comments
-that relate a branch to the domain; they are not additional calculus operators.
-Named definitions such as `START_RENTAL` are macros expanded into terms of the
-grammar above.
+conditions used to choose a branch. 
 
 ## Participants
 
@@ -32,11 +31,9 @@ grammar above.
 | `FLEET` | Fleet Management external role |
 | `WORKER` | ACMEMobility charge-calculation worker |
 
-Fleet's internal microservices are deliberately hidden at this level. `ACME` includes the BPMS because the BPMS realizes ACMEMobility capabilities.
+Fleet's internal microservices are deliberately hidden at this level. 
 
 ## Interaction catalogue
-
-Every reservation-related interaction carries `corr`, consisting of `requestId` during creation and `reservationId` after creation.
 
 | Interaction | Sender -> receiver | Meaning |
 | --- | --- | --- |
@@ -222,26 +219,6 @@ OPTIONAL_LOW_BATTERY_NOTICE ::=
     lowBatteryPenaltyNotice: ACME -> APP
   + 1
 ```
-
-`OPTIONAL_LOW_BATTERY_NOTICE` mirrors the executable behavior exactly: the App
-receives an extra interaction only when the battery is below 15%. As discussed
-in `connectedness.md`, the `+ 1` shape does not satisfy the course's strict
-sufficient point-of-choice condition. A fully connected protocol would send a
-pricing-result interaction in both branches, with the penalty represented in
-its payload.
-
-## Timing constraints
-
-```text
-now <= scheduledStart <= now + 30 minutes
-freeCancellationCutoff = scheduledStart - 5 minutes
-pickupDeadline = scheduledStart + 5 minutes
-activationTime >= scheduledStart
-lateCancellation = cancellationTime > freeCancellationCutoff
-noShow = no pickup observed at pickupDeadline
-```
-
-The one-minute clock tolerance used by the REST services is an implementation guard against clock and transport skew; it does not change the domain rules above.
 
 ## Fleet implementation refinement
 
