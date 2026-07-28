@@ -444,19 +444,21 @@ bancario. Utilizza due interfacce differenti: una SOAP per comunicare con il
 processo Camunda e una REST per fornire a Logistics il catalogo delle
 stazioni. Nel server sono state definite le funzioni:
 \begin{itemize}
-  \item \code{login} e \code{logout}, per creare le sessioni delle singole
-        stazioni;
-  \item \code{unlock} e \code{lock}, per rappresentare lo sblocco e il blocco
-        di un veicolo;
+  \item \code{openSession} e \code{closeSession}, per creare e terminare le
+        sessioni delle singole stazioni;
+  \item \code{unlockVehicle} e \code{lockVehicle}, per rappresentare lo
+        sblocco e il blocco di un veicolo;
   \item \code{listStations}, che restituisce l'elenco delle stazioni;
   \item \code{getStation}, che restituisce la stazione richiesta.
 \end{itemize}
 
-Il server rimane in attesa di un login, della richiesta di una stazione o
-della richiesta dell'intera lista. Quando arriva un login viene aperta una
-sessione privata, nella quale possono essere ricevuti più comandi di blocco e
-sblocco. Il logout chiude la sessione e riporta il servizio nello stato
-iniziale. Il catalogo e lo stato delle stazioni sono persistiti in PostgreSQL
+Il server rimane in attesa dell'apertura di una sessione, della richiesta di
+una stazione o della richiesta dell'intera lista. Quando arriva una
+\code{openSession} viene aperta una sessione privata, nella quale possono
+essere ricevuti più comandi di blocco e sblocco. La \code{closeSession}
+termina la sessione e riporta il servizio nello stato iniziale. Il catalogo e
+le sessioni delle stazioni, incluso
+l'identificativo dell'ultimo veicolo gestito, sono persistiti in PostgreSQL
 tramite il driver JDBC di Jolie; questo evita che la perdita del container
 comporti la perdita dei dati.
 
@@ -548,7 +550,9 @@ dove $m$ rappresenta i minuti e $k$ i chilometri. Se la batteria è inferiore
 al 15\%, il costo viene moltiplicato per $1{,}10$; l'importo finale è
 arrotondato ai centesimi. Il worker valida inoltre che minuti e chilometri
 siano non negativi e che la batteria appartenga all'intervallo $[0,100]$.
-Un secondo worker, \code{stop-and-charge}, collabora alla chiusura del viaggio.
+Un secondo worker, \code{stop-and-charge}, gestisce la ricarica di sicurezza:
+quando la batteria raggiunge la soglia critica, richiede a Fleet di ricaricare
+il veicolo al 25\% e di riprendere la simulazione ancora attiva.
 
 La separazione del calcolo in un worker evita di inserire codice complesso
 nelle espressioni BPMN e rende la regola tariffaria verificabile tramite test
@@ -649,8 +653,8 @@ Kafka usa i topic \code{vehicle-tracking} e \code{vehicle-battery};
 PostgreSQL è distribuito nel namespace applicativo; GraphHopper usa la mappa
 inclusa nel repository. L'API ACMEMobility e il visualizzatore sono esposti
 rispettivamente sulle NodePort 30080 e 30081, mentre i servizi interni
-rimangono raggiungibili soltanto nel cluster. ConfigMap e Secret separano
-configurazione e credenziali dalle immagini.
+rimangono raggiungibili soltanto nel cluster. Secret ed environment variable
+separano credenziali e configurazione dalle immagini.
 
 I servizi applicativi sono raggiunti mediante nomi DNS interni stabili,
 indipendenti dall'indirizzo dei singoli pod. Le due NodePort costituiscono
@@ -692,18 +696,21 @@ un'istanza bloccata.
 
 La verifica combina test automatici e scenari end-to-end. I test JUnit
 coprono le risorse Helidon, le transizioni principali e il calcolo
-dell'addebito; i test del frontend coprono i componenti React. Gli script di
-smoke test verificano autenticazione, prenotazione, ritiro, telemetria,
-riconsegna, cancellazione e ricarica.
+dell'addebito. Per i frontend la verifica automatica comprende la compilazione
+TypeScript, la build di produzione e l'analisi statica con ESLint; non sono
+presenti test automatici dei componenti React. Le procedure manuali di smoke
+test descritte nel README verificano autenticazione, prenotazione, ritiro,
+telemetria, riconsegna, cancellazione e ricarica.
 
 Le prove sono organizzate su livelli differenti. I test unitari isolano le
 regole deterministiche, come formula tariffaria, validazione degli input e
 comportamento dei repository sostitutivi. I test dei singoli servizi
-verificano contratti HTTP, codici di risposta e serializzazione. Gli smoke
-test operano invece sul cluster completo e controllano che Camunda, Jolie,
-PostgreSQL, Kafka e i servizi Helidon collaborino nello stesso scenario. La
-prova manuale del frontend completa la verifica osservando notifiche SSE,
-aggiornamento della mappa e transizioni visibili all'utente.
+verificano contratti HTTP, codici di risposta e serializzazione. Le procedure
+di smoke test vengono invece eseguite manualmente sul cluster completo e
+controllano che Camunda, Jolie, PostgreSQL, Kafka e i servizi Helidon
+collaborino nello stesso scenario. La prova manuale del frontend completa la
+verifica osservando notifiche SSE, aggiornamento della mappa e transizioni
+visibili all'utente.
 
 Questa distinzione è importante perché un test unitario non può dimostrare la
 corretta correlazione di un messaggio Camunda o la consegna della telemetria
