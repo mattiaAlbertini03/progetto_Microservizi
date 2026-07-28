@@ -1,0 +1,672 @@
+\documentclass[12pt,a4paper,twoside]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{newtxtext}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\setlength{\headheight}{14.5pt}
+\textwidth=450pt
+\oddsidemargin=0pt
+\evensidemargin=20pt
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.15em}
+\linespread{1.3}
+\setlist{nosep,leftmargin=*}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO,RE]{ACMEMobility}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue!50!black,
+    pdftitle={ACMEMobility},
+    pdfauthor={Mattia Albertini e Pierre Errico}
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    columns=fullflexible,
+    showstringspaces=false
+}
+
+\newcommand{\capitoloSpecial}[1]{%
+  \chapter*{#1}
+  \addcontentsline{toc}{chapter}{#1}}
+\newcommand{\capitoloNum}[1]{\chapter{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\textbf{ACMEMobility}\\
+\large Progetto di Architetture Software a Microservizi\\
+A.A. 2025/2026}
+\author{Mattia Albertini -- 0001235513\\
+Pierre Errico -- 0001235580}
+\date{\today}
+
+\begin{document}
+\maketitle
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\capitoloNum{Coreografia e sistema proiettato}
+
+Durante questa prima fase abbiamo analizzato il testo e abbiamo iniziato a
+suddividerlo per capire quali dovessero essere i singoli elementi della
+coreografia, ottenendo App, ACME, Banca, Fleet e Stazione. Successivamente
+abbiamo scritto la coreografia associata al testo basandoci su questi servizi.
+
+ACMEMobility è una piattaforma di vehicle sharing. L'utente può consultare
+stazioni e veicoli, prenotare un mezzo con un anticipo massimo di 30 minuti
+oppure iniziare un noleggio immediato mediante QR code, seguirne lo
+spostamento e riconsegnarlo alla stazione assegnata. La cancellazione è
+gratuita fino a cinque minuti prima dell'inizio; la cancellazione tardiva e
+il mancato ritiro entro i cinque minuti di tolleranza producono un addebito di
+10 euro. Al ritiro viene bloccata una cauzione di 10 euro. Il costo finale
+dipende da durata e distanza e aumenta del 10\% se la batteria residua è
+inferiore al 15\%.
+
+Indichiamo con $a\rightarrow b:m$ l'invio del messaggio $m$ da $a$ a $b$.
+La coreografia seguente descrive i due cammini principali; le risposte di
+errore sono omesse per leggibilità.
+
+\begin{lstlisting}[mathescape=true]
+C ::= (
+  App $\rightarrow$ ACME : lista
+  ;
+  (
+    App $\rightarrow$ ACME : ritiroQR
+    +
+    App $\rightarrow$ ACME : prenota
+    ;
+    (App $\rightarrow$ ACME : ritira
+     + App $\rightarrow$ ACME : annulla
+     + ACME : timeout)
+  )
+  ;
+  ACME $\rightarrow$ Banca : cauzione
+  ;
+  ACME $\rightarrow$ Stazione : sblocca
+  ;
+  ACME $\rightarrow$ Fleet : avvia
+  ;
+  (ACME $\rightarrow$ Fleet : stato)*
+  ;
+  App $\rightarrow$ ACME : riconsegna
+  ;
+  ACME $\rightarrow$ Fleet : arresta
+  ;
+  ACME $\rightarrow$ Stazione : blocca
+  ;
+  ACME $\rightarrow$ Banca : addebita
+  ;
+  ACME $\rightarrow$ Banca : rilasciaCauzione
+  ;
+  ACME $\rightarrow$ App : esito
+)*
+\end{lstlisting}
+
+La scelta esterna distingue il ritiro immediato dalla prenotazione. Il ramo di
+annullamento può terminare senza costo oppure con una penale; il timeout
+produce la medesima penale. Nel cammino nominale il monitoraggio di Fleet è
+iterativo, mentre la riconsegna chiude il viaggio soltanto quando il veicolo
+ha raggiunto la destinazione.
+
+Dopo aver scritto la coreografia, l'abbiamo riscritta come sistema proiettato,
+riorganizzando i servizi come ruoli. La proiezione assegna ad ACME tutte le
+decisioni che coinvolgono più domini. App invia comandi e riceve
+aggiornamenti; Stazione e Banca espongono protocolli conversazionali con stato
+di sessione; Fleet avvia, interroga e arresta la simulazione. In forma
+compatta:
+
+\begin{lstlisting}[mathescape=true]
+App     ::= lista! ; (ritiroQR! + prenota! ; (ritira! + annulla!))
+            ; (aggiornamento?)* ; riconsegna! ; esito?
+ACME    ::= lista? ; scelta? ; coordinaRitiro
+            ; (statoFleet! ; statoFleet?)* ; riconsegna?
+            ; coordinaChiusura ; esito!
+Stazione ::= login? ; (sblocca? ; esito! + blocca? ; esito!)* ; logout?
+Banca   ::= login? ; (cauzione? + addebita? + rilascia?)* ; logout?
+Fleet   ::= (avvia? ; (stato? ; stato!)* ; arresta? ; riepilogo!)*
+\end{lstlisting}
+
+Le interazioni REST sono sincrone quando serve una risposta immediata; Kafka
+disaccoppia produzione e lettura della telemetria; gli eventi SSE aggiornano
+le interfacce senza polling applicativo. Camunda conserva lo stato del
+processo di noleggio e correla messaggi asincroni mediante gli identificativi
+di prenotazione e processo.
+
+Questa combinazione deriva dai diversi requisiti delle operazioni. La
+consultazione di una stazione o la validazione di un QR code richiedono un
+esito immediato e sono quindi modellate come richieste REST. La telemetria,
+invece, viene prodotta con continuità e non deve rallentare il simulatore:
+viene perciò inviata su Kafka e consumata successivamente da Query. I
+messaggi Camunda rappresentano eventi di dominio che fanno avanzare
+un'istanza persistente del processo. L'identificativo della prenotazione
+costituisce la chiave di correlazione e impedisce che un evento relativo a un
+noleggio modifichi lo stato di un altro.
+
+\capitoloNum{Il diagramma documentativo BPMN}
+
+Durante questa fase abbiamo ripreso il sistema proiettato e l'abbiamo
+riscritto come diagramma BPMN, aggiungendo tutti i calcoli e i controlli dei
+vari servizi che non potevano essere espressi nella coreografia. Alcune
+comunicazioni sono state inoltre modificate per rendere più semplice
+l'implementazione. Il BPMN documentativo è suddiviso in cinque pool, una per
+ogni ruolo individuato nell'analisi.
+
+I due modelli sono contenuti nei file:
+\begin{center}
+\small
+\path{docs/orchestration/modello_documentativo.bpmn}\\
+\path{docs/orchestration/processes/process.bpmn}
+\end{center}
+Il primo descrive le responsabilità organizzative; il secondo traduce la pool
+ACME in un processo Camunda 8, sostituendo le interazioni astratte con job
+worker, connettori e messaggi correlati.
+
+\section{Applicazione}
+
+La pool App rimane in attesa di un messaggio da parte di ACME per ottenere la
+lista delle stazioni e dei veicoli. Per gestire le due scelte dell'utente
+abbiamo applicato un gateway esclusivo: visualizzare la mappa e avviare un
+ritiro tramite QR code oppure prenotare un veicolo.
+
+Nel ramo della mappa l'utente visualizza i veicoli e ne sceglie uno; queste
+azioni sono rappresentate mediante user task. Successivamente invia ad ACME
+il QR code acquisito. Nel ramo della prenotazione, dopo aver inviato la
+richiesta, l'utente si trova di fronte a tre possibilità:
+\begin{itemize}
+  \item continuare con la prenotazione e notificare ACME al momento del ritiro;
+  \item non ritirare il veicolo, lasciando che il timer di tolleranza scada;
+  \item inviare una richiesta di annullamento.
+\end{itemize}
+I due rami che conducono al ritiro si ricongiungono nell'attesa della conferma
+di ACME. Terminato l'uso del veicolo, l'applicazione invia la richiesta di
+riconsegna e attende l'esito. Se la destinazione non è ancora stata raggiunta,
+l'esito \code{VEHICLE\_NOT\_AT\_DESTINATION} mantiene il processo attivo e
+consente un nuovo tentativo.
+
+\section{Servizio stazioni}
+
+La pool Stazione rimane in attesa di una notifica tramite un gateway basato
+su eventi. Le due scelte sono la richiesta di blocco o quella di sblocco di
+un veicolo. In entrambi i casi l'azione fisica è rappresentata nel modello
+documentativo da una manual task; al termine viene notificato ad ACME l'esito
+dell'operazione.
+
+Nell'implementazione il servizio mantiene una sessione SOAP Jolie per ciascuna
+stazione e offre inoltre un catalogo REST. In questo modo il comando sul
+blocco viene separato dalla consultazione delle informazioni statiche.
+
+\section{Servizio Fleet}
+
+La pool Fleet rimane in attesa di un messaggio di avvio da parte di ACME, al
+quale risponde notificandone la ricezione. Successivamente entra in un ciclo
+di richieste dello stato del veicolo: ricerca e lettura dei dati sono
+rappresentate mediante service task e l'esito viene inviato ad ACME. Quando
+arriva la richiesta di arresto, Fleet interrompe la simulazione e restituisce
+il riepilogo del viaggio.
+
+Nel BPMN eseguibile un sottoprocesso parallelo effettua il monitoraggio ogni
+due secondi e un evento di confine ne interrompe l'esecuzione alla
+riconsegna. Posizione e batteria sono letture eventualmente consistenti,
+mentre tempo e distanza calcolati dal simulatore sono i valori autorevoli per
+l'addebito.
+
+\section{Servizio bancario}
+
+La pool Banca rimane in attesa di un messaggio tramite un gateway basato su
+eventi. Il messaggio può riguardare:
+\begin{itemize}
+  \item un addebito, usato in caso di cancellazione tardiva o mancato ritiro;
+  \item una cauzione, bloccata all'inizio del noleggio;
+  \item il rilascio della cauzione, eseguito al termine del pagamento.
+\end{itemize}
+Ogni interazione con il conto è rappresentata mediante una service task e il
+risultato viene notificato ad ACME. Se il saldo non è sufficiente,
+l'applicazione richiede una ricarica e correla il relativo messaggio al
+processo in attesa. Il servizio è volutamente dimostrativo e non rappresenta
+un sistema di pagamento conforme ai requisiti di un sistema bancario reale.
+
+\section{Servizio ACMEMobility}
+
+La pool ACME era stata inizialmente suddivisa in due lane, per differenziare
+la parte gestionale dalla parte logistica. La prima coordina il processo di
+noleggio; la seconda gestisce stato, disponibilità e batteria dei veicoli.
+In fase di implementazione tali responsabilità sono state separate nei
+servizi ACMEMobility, Reservation, Logistics e Fleet.
+
+La lane gestionale inizia inviando stazioni e veicoli all'applicazione, quindi
+rimane in attesa della scelta fra QR code e prenotazione. Nel secondo caso un
+gateway esclusivo gestisce tre continuazioni: ritiro, annullamento o scadenza
+del tempo disponibile. I controlli temporali sono realizzati mediante timer
+event. Quando avviene il ritiro, ACME richiede lo sblocco alla stazione,
+blocca la cauzione e avvia Fleet, attendendo l'esito di ogni servizio.
+
+Durante l'uso del veicolo viene richiesto periodicamente lo stato a Fleet. La
+richiesta di riconsegna interrompe tale ciclo; ACME verifica la destinazione,
+arresta Fleet, blocca il veicolo, calcola ed esegue il pagamento, rilascia la
+cauzione e notifica l'applicazione.
+
+Nell'implementazione ACMEMobility costituisce l'API pubblica e il confine di
+sicurezza. Valida il JWT, verifica la proprietà delle prenotazioni, inoltra le
+richieste ai servizi interni e pubblica i messaggi Camunda. Il processo
+gestisce:
+\begin{itemize}
+  \item creazione, annullamento e scadenza della prenotazione;
+  \item cauzione, ricarica eventuale, addebito e rilascio;
+  \item sblocco, avvio Fleet, monitoraggio, blocco e arresto;
+  \item calcolo del prezzo e notifiche SSE verso app e visualizzatore.
+\end{itemize}
+Timer e message boundary event modellano esplicitamente finestre temporali,
+attese e interruzioni, evitando che tali regole restino nel frontend.
+
+Il processo eseguibile realizza quindi una saga orchestrata. Non esiste una
+transazione distribuita che comprenda Reservation, Logistics, Banca,
+Stazione e Fleet: ogni partecipante completa una propria operazione locale,
+mentre Camunda ne registra l'ordine e decide il passo successivo. Gli esiti
+negativi restano espliciti nel flusso. Per esempio, un saldo insufficiente
+porta all'attesa della ricarica e una riconsegna lontana dalla destinazione
+non chiude la prenotazione. Questa soluzione rende visibile lo stato
+intermedio del noleggio e consente di riprendere l'orchestrazione dopo un
+errore temporaneo.
+
+\capitoloNum{Il diagramma SOA con UML}
+
+\section{Decomposizione dei servizi}
+
+In seguito abbiamo definito la struttura del sistema in un diagramma SOA
+tramite UML, utilizzando il profilo TinySOA. Ogni servizio è stato definito
+mediante un package, al quale è stato assegnato uno dei seguenti profili:
+\begin{itemize}
+  \item \emph{Task}, se il servizio implementa la logica del sistema;
+  \item \emph{Entity}, se il servizio gestisce un'entità del dominio;
+  \item \emph{Utility}, se il servizio è esterno alla logica applicativa.
+\end{itemize}
+Ogni package viene implementato da un'interfaccia con profilo
+\emph{ServiceInterface} e da una classe con profilo \emph{Capability}. I due
+elementi sono collegati da una dipendenza \emph{Expose}, diretta
+dall'interfaccia alla classe. I servizi sono poi collegati mediante
+dipendenze che partono dalla capability del consumatore e terminano
+all'interfaccia del fornitore.
+
+Oltre ai servizi già presenti nel diagramma BPMN, per semplificare
+l'implementazione è stato necessario introdurre nuovi servizi oppure
+suddividere un servizio in componenti più piccoli. In particolare sono stati
+aggiunti il simulatore dei veicoli, utile a gestirne il movimento, il servizio
+di autenticazione, il servizio Reservation e i componenti dedicati alla
+telemetria. La decomposizione finale è riportata in
+Tabella~\ref{tab:servizi}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+Componente & Tipo & Responsabilità principale \\
+\midrule
+ACMEMobility & Task & API pubblica, autorizzazione, correlazione Camunda e SSE \\
+Auth & Entity & utenti, credenziali, recupero password e JWT \\
+Reservation & Entity & ciclo di vita e proprietà delle prenotazioni \\
+Logistics & Entity & veicoli, disponibilità, QR e metadati batteria \\
+Stations & Entity & catalogo stazioni e sessioni di blocco/sblocco \\
+Banking & Task & saldo dimostrativo, cauzione, addebito e ricarica \\
+Fleet & Task & coordinamento del viaggio e verifica della destinazione \\
+Simulator & Task & percorso, movimento, durata, distanza e batteria finale \\
+Tracking/Battery & Task & pubblicazione della telemetria su Kafka \\
+Query & Entity & read model di posizione e batteria \\
+Charge worker & Task & calcolo dell'importo corrente e finale \\
+Camunda & Utility & stato e orchestrazione del processo BPMN \\
+Kafka & Utility & trasporto asincrono della telemetria \\
+GraphHopper & Utility & calcolo dei percorsi sulla mappa di Bologna \\
+\bottomrule
+\end{tabularx}
+\caption{Servizi e responsabilità.}
+\label{tab:servizi}
+\end{table}
+
+\section{Dipendenze e criteri progettuali}
+
+Lo schema definisce App come consumatore di ACMEMobility. Quest'ultimo dipende
+da Auth, Banking, Reservation, Logistics e Fleet, oltre a Camunda per
+l'orchestrazione. Reservation gestisce la proprietà e il ciclo di vita delle
+prenotazioni, mentre Logistics gestisce i veicoli. Fleet è a sua volta
+dipendente da Query, Simulator, Reservation, Logistics e Stations. Simulator
+usa GraphHopper e invia i dati ai servizi Tracking e Battery; questi
+pubblicano su Kafka e Query ne costruisce il modello di lettura.
+
+La separazione tra Reservation e Logistics impedisce che la disponibilità
+del veicolo coincida con la proprietà della prenotazione. La scomposizione
+Fleet--Simulator isola la simulazione dalla coordinazione. Tracking e Battery
+scrivono eventi sui topic \code{vehicle-tracking} e
+\code{vehicle-battery}; Query li combina in un read model, applicando un
+semplice schema CQRS. GraphHopper e Kafka sono modellati come Utility perché
+non sono servizi ideati nel progetto, ma dipendenze necessarie alla
+comprensione dell'architettura. Il charge worker è un job worker Camunda
+indipendente e può evolvere senza modificare il diagramma delle API.
+
+La proprietà dei dati segue gli stessi confini. Auth è responsabile degli
+utenti; Reservation delle prenotazioni; Logistics dell'inventario dei
+veicoli; Stations del catalogo delle stazioni. Nessun servizio modifica
+direttamente le tabelle di un altro dominio: le variazioni passano attraverso
+le interfacce esposte. Il read model di Query non sostituisce le sorgenti
+autorevoli, ma conserva una proiezione ricostruibile degli eventi di
+posizione e batteria. La scelta riduce l'accoppiamento sullo schema e
+consente ai servizi di evolvere in modo indipendente.
+
+\capitoloNum{Implementazione}
+
+\section{Servizio bancario}
+
+Il servizio bancario è stato implementato con Jolie, impostando una
+\emph{inputPort} con protocollo SOAP. Nel server sono state definite le
+seguenti operazioni:
+\begin{itemize}
+  \item \code{login} e \code{logout}, per creare e terminare l'ambiente
+        privato dell'utente;
+  \item \code{charge}, per sottrarre l'importo richiesto dal saldo;
+  \item \code{holdDeposit}, per bloccare la cauzione e memorizzarla nella
+        sessione privata;
+  \item \code{releaseDeposit}, per restituire la cauzione;
+  \item \code{recharge}, per aumentare il saldo quando l'utente autorizza
+        una ricarica.
+\end{itemize}
+
+Il server rimane in attesa di un login e, dopo l'arrivo della richiesta,
+crea una sessione personale per l'utente. All'interno della sessione rimane
+in attesa delle operazioni sul conto fino alla ricezione del logout. Rispetto
+al modello iniziale abbiamo corretto la gestione del saldo insufficiente: il
+servizio non effettua autonomamente una ricarica senza autorizzazione, ma
+restituisce l'esito al processo. ACMEMobility notifica l'applicazione e
+Camunda attende un messaggio di ricarica correlato alla prenotazione.
+
+L'interfaccia è descritta nel file \code{BankingService.wsdl}, mentre
+\code{banking-interface.iol} contiene i tipi e le operazioni condivise. Il
+file \code{banking-service.ol} implementa il comportamento conversazionale.
+Nel deployment Kubernetes indirizzo, porte e parametri iniziali sono passati
+al container tramite configurazione, evitando di codificare nel processo gli
+indirizzi del cluster. Il servizio rimane dimostrativo: saldo e credenziali
+non hanno le garanzie di sicurezza di un vero intermediario finanziario.
+
+\section{Servizio stazioni}
+
+Il servizio stazioni è stato implementato con Jolie, come il servizio
+bancario. Utilizza due interfacce differenti: una SOAP per comunicare con il
+processo Camunda e una REST per fornire a Logistics il catalogo delle
+stazioni. Nel server sono state definite le funzioni:
+\begin{itemize}
+  \item \code{login} e \code{logout}, per creare le sessioni delle singole
+        stazioni;
+  \item \code{unlock} e \code{lock}, per rappresentare lo sblocco e il blocco
+        di un veicolo;
+  \item \code{listStations}, che restituisce l'elenco delle stazioni;
+  \item \code{getStation}, che restituisce la stazione richiesta.
+\end{itemize}
+
+Il server rimane in attesa di un login, della richiesta di una stazione o
+della richiesta dell'intera lista. Quando arriva un login viene aperta una
+sessione privata, nella quale possono essere ricevuti più comandi di blocco e
+sblocco. Il logout chiude la sessione e riporta il servizio nello stato
+iniziale. Il catalogo e lo stato delle stazioni sono persistiti in PostgreSQL
+tramite il driver JDBC di Jolie; questo evita che la perdita del container
+comporti la perdita dei dati.
+
+La separazione tra SOAP e REST riflette due tipi di interazione differenti.
+Il comando di blocco appartiene a una conversazione con stato, mentre la
+lettura del catalogo è una richiesta priva di stato e può essere esposta come
+risorsa. In questo modo Logistics non dipende dalla sessione usata da
+Camunda.
+
+\section{Servizio Fleet management}
+
+Come anticipato nel diagramma UML, il servizio Fleet management è suddiviso
+nei componenti Fleet, Simulator, Tracking, Battery e Query. Tutti questi
+componenti sono implementati in Java 21 con Helidon MicroProfile 4.3.4.
+
+Il \code{tracking-service} riceve dal simulatore la posizione del veicolo e
+la pubblica sul topic Kafka \code{vehicle-tracking}. In modo analogo, il
+\code{battery-service} pubblica la percentuale di carica sul topic
+\code{vehicle-battery}. I producer richiedono conferma da tutte le repliche
+con \code{acks=all}, abilitano l'idempotenza e configurano retry e timeout.
+Queste impostazioni riducono il rischio di perdita o duplicazione degli
+eventi durante errori transitori.
+
+Il \code{query-service} consuma entrambi i topic e mantiene l'ultima
+fotografia disponibile per ciascun veicolo. In questo modo viene realizzato
+un semplice modello CQRS: Tracking e Battery costituiscono il lato di
+scrittura degli eventi, mentre Query costituisce il lato di lettura. Le due
+misure possono arrivare in istanti differenti; di conseguenza posizione e
+batteria mostrate nell'interfaccia sono eventualmente consistenti.
+
+Ogni evento contiene l'identificativo del veicolo e il valore misurato. Query
+usa tale identificativo come chiave logica e aggiorna soltanto la parte del
+modello interessata dall'evento ricevuto. Un aggiornamento di posizione non
+sovrascrive quindi la batteria e viceversa. La configurazione idempotente dei
+producer riduce i duplicati dovuti ai retry; il consumatore, memorizzando
+l'ultima fotografia, rende comunque innocua la ripetizione dello stesso
+valore. Questa consistenza eventuale è accettabile per la visualizzazione,
+ma non per il calcolo economico: minuti, chilometri e batteria finale vengono
+richiesti direttamente al simulatore al termine del viaggio.
+
+Il \code{fleet-service} coordina il sottosistema. Per iniziare un viaggio
+recupera i dati della prenotazione e del veicolo, seleziona la destinazione e
+richiede al simulatore di iniziare il percorso. Durante il viaggio interroga
+Query e Simulator per produrre lo stato richiesto dal BPMN. Alla
+riconsegna controlla che il veicolo abbia raggiunto la stazione assegnata:
+in caso contrario restituisce l'esito
+\code{VEHICLE\_NOT\_AT\_DESTINATION}; in caso positivo arresta la simulazione
+e restituisce minuti, chilometri e batteria finale.
+
+\section{Servizio ACMEMobility}
+
+La parte gestionale di ACME è stata realizzata come BPMS tramite Camunda 8.
+Per farlo abbiamo ripreso il BPMN documentativo, isolando la parte gestionale
+e trasformandola in un processo eseguibile. Le coppie di task che comunicano
+con i servizi Jolie sono state sostituite da connettori SOAP; le
+comunicazioni con API HTTP sono state sostituite da connettori REST o da job
+worker. Le variabili del processo contengono identificativi, tempi e risultati
+necessari alla correlazione, mentre indirizzi e credenziali provengono dalla
+configurazione del deployment.
+
+Il ciclo di lettura dello stato del veicolo è stato spostato in un
+sottoprocesso parallelo, così da poterlo gestire indipendentemente dal flusso
+principale. Il ciclo viene attivato da un timer ogni due secondi e termina
+mediante un evento di confine quando arriva la richiesta di riconsegna.
+Questa soluzione sostituisce il gateway basato su eventi del diagramma
+documentativo e permette al processo di continuare a ricevere messaggi mentre
+il monitoraggio è in corso.
+
+ACMEMobility è inoltre un microservizio Helidon che funge da API pubblica.
+Espone le operazioni di autenticazione, stazioni, prenotazioni, QR, banca e
+Fleet; valida il JWT, ricava l'identità dell'utente e impedisce l'accesso alle
+prenotazioni altrui. I client interni comunicano con i rispettivi
+microservizi, mentre il client Camunda avvia istanze e pubblica messaggi
+correlati.
+
+Per notificare il browser sono stati usati Server-Sent Events. Sono presenti
+flussi distinti per prenotazioni, veicoli e visualizzatore della simulazione.
+La comunicazione è principalmente server-to-client e non richiede la
+bidirezionalità di WebSocket; SSE permette inoltre al browser di ristabilire
+la connessione in modo semplice.
+
+Il calcolo dell'addebito è affidato al job worker
+\code{calculate-charge}, scritto in Java. Esso riceve minuti, chilometri e
+batteria e applica la formula
+\[
+  C = 1{,}00 + 0{,}20\,m + 0{,}50\,k,
+\]
+dove $m$ rappresenta i minuti e $k$ i chilometri. Se la batteria è inferiore
+al 15\%, il costo viene moltiplicato per $1{,}10$; l'importo finale è
+arrotondato ai centesimi. Il worker valida inoltre che minuti e chilometri
+siano non negativi e che la batteria appartenga all'intervallo $[0,100]$.
+Un secondo worker, \code{stop-and-charge}, collabora alla chiusura del viaggio.
+
+La separazione del calcolo in un worker evita di inserire codice complesso
+nelle espressioni BPMN e rende la regola tariffaria verificabile tramite test
+unitari. Il worker restituisce sia l'importo base sia quello finale e indica
+esplicitamente se la maggiorazione è stata applicata. Il processo può così
+notificare all'utente il motivo della differenza, mantenendo distinta la
+decisione economica dall'operazione SOAP che modifica il saldo.
+
+\section{Servizio di autenticazione}
+
+Il servizio di autenticazione è implementato con Helidon e separa la gestione
+degli utenti dal resto del dominio. Espone registrazione, login, cambio
+password e recupero password. Le credenziali e i dati dell'utente sono
+persistiti in PostgreSQL; Flyway crea e aggiorna lo schema in fase di avvio.
+Per i test è disponibile un repository in memoria, così da non rendere le
+verifiche unitarie dipendenti dal database.
+
+Dopo un login valido il servizio genera un JWT. Il token viene inviato dal
+frontend nell'header \code{Authorization} e verificato da ACMEMobility prima
+di inoltrare una richiesta. In questo modo i servizi interni non sono esposti
+direttamente al browser. Il recupero password usa un'astrazione
+\code{PasswordMailer}, con implementazione SMTP e sostituto controllabile nei
+test. Le configurazioni incluse nel repository sono adatte alla
+dimostrazione, ma chiavi, password e segreti dovrebbero essere ruotati e
+gestiti esternamente in un ambiente produttivo.
+
+\section{Servizio Reservation}
+
+Reservation gestisce la proprietà e il ciclo di vita della prenotazione. I
+dati principali sono identificativo, utente, veicolo, stazioni, orario
+previsto e stato. La persistenza usa PostgreSQL, pool HikariCP e migrazioni
+Flyway. Le transizioni sono esposte sia mediante API REST interne sia
+mediante job worker Camunda, in modo che il processo possa creare, ritirare,
+annullare, far scadere e completare una prenotazione.
+
+La prenotazione può iniziare nell'intervallo compreso tra l'istante corrente e
+i 30 minuti successivi. L'annullamento è gratuito fino a cinque minuti prima
+dell'orario stabilito; dopo tale soglia viene applicata la penale di 10 euro.
+Anche il mancato ritiro entro i cinque minuti di tolleranza produce lo stesso
+addebito. Il servizio associa sempre la prenotazione all'utente autenticato;
+ACMEMobility verifica tale proprietà prima di pubblicare comandi Camunda.
+
+\section{Servizio Logistics}
+
+Logistics gestisce inventario e stato operativo dei veicoli: stazione,
+disponibilità, batteria, coordinate e QR code. I dati sono memorizzati in
+PostgreSQL e inizializzati tramite migrazioni Flyway. Il servizio consulta il
+catalogo REST di Stations per associare correttamente i mezzi alle stazioni.
+
+Quando viene creata una prenotazione, Logistics pone il veicolo in stato
+riservato; al ritiro lo rende in uso; al termine aggiorna stazione, batteria e
+disponibilità. La separazione da Reservation evita che i dati relativi alla
+proprietà del noleggio vengano confusi con quelli dell'inventario. Nel flusso
+QR, ACMEMobility confronta il codice inserito con il valore restituito da
+Logistics prima di avviare il processo.
+
+\section{Simulazione dei veicoli}
+
+Il simulatore è un servizio Helidon che riproduce lo spostamento del veicolo.
+All'avvio riceve posizione iniziale e destinazione, quindi usa GraphHopper e
+la mappa di Bologna inclusa nel progetto per calcolare un percorso stradale.
+Il movimento viene avanzato per passi; a ogni aggiornamento il simulatore
+invia la posizione a Tracking e la carica a Battery.
+
+Il simulatore mantiene i valori autorevoli di tempo trascorso e distanza
+percorsa. Fleet li usa sia durante il monitoraggio sia nel riepilogo finale,
+evitando che il costo dipenda dal numero di richieste del frontend. Quando la
+batteria raggiunge una soglia critica il processo può fermare il veicolo,
+richiedere una ricarica e riprendere la simulazione. Il visualizzatore mostra
+separatamente percorso, posizione, batteria, durata, chilometri e importo
+corrente.
+
+\section{Applicazione}
+
+L'applicazione è stata sviluppata come single-page application mediante
+React, TypeScript, HTML e CSS, con Vite come strumento di build. Le viste
+gestiscono login, registrazione, mappa, elenco delle prenotazioni, ritiro,
+annullamento e riconsegna. L'utente può selezionare una stazione e un veicolo,
+indicare l'orario di inizio entro la finestra ammessa oppure inserire il QR
+code per il ritiro immediato.
+
+Le notifiche SSE aggiornano l'interfaccia senza polling continuo e mostrano
+conferma, cauzione, eventuale penale, stato del viaggio e pagamento finale.
+Una seconda applicazione React, il simulation visualizer, combina la
+posizione e la batteria lette da Query con durata, chilometri e costo inviati
+da ACMEMobility. La distinzione evita di accoppiare la UI operativa a quella
+di osservazione.
+
+\section{Container e Kubernetes}
+
+Ogni servizio dispone di un Dockerfile. Gli script nella directory
+\code{scripts} preparano un profilo Minikube, creano i namespace
+\code{acme}, \code{orchestration} e \code{kafka}, installano Camunda tramite
+Helm e Kafka tramite Strimzi, costruiscono le immagini all'interno di
+Minikube e attendono la readiness dei deployment.
+
+Kafka usa i topic \code{vehicle-tracking} e \code{vehicle-battery};
+PostgreSQL è distribuito nel namespace applicativo; GraphHopper usa la mappa
+inclusa nel repository. L'API ACMEMobility e il visualizzatore sono esposti
+rispettivamente sulle NodePort 30080 e 30081, mentre i servizi interni
+rimangono raggiungibili soltanto nel cluster. ConfigMap e Secret separano
+configurazione e credenziali dalle immagini.
+
+I servizi applicativi sono raggiunti mediante nomi DNS interni stabili,
+indipendenti dall'indirizzo dei singoli pod. Le due NodePort costituiscono
+deliberatamente l'unico ingresso dall'host: il browser comunica con
+ACMEMobility e con il visualizzatore, mentre database, broker e API interne
+non vengono pubblicati all'esterno. Gli script attendono inoltre il rollout
+dei deployment prima di avviare le verifiche, evitando che una dipendenza
+ancora in fase di inizializzazione venga interpretata come errore
+applicativo.
+
+La procedura completa richiede risorse elevate soprattutto a causa di
+Camunda, Elasticsearch, Kafka e GraphHopper. La configurazione proposta
+assegna 16 GiB di memoria e 8 CPU al profilo Minikube. Gli script non
+eliminano automaticamente un profilo esistente con risorse insufficienti,
+per evitare la perdita accidentale dello stato dell'utente.
+
+\section{Verifica}
+
+La verifica combina test automatici e scenari end-to-end. I test JUnit
+coprono le risorse Helidon, le transizioni principali e il calcolo
+dell'addebito; i test del frontend coprono i componenti React. Gli script di
+smoke test verificano autenticazione, prenotazione, ritiro, telemetria,
+riconsegna, cancellazione e ricarica.
+
+I criteri di accettazione principali sono:
+\begin{itemize}
+  \item una prenotazione riserva un solo veicolo e rispetta le finestre
+        temporali;
+  \item un QR errato non avvia il processo e un utente non può operare sulle
+        prenotazioni altrui;
+  \item posizione e batteria raggiungono Query attraverso Kafka;
+  \item una richiesta di riconsegna anticipata non chiude il viaggio;
+  \item addebito, maggiorazione e cauzione concordano con il riepilogo finale;
+  \item tutti i deployment applicativi raggiungono lo stato \emph{Ready}.
+\end{itemize}
+
+\capitoloNum{Conclusioni}
+
+Il progetto realizza l'intero ciclo di un noleggio mediante un'architettura
+eterogenea a microservizi. L'orchestrazione BPMN rende esplicite regole,
+timeout e compensazioni; REST e SOAP gestiscono le richieste con risposta,
+Kafka disaccoppia la telemetria e SSE aggiorna le interfacce. PostgreSQL
+assegna la proprietà dei dati ai rispettivi servizi, mentre Kubernetes rende
+riproducibile il deployment.
+
+Il principale compromesso è la complessità operativa: per un prototipo, il
+numero di componenti e il consumo di risorse sono superiori a quelli di
+un'applicazione monolitica. Tale costo è giustificato dall'obiettivo
+didattico di integrare orchestrazione, messaggistica, protocolli eterogenei e
+deployment cloud-native. Restano fuori dall'ambito produttivo la gestione
+sicura dei segreti, l'alta disponibilità, la cifratura end-to-end,
+l'osservabilità centralizzata e un vero payment provider. Questi aspetti
+costituiscono le evoluzioni naturali del sistema.
+
+\end{document}
