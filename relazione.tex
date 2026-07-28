@@ -284,6 +284,42 @@ non chiude la prenotazione. Questa soluzione rende visibile lo stato
 intermedio del noleggio e consente di riprendere l'orchestrazione dopo un
 errore temporaneo.
 
+\section{Corrispondenza fra modello e implementazione}
+
+La Tabella~\ref{tab:bpmn-implementation} riassume come gli elementi del
+diagramma documentativo sono stati tradotti nel processo eseguibile. La
+traduzione non è puramente sintattica: alcune attività astratte sono state
+scomposte per rendere espliciti correlazione, attese e gestione degli esiti.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\toprule
+Elemento & Implementazione Camunda & Motivazione \\
+\midrule
+Banca e Stazione & Connettore SOAP &
+Riutilizzo delle interfacce WSDL dei servizi Jolie. \\
+Richiesta HTTP & Connettore REST o client ACMEMobility &
+Invocazione sincrona con esito disponibile nel processo. \\
+Calcolo del costo & Worker \code{calculate-charge} &
+Logica Java testabile, separata dalle espressioni BPMN. \\
+Monitoraggio Fleet & Sottoprocesso con timer di due secondi &
+Aggiornamenti periodici senza bloccare il flusso principale. \\
+Riconsegna & Messaggio correlato e boundary event &
+Interruzione del monitoraggio della stessa prenotazione. \\
+Attesa ricarica & Message catch event &
+Sospensione persistente senza occupare un thread. \\
+Scadenza & Timer event &
+Applicazione deterministica delle finestre temporali. \\
+Notifica & REST verso ACMEMobility, poi SSE &
+Disaccoppiamento fra processo e connessione del browser. \\
+\bottomrule
+\end{tabularx}
+\caption{Corrispondenza fra BPMN documentativo e processo eseguibile.}
+\label{tab:bpmn-implementation}
+\end{table}
+
 \capitoloNum{Il diagramma SOA con UML}
 
 \section{Decomposizione dei servizi}
@@ -631,6 +667,27 @@ assegna 16 GiB di memoria e 8 CPU al profilo Minikube. Gli script non
 eliminano automaticamente un profilo esistente con risorse insufficienti,
 per evitare la perdita accidentale dello stato dell'utente.
 
+\section{Gestione dei fallimenti}
+
+L'orchestrazione riduce il rischio che un errore temporaneo renda
+incomprensibile lo stato del noleggio, ma non equivale a una transazione
+distribuita. Se un servizio non risponde, l'istanza Camunda conserva le
+variabili e il punto di avanzamento; il job o il connettore può essere
+ritentato senza ricostruire il flusso dal browser. I comandi sono correlati
+alla prenotazione e le verifiche di stato nei servizi limitano l'effetto di
+messaggi ripetuti.
+
+Rimangono casi che, in un sistema produttivo, richiederebbero compensazioni
+più articolate. Se la cauzione viene bloccata ma lo sblocco fallisce
+definitivamente, il processo dovrebbe rilasciarla esplicitamente. Se Fleet si
+arresta dopo l'avvio, occorre ricostruire lo stato dal simulatore prima di
+accettare la riconsegna. Un ritardo di Kafka può rendere temporaneamente
+obsoleta la posizione mostrata, ma non modifica l'addebito, che usa il
+riepilogo autorevole del simulatore. Per completare l'industrializzazione
+sarebbero inoltre utili dead-letter queue, politiche di retry differenziate,
+timeout per ogni dipendenza e operazioni amministrative per correggere
+un'istanza bloccata.
+
 \section{Verifica}
 
 La verifica combina test automatici e scenari end-to-end. I test JUnit
@@ -638,6 +695,22 @@ coprono le risorse Helidon, le transizioni principali e il calcolo
 dell'addebito; i test del frontend coprono i componenti React. Gli script di
 smoke test verificano autenticazione, prenotazione, ritiro, telemetria,
 riconsegna, cancellazione e ricarica.
+
+Le prove sono organizzate su livelli differenti. I test unitari isolano le
+regole deterministiche, come formula tariffaria, validazione degli input e
+comportamento dei repository sostitutivi. I test dei singoli servizi
+verificano contratti HTTP, codici di risposta e serializzazione. Gli smoke
+test operano invece sul cluster completo e controllano che Camunda, Jolie,
+PostgreSQL, Kafka e i servizi Helidon collaborino nello stesso scenario. La
+prova manuale del frontend completa la verifica osservando notifiche SSE,
+aggiornamento della mappa e transizioni visibili all'utente.
+
+Questa distinzione è importante perché un test unitario non può dimostrare la
+corretta correlazione di un messaggio Camunda o la consegna della telemetria
+attraverso Kafka. Simmetricamente, uno scenario end-to-end è più lento e
+rende meno immediata l'individuazione di un errore nella formula. L'uso
+congiunto dei livelli bilancia rapidità diagnostica e copertura
+dell'integrazione.
 
 I criteri di accettazione principali sono:
 \begin{itemize}
@@ -659,6 +732,23 @@ timeout e compensazioni; REST e SOAP gestiscono le richieste con risposta,
 Kafka disaccoppia la telemetria e SSE aggiorna le interfacce. PostgreSQL
 assegna la proprietà dei dati ai rispettivi servizi, mentre Kubernetes rende
 riproducibile il deployment.
+
+Rispetto a un'applicazione monolitica, questa soluzione introduce un costo
+operativo evidente: più processi, configurazioni, immagini, protocolli e
+dipendenze devono essere distribuiti e osservati. Una singola operazione di
+noleggio attraversa più confini di rete e non può affidarsi a una sola
+transazione ACID. In compenso, i confini rendono esplicita la proprietà dei
+dati, consentono di sostituire o scalare separatamente i componenti e
+permettono di integrare tecnologie eterogenee, come Jolie, Camunda e Helidon,
+attraverso contratti definiti.
+
+Nel contesto del progetto la decomposizione è volutamente più articolata di
+quanto richiederebbe il solo carico dimostrativo. Il suo valore risiede nella
+possibilità di studiare orchestrazione, consistenza eventuale,
+interoperabilità e deployment cloud-native su un caso d'uso completo. Per
+un prodotto con scala ridotta, alcuni servizi potrebbero essere inizialmente
+accorpati e separati soltanto in presenza di esigenze organizzative o di
+carico misurabili.
 
 Il principale compromesso è la complessità operativa: per un prototipo, il
 numero di componenti e il consumo di risorse sono superiori a quelli di
