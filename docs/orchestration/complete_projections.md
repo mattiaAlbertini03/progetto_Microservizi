@@ -1,23 +1,6 @@
-# Aligned role projections
-
-## Projection notation
-
-- `!m@R` sends interaction `m` to role `R`.
-- `?m@R` receives interaction `m` from role `R`.
-- `;`, `+`, `*`, and `1` retain the meanings defined in `choreography.md`.
-- Guards are local decisions available to the role controlling the branch.
-
-Square-bracketed branch descriptions are explanatory comments rather than calculus syntax.
-
-## System
-
 ```text
 S ::= APP | ACME | RES | LOG | STA | BANK | FLEET | WORKER
-```
 
-## Customer application
-
-```text
 APP ::= (
     !catalogueReq@ACME ; ?catalogueRes@ACME
 )* ; (
@@ -58,13 +41,7 @@ ACTIVE_APP ::=
         ?depositReleasedNotice@ACME ;
         ?returnConfirmed@ACME
     )
-```
 
-The `1` branch represents a no-show, which is initiated by ACMEMobility's timer and requires no customer message.
-
-## ACMEMobility and BPMS
-
-```text
 ACME ::= (
     ?catalogueReq@APP ; !catalogueRes@APP
 )* ; (
@@ -152,11 +129,7 @@ FINISH_ACME ::=
     !depositReleasedNotice@APP ;
     !returnConfirmed@APP ;
     !bankLogoutReq@BANK ; ?bankLogoutRes@BANK
-```
 
-## Reservation service
-
-```text
 RES ::= (
     ?createReq@ACME ; !createRes@ACME ;
     (
@@ -184,11 +157,7 @@ COMPLETE_OR_ACTIVE ::=
     ?completeReq@ACME ;
     !vehicleReturnReq@LOG ; ?vehicleReturnRes@LOG ;
     !completeRes@ACME
-```
 
-## Logistics service
-
-```text
 LOG ::= (
     ?qrValidationReq@ACME ; !qrValidationRes@ACME
   +
@@ -200,22 +169,16 @@ LOG ::= (
   +
     ?vehicleReturnReq@RES ; !vehicleReturnRes@RES
 )*
-```
 
-## Station service
 
-```text
 STA ::= (
     ?openStationReq@ACME ; !openStationRes@ACME ;
     ?unlockReq@ACME ; !unlockRes@ACME ;
     ?lockReq@ACME ; !lockRes@ACME ;
     ?closeStationReq@ACME ; !closeStationRes@ACME
 )*
-```
 
-## Banking service
 
-```text
 BANK ::= (
     ?bankLoginReq@ACME ; !bankLoginRes@ACME ;
     (
@@ -227,22 +190,16 @@ BANK ::= (
         ?bankLogoutReq@ACME ; !bankLogoutRes@ACME
     )
 )*
-```
 
-## Fleet Management
 
-```text
 FLEET ::= (
     ?monitorStartReq@ACME ; !monitorStartRes@ACME ;
     (?statusReq@ACME ; !statusRes@ACME)* ;
     (?destinationReq@ACME ; !destinationRes@ACME)* ;
     ?monitorStopReq@ACME ; !tripSummaryRes@ACME
 )*
-```
 
-## Charge worker
 
-```text
 WORKER ::= (
     ?calculateReq@ACME ;
     !calculateRes@ACME

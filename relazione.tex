@@ -24,6 +24,7 @@
 \fancyhf{}
 \fancyhead[LE,RO]{\thepage}
 \fancyhead[LO,RE]{ACMEMobility}
+\hyphenation{sil-la-ba-zio-ne pa-ren-te-si}
 
 \hypersetup{
     colorlinks=true,
@@ -47,12 +48,17 @@
 \newcommand{\capitoloNum}[1]{\chapter{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
 
-\title{\textbf{ACMEMobility}\\
+
+
+
+\title{ACMEMobility\\
 \large Progetto di Architetture Software a Microservizi\\
 A.A. 2025/2026}
-\author{Mattia Albertini -- 0001235513\\
-Pierre Errico -- 0001235580}
+\author{Mattia Albertini [0001235513] [mattia.albertini3@studio.unibo.it] \\ 
+        Pierre Errico [0001235580] [pierre.errico@studio.unibo.it]}
 \date{\today}
+
+
 
 \begin{document}
 \maketitle
@@ -78,46 +84,57 @@ il mancato ritiro entro i cinque minuti di tolleranza producono un addebito di
 dipende da durata e distanza e aumenta del 10\% se la batteria residua è
 inferiore al 15\%.
 
-Indichiamo con $a\rightarrow b:m$ l'invio del messaggio $m$ da $a$ a $b$.
+Indichiamo con $m: a\rightarrow b$ l'invio del messaggio $m$ da $a$ a $b$.
 La coreografia seguente descrive i due cammini principali; le risposte di
 errore sono omesse per leggibilità.
 
 \begin{lstlisting}[mathescape=true]
-C ::= (
-  App $\rightarrow$ ACME : lista
-  ;
-  (
-    App $\rightarrow$ ACME : ritiroQR
+C::=(
+    (
+        mappa_req: App -> ACME ;  mappa_res: ACME -> App ;      
+        ritiroQR_req: App -> ACME ;  
+        sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
+        cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
+        notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
+        ritiro_res: ACME -> App;
+        ( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
+        riconsegna_req: App -> ACME ; 
+        bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
+        notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
+        addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
+        rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
+        riconsegna_res: ACME -> App
+    )
     +
-    App $\rightarrow$ ACME : prenota
-    ;
-    (App $\rightarrow$ ACME : ritira
-     + App $\rightarrow$ ACME : annulla
-     + ACME : timeout)
-  )
-  ;
-  ACME $\rightarrow$ Banca : cauzione
-  ;
-  ACME $\rightarrow$ Stazione : sblocca
-  ;
-  ACME $\rightarrow$ Fleet : avvia
-  ;
-  (ACME $\rightarrow$ Fleet : stato)*
-  ;
-  App $\rightarrow$ ACME : riconsegna
-  ;
-  ACME $\rightarrow$ Fleet : arresta
-  ;
-  ACME $\rightarrow$ Stazione : blocca
-  ;
-  ACME $\rightarrow$ Banca : addebita
-  ;
-  ACME $\rightarrow$ Banca : rilasciaCauzione
-  ;
-  ACME $\rightarrow$ App : esito
+    (
+        prenotazione_req: App -> ACME ; prenotazione_res: ACME -> App ; 
+        ( 
+            annulla_req: App -> ACME ;  annulla_res: ACME -> App ;
+            ( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
+            + ( 1 )
+        )
+        +
+        ( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
+        +
+        (
+            ritiroDiretto_req: App -> ACME;
+            sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
+            cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
+            notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
+            ritiro_res: ACME -> App;
+            ( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
+            riconsegna_req: App -> ACME ; 
+            bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
+            notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
+            addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
+            rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
+            riconsegna_res: ACME -> App
+        )
+    )
 )*
-\end{lstlisting}
 
+\end{lstlisting}
+$\\$
 La scelta esterna distingue il ritiro immediato dalla prenotazione. Il ramo di
 annullamento può terminare senza costo oppure con una penale; il timeout
 produce la medesima penale. Nel cammino nominale il monitoraggio di Fleet è
@@ -125,21 +142,89 @@ iterativo, mentre la riconsegna chiude il viaggio soltanto quando il veicolo
 ha raggiunto la destinazione.
 
 Dopo aver scritto la coreografia, l'abbiamo riscritta come sistema proiettato,
-riorganizzando i servizi come ruoli. La proiezione assegna ad ACME tutte le
-decisioni che coinvolgono più domini. App invia comandi e riceve
+riorganizzando i servizi come ruoli, indicando con $!m@R$ inviare un messaggio $m$ ad $R$ e con $?m@R$ attendere un messaggio $m$ da $R$.
+La proiezione assegna ad ACME tutte le decisioni che coinvolgono più domini. App invia comandi e riceve
 aggiornamenti; Stazione e Banca espongono protocolli conversazionali con stato
-di sessione; Fleet avvia, interroga e arresta la simulazione. In forma
-compatta:
+di sessione; Fleet avvia, interroga e arresta la simulazione.
 
 \begin{lstlisting}[mathescape=true]
-App     ::= lista! ; (ritiroQR! + prenota! ; (ritira! + annulla!))
-            ; (aggiornamento?)* ; riconsegna! ; esito?
-ACME    ::= lista? ; scelta? ; coordinaRitiro
-            ; (statoFleet! ; statoFleet?)* ; riconsegna?
-            ; coordinaChiusura ; esito!
-Stazione ::= login? ; (sblocca? ; esito! + blocca? ; esito!)* ; logout?
-Banca   ::= login? ; (cauzione? + addebita? + rilascia?)* ; logout?
-Fleet   ::= (avvia? ; (stato? ; stato!)* ; arresta? ; riepilogo!)*
+S::=ACME|App|Stazione|Banca|Fleet
+Fleet::=( 
+        ?notificaSblocco_req@ACME ; !notificaSblocco_res@ACME ; 
+        ( ?status_req@ACME ; !status_res@ACME)* ; 
+        ?notificaBlocco_req@ACME ; !notificaBlocco_res@ACME
+    )*
+Banca::=( 
+        ( ?addebito_req@ACME ; !addebito_res@ACME)
+        +
+        ( 
+         ?cauzione_req@ACME ; !cauzione_res@ACME ; 
+         ?addebito_req@ACME ; !addebito_res@ACME ; 
+         ?rimuoviCauzione_req@ACME ; !rimuoviCauzione_res@ACME
+        )
+    )*
+Stazione::=( 
+        ?sbloccoVeicolo_req@ACME ; !sbloccoVeicolo_res@ACME ; 
+        ?bloccoVeicolo_req@ACME ; !bloccoVeicolo_res@ACME ; 
+    )*
+App::=( 
+        ( 
+        !mappa_req@ACME ; ?mappa_res@ACME ; 
+        !QR_ritiro@ACME ; ?ris_utente@ACME ; 
+        !Riconsegna@ACME ; ?ris_finale@ACME ; 
+        )
+        +
+        ( 
+         !prenotazione@ACME ; ?prenotazione_res@ACME ; 
+         ( !annulla_req@ACME ; ?annulla_res@ACME)
+         +
+         ( !ritiro@ACME ; ?ris_utente@ACME ; !Riconsegna@ACME ; ?ris_finale@ACME ; )
+         +
+         ( 1)
+        )
+    )*
+ACME::=( 
+        ( 
+         ?mappa_req@App ; !mappa_res@App ; 
+         ?QR_ritiro@App ; 
+         !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
+         !cauzione_req@Banca ; ?cauzione_res@Banca ; 
+         !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
+         !ris_utente@App ; 
+         ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
+         ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
+         !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
+         !addebito_req@Banca ; ?addebito_res@Banca ; 
+         !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
+         !ris_finale@App ; 
+        )
+        +
+        ( 
+         ?prenotazione@App ; !ris_pre@App ; 
+         ( 
+          ?annulla_req@App ; !annulla_ris@App ; 
+          ( !addebito_req@Banca ; ?addebito_res@Banca ; )+( 1) ; 
+         )
+         +
+         ( !addebito_req@Banca ; ?addebito_res@Banca ; )
+         +
+         ( 
+          ?ritiro@App ; 
+          !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
+          !cauzione_req@Banca ; ?cauzione_res@Banca ; 
+          !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
+          !ris_utente@App ; 
+          ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
+          ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
+          !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
+          !addebito_req@Banca ; ?addebito_res@Banca ; 
+          !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
+          !ris_finale@App ; 
+         )
+        )
+    )*
+
+
 \end{lstlisting}
 
 Le interazioni REST sono sincrone quando serve una risposta immediata; Kafka
@@ -300,7 +385,7 @@ Elemento & Implementazione Camunda & Motivazione \\
 \midrule
 Banca e Stazione & Connettore SOAP &
 Riutilizzo delle interfacce WSDL dei servizi Jolie. \\
-Richiesta HTTP & Connettore REST o client ACMEMobility &
+connesione App e ACME & Connettore REST o client ACMEMobility &
 Invocazione sincrona con esito disponibile nel processo. \\
 Calcolo del costo & Worker \code{calculate-charge} &
 Logica Java testabile, separata dalle espressioni BPMN. \\
