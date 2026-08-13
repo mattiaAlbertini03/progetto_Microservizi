@@ -1,82 +1,259 @@
-S::=ACME|App|Stazione|Banca|Fleet
+# Proiezione
 
-Fleet::=( 
-		?notificaSblocco_req@ACME ; !notificaSblocco_res@ACME ; 
-		( ?status_req@ACME ; !status_res@ACME)* ; 
-		?notificaBlocco_req@ACME ; !notificaBlocco_res@ACME
-	)*
+Si usa `!` per indicare un output:
 
-Banca::=( 
-		( ?addebito_req@ACME ; !addebito_res@ACME)
-		+
-		( 
-		 ?cauzione_req@ACME ; !cauzione_res@ACME ; 
-		 ?addebito_req@ACME ; !addebito_res@ACME ; 
-		 ?rimuoviCauzione_req@ACME ; !rimuoviCauzione_res@ACME
-		)
-	)*
+```text
+!op@ROLE    output verso ROLE
+op@ROLE     input proveniente da ROLE
+```
 
-Stazione::=( 
-		?sbloccoVeicolo_req@ACME ; !sbloccoVeicolo_res@ACME ; 
-		?bloccoVeicolo_req@ACME ; !bloccoVeicolo_res@ACME ; 
-	   )*
+La proiezione sostituisce inoltre con `1` le interazioni alle quali il ruolo
+non partecipa ed è omomorfa rispetto agli operatori della coreografia.
 
-App::=( 
-		( 
-		 !mappa_req@ACME ; ?mappa_res@ACME ; 
-		 !QR_ritiro@ACME ; ?ris_utente@ACME ; 
-		 !Riconsegna@ACME ; ?ris_finale@ACME ; 
-		)
-		+
-		( 
-		 !prenotazione@ACME ; ?prenotazione_res@ACME ; 
-		 ( !annulla_req@ACME ; ?annulla_res@ACME)
-		 +
-		 ( !ritiro@ACME ; ?ris_utente@ACME ; !Riconsegna@ACME ; ?ris_finale@ACME ; )
-		 +
-		 ( 1)
-		)
-      )*
+## APP
 
+```text
+APP :== ((
+    !online_req@ACME;
+    online_res@ACME;
 
-ACME::=( 
-		( 
-		 ?mappa_req@App ; !mappa_res@App ; 
-		 ?QR_ritiro@App ; 
-		 !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
-		 !cauzione_req@Banca ; ?cauzione_res@Banca ; 
-		 !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
-		 !ris_utente@App ; 
-		 ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
-		 ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
-		 !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
-		 !addebito_req@Banca ; ?addebito_res@Banca ; 
-		 !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
-		 !ris_finale@App ; 
-		)
-		+
-		( 
-		 ?prenotazione@App ; !ris_pre@App ; 
-		 ( 
-		  ?annulla_req@App ; !annulla_ris@App ; 
-		  ( !addebito_req@Banca ; ?addebito_res@Banca ; )+( 1) ; 
-		 )
-		 +
-		 ( !addebito_req@Banca ; ?addebito_res@Banca ; )
-		 +
-		 ( 
-		  ?ritiro@App ; 
-		  !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
-		  !cauzione_req@Banca ; ?cauzione_res@Banca ; 
-		  !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
-		  !ris_utente@App ; 
-		  ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
-		  ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
-		  !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
-		  !addebito_req@Banca ; ?addebito_res@Banca ; 
-		  !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
-		  !ris_finale@App ; 
-		 )
-		 )
-	)*
+    (
+        !pickup_req@ACME;
+        pickup_res@ACME;
 
+        !return_req@ACME;
+        return_res@ACME
+    )
+
+    +
+
+    (
+        !cancel_req@ACME;
+        cancel_res@ACME
+    )
+)
+
++
+(
+    !qr_req@ACME;
+    qr_res@ACME;
+
+    !return_req@ACME;
+    return_res@ACME
+))*
+```
+
+## ACME
+
+```text
+ACME :== ((
+    online_req@APP;
+    !online_res@APP;
+
+    (
+        pickup_req@APP;
+        !pickup_res@APP;
+
+        !unlock_req@STATIONS;
+        unlock_res@STATIONS;
+
+        !bail_req@BANK;
+        bail_res@BANK;
+
+        !start_req@FLEET;
+        start_res@FLEET;
+
+        (
+            !track_req@FLEET;
+            track_res@FLEET
+        )*;
+
+        return_req@APP;
+        !return_res@APP;
+
+        !lock_req@STATIONS;
+        lock_res@STATIONS;
+
+        !stop_req@FLEET;
+        stop_res@FLEET;
+
+        !charge_req@BANK;
+        charge_res@BANK;
+
+        !unbail_req@BANK;
+        unbail_res@BANK
+    )
+
+    +
+
+    (
+        cancel_req@APP;
+        !cancel_res@APP;
+
+        (
+            !bail_req@BANK;
+            bail_res@BANK
+        )
+
+        +
+
+        1
+    )
+)
+
++
+(
+    qr_req@APP;
+    !qr_res@APP;
+
+    !unlock_req@STATIONS;
+    unlock_res@STATIONS;
+
+    !bail_req@BANK;
+    bail_res@BANK;
+
+    !start_req@FLEET;
+    start_res@FLEET;
+
+    (
+        !track_req@FLEET;
+        track_res@FLEET
+    )*;
+
+    return_req@APP;
+    !return_res@APP;
+
+    !lock_req@STATIONS;
+    lock_res@STATIONS;
+
+    !stop_req@FLEET;
+    stop_res@FLEET;
+
+    !charge_req@BANK;
+    charge_res@BANK;
+
+    !unbail_req@BANK;
+    unbail_res@BANK
+))*
+```
+
+## STATIONS
+
+```text
+STATIONS :== ((
+    (
+        unlock_req@ACME;
+        !unlock_res@ACME;
+
+        lock_req@ACME;
+        !lock_res@ACME
+    )
+
+    +
+
+    1
+)
+
++
+(
+    unlock_req@ACME;
+    !unlock_res@ACME;
+
+    lock_req@ACME;
+    !lock_res@ACME
+))*
+```
+
+## BANK
+
+```text
+BANK :== ((
+    (
+        bail_req@ACME;
+        !bail_res@ACME;
+
+        charge_req@ACME;
+        !charge_res@ACME;
+
+        unbail_req@ACME;
+        !unbail_res@ACME
+    )
+
+    +
+
+    (
+        (
+            bail_req@ACME;
+            !bail_res@ACME
+        )
+
+        +
+
+        1
+    )
+)
+
++
+(
+    bail_req@ACME;
+    !bail_res@ACME;
+
+    charge_req@ACME;
+    !charge_res@ACME;
+
+    unbail_req@ACME;
+    !unbail_res@ACME
+))*
+```
+
+## FLEET
+
+```text
+FLEET :== ((
+    (
+        start_req@ACME;
+        !start_res@ACME;
+
+        (
+            track_req@ACME;
+            !track_res@ACME
+        )*;
+
+        stop_req@ACME;
+        !stop_res@ACME
+    )
+
+    +
+
+    1
+)
+
++
+(
+    start_req@ACME;
+    !start_res@ACME;
+
+    (
+        track_req@ACME;
+        !track_res@ACME
+    )*;
+
+    stop_req@ACME;
+    !stop_res@ACME
+))*
+```
+
+## Sistema proiettato
+
+```text
+SYSTEM :==
+    (APP)_APP
+    |
+    (ACME)_ACME
+    |
+    (STATIONS)_STATIONS
+    |
+    (BANK)_BANK
+    |
+    (FLEET)_FLEET
+```

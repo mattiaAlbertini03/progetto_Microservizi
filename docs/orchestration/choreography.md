@@ -1,44 +1,99 @@
-(
-	(
-		mappa_req: App -> ACME ;  mappa_res: ACME -> App ; 	 
-        ritiroQR_req: App -> ACME ;  
-    	sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
-		cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
-	    notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
-		ritiro_res: ACME -> App;
-    	( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
-	    riconsegna_req: App -> ACME ; 
-		bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
-	    notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
-		addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
-	    rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
-		riconsegna_res: ACME -> App
-    )
-    +
+# Coreografia
+
+La coreografia descrive due modalità di avvio della sessione di mobilità:
+la prenotazione online (`ONLINE`) e il ritiro immediato tramite codice QR
+(`QR`). In entrambi i casi, `ACME` coordina le interazioni con l'applicazione
+utente e con i servizi `STATIONS`, `BANK` e `FLEET`.
+
+```text
+ONLINE :== (
+    online_req: APP -> ACME;
+    online_res: ACME -> APP;
+
     (
-		prenotazione_req: App -> ACME ; prenotazione_res: ACME -> App ; 
-		( 
-			annulla_req: App -> ACME ;  annulla_res: ACME -> App ;
-			( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
-			+ 
-			( 1 )
-		)
-		+
-		( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
-	    +
-	    (
-			ritiroDiretto_req: App -> ACME;
-    		sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
-			cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
-		    notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
-			ritiro_res: ACME -> App;
-    		( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
-		    riconsegna_req: App -> ACME ; 
-			bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
-		    notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
-			addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
-		    rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
-			riconsegna_res: ACME -> App
-	    )
+        pickup_req: APP -> ACME;
+        pickup_res: ACME -> APP;
+
+        unlock_req: ACME -> STATIONS;
+        unlock_res: STATIONS -> ACME;
+
+        bail_req: ACME -> BANK;
+        bail_res: BANK -> ACME;
+
+        start_req: ACME -> FLEET;
+        start_res: FLEET -> ACME;
+
+        (
+            track_req: ACME -> FLEET;
+            track_res: FLEET -> ACME
+        )*;
+
+        return_req: APP -> ACME;
+        return_res: ACME -> APP;
+
+        lock_req: ACME -> STATIONS;
+        lock_res: STATIONS -> ACME;
+
+        stop_req: ACME -> FLEET;
+        stop_res: FLEET -> ACME;
+
+        charge_req: ACME -> BANK;
+        charge_res: BANK -> ACME;
+
+        unbail_req: ACME -> BANK;
+        unbail_res: BANK -> ACME
     )
-)*
+
+    +
+
+    (
+        cancel_req: APP -> ACME;
+        cancel_res: ACME -> APP;
+
+        (
+            bail_req: ACME -> BANK;
+            bail_res: BANK -> ACME
+        )
+
+        +
+
+        1
+    )
+)
+
+QR :== (
+    qr_req: APP -> ACME;
+    qr_res: ACME -> APP;
+
+    unlock_req: ACME -> STATIONS;
+    unlock_res: STATIONS -> ACME;
+
+    bail_req: ACME -> BANK;
+    bail_res: BANK -> ACME;
+
+    start_req: ACME -> FLEET;
+    start_res: FLEET -> ACME;
+
+    (
+        track_req: ACME -> FLEET;
+        track_res: FLEET -> ACME
+    )*;
+
+    return_req: APP -> ACME;
+    return_res: ACME -> APP;
+
+    lock_req: ACME -> STATIONS;
+    lock_res: STATIONS -> ACME;
+
+    stop_req: ACME -> FLEET;
+    stop_res: FLEET -> ACME;
+
+    charge_req: ACME -> BANK;
+    charge_res: BANK -> ACME;
+
+    unbail_req: ACME -> BANK;
+    unbail_res: BANK -> ACME
+)
+
+MOBILITY :== (ONLINE + QR)*
+```

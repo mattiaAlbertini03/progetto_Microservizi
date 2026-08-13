@@ -4,26 +4,41 @@
 \usepackage[utf8]{inputenc}
 \usepackage[italian]{babel}
 \usepackage{newtxtext}
+\usepackage[a4paper,inner=30mm,outer=25mm,top=27mm,bottom=28mm,headheight=15pt]{geometry}
+\usepackage{microtype}
 \usepackage{fancyhdr}
 \usepackage{enumitem}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{titlesec}
 \usepackage{hyperref}
 
-\setlength{\headheight}{14.5pt}
-\textwidth=450pt
-\oddsidemargin=0pt
-\evensidemargin=20pt
 \setlength{\parindent}{1.2em}
-\setlength{\parskip}{0.15em}
-\linespread{1.3}
+\setlength{\parskip}{0.1em}
+\setlength{\emergencystretch}{2em}
+\linespread{1.18}
 \setlist{nosep,leftmargin=*}
+\definecolor{acmeblue}{HTML}{173B57}
+\definecolor{codebg}{HTML}{F5F7F9}
+\definecolor{coderule}{HTML}{B8C4CE}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[LE,RO]{\thepage}
-\fancyhead[LO,RE]{ACMEMobility}
+\fancyhead[LO,RE]{\small\textsc{ACMEMobility}}
+\renewcommand{\headrulewidth}{0.4pt}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\color{acmeblue}}
+  {\small\MakeUppercase{\chaptertitlename}\ \thechapter}
+  {0.4ex}
+  {\Huge}
+  [\vspace{0.5ex}\titlerule]
+\titlespacing*{\chapter}{0pt}{-18pt}{24pt}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{acmeblue}}
+  {\thesection}{0.7em}{}
+\titlespacing*{\section}{0pt}{2.1ex plus 0.6ex minus 0.2ex}{0.8ex}
 \hyphenation{sil-la-ba-zio-ne pa-ren-te-si}
 
 \hypersetup{
@@ -35,11 +50,20 @@
 }
 
 \lstset{
-    basicstyle=\ttfamily\footnotesize,
+    basicstyle=\ttfamily\scriptsize,
     breaklines=true,
     frame=single,
+    backgroundcolor=\color{codebg},
+    rulecolor=\color{coderule},
+    framesep=5pt,
+    xleftmargin=0.5em,
+    xrightmargin=0.5em,
+    aboveskip=0.8em,
+    belowskip=0.8em,
     columns=fullflexible,
-    showstringspaces=false
+    keepspaces=true,
+    showstringspaces=false,
+    literate={->}{$\rightarrow$}2
 }
 
 \newcommand{\capitoloSpecial}[1]{%
@@ -51,17 +75,40 @@
 
 
 
-\title{ACMEMobility\\
-\large Progetto di Architetture Software a Microservizi\\
-A.A. 2025/2026}
-\author{Mattia Albertini [0001235513] [mattia.albertini3@studio.unibo.it] \\ 
-        Pierre Errico [0001235580] [pierre.errico@studio.unibo.it]}
-\date{\today}
-
-
-
 \begin{document}
-\maketitle
+\begin{titlepage}
+  \thispagestyle{empty}
+  \begin{flushleft}
+    {\small\bfseries\color{acmeblue}\MakeUppercase{Università di Bologna}}\\[0.35em]
+    {\small Dipartimento di Informatica -- Scienza e Ingegneria}
+  \end{flushleft}
+
+  \vspace{2.2cm}
+  \noindent{\color{acmeblue}\rule{\textwidth}{1.2pt}}\\[1.1cm]
+  {\fontsize{34}{39}\selectfont\bfseries\color{acmeblue} ACMEMobility}\\[0.55cm]
+  {\Large Architettura a microservizi per il vehicle sharing}\\[0.35cm]
+  {\large Coreografia, orchestrazione BPMN e implementazione cloud-native}
+  \\[1.1cm]
+  \noindent{\color{acmeblue}\rule{0.34\textwidth}{0.6pt}}
+
+  \vfill
+  \begin{minipage}[t]{0.47\textwidth}
+    {\small\color{acmeblue}\bfseries INSEGNAMENTO}\\[0.35em]
+    Architetture Software a Microservizi\\
+    Anno accademico 2025/2026
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.47\textwidth}
+    {\small\color{acmeblue}\bfseries AUTORI}\\[0.35em]
+    Mattia Albertini \hfill 0001235513\\
+    \texttt{mattia.albertini3@studio.unibo.it}\\[0.7em]
+    Pierre Errico \hfill 0001235580\\
+    \texttt{pierre.errico@studio.unibo.it}
+  \end{minipage}
+
+  \vspace{1.7cm}
+  {\small Bologna, \today}
+\end{titlepage}
 \pagenumbering{roman}
 \tableofcontents
 \clearpage
@@ -71,7 +118,7 @@ A.A. 2025/2026}
 
 Durante questa prima fase abbiamo analizzato il testo e abbiamo iniziato a
 suddividerlo per capire quali dovessero essere i singoli elementi della
-coreografia, ottenendo App, ACME, Banca, Fleet e Stazione. Successivamente
+coreografia, ottenendo i ruoli APP, ACME, BANK, FLEET e STATIONS. Successivamente
 abbiamo scritto la coreografia associata al testo basandoci su questi servizi.
 
 ACMEMobility è una piattaforma di vehicle sharing. L'utente può consultare
@@ -85,153 +132,272 @@ dipende da durata e distanza e aumenta del 10\% se la batteria residua è
 inferiore al 15\%.
 
 Indichiamo con $m: a\rightarrow b$ l'invio del messaggio $m$ da $a$ a $b$.
-La coreografia seguente descrive i due cammini principali; le risposte di
-errore sono omesse per leggibilità.
+La coreografia aggiornata distingue la prenotazione online (\code{ONLINE}) dal
+ritiro immediato tramite QR code (\code{QR}); le risposte di errore sono
+omesse per leggibilità.
 
 \begin{lstlisting}[mathescape=true]
-C::=(
+ONLINE :== (
+    online_req: APP -> ACME;
+    online_res: ACME -> APP;
     (
-        mappa_req: App -> ACME ;  mappa_res: ACME -> App ;      
-        ritiroQR_req: App -> ACME ;  
-        sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
-        cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
-        notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
-        ritiro_res: ACME -> App;
-        ( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
-        riconsegna_req: App -> ACME ; 
-        bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
-        notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
-        addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
-        rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
-        riconsegna_res: ACME -> App
+        pickup_req: APP -> ACME;
+        pickup_res: ACME -> APP;
+        unlock_req: ACME -> STATIONS;
+        unlock_res: STATIONS -> ACME;
+        bail_req: ACME -> BANK;
+        bail_res: BANK -> ACME;
+        start_req: ACME -> FLEET;
+        start_res: FLEET -> ACME;
+        (
+            track_req: ACME -> FLEET;
+            track_res: FLEET -> ACME
+        )*;
+        return_req: APP -> ACME;
+        return_res: ACME -> APP;
+        lock_req: ACME -> STATIONS;
+        lock_res: STATIONS -> ACME;
+        stop_req: ACME -> FLEET;
+        stop_res: FLEET -> ACME;
+        charge_req: ACME -> BANK;
+        charge_res: BANK -> ACME;
+        unbail_req: ACME -> BANK;
+        unbail_res: BANK -> ACME
     )
     +
     (
-        prenotazione_req: App -> ACME ; prenotazione_res: ACME -> App ; 
-        ( 
-            annulla_req: App -> ACME ;  annulla_res: ACME -> App ;
-            ( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
-            + ( 1 )
-        )
-        +
-        ( addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ) 
-        +
+        cancel_req: APP -> ACME;
+        cancel_res: ACME -> APP;
         (
-            ritiroDiretto_req: App -> ACME;
-            sbloccoVeicolo_req: ACME -> Stazione ; sbloccoVeicolo_res: Stazione -> ACME ; 
-            cauzione_req: ACME -> Banca ; cauzione_res: Banca -> ACME ; 
-            notificaSblocco_req: ACME -> Fleet ; notificaSblocco_res: Fleet -> ACME ;
-            ritiro_res: ACME -> App;
-            ( status_req: ACME -> Fleet ; status_res: Fleet -> ACME )* ;
-            riconsegna_req: App -> ACME ; 
-            bloccoVeicolo_req: ACME -> Stazione ; bloccoVeicolo_res: Stazione -> ACME ; 
-            notificaBlocco_req: ACME -> Fleet ; notificaBlocco_res: Fleet -> ACME;  
-            addebito_req: ACME -> Banca ; addebito_res: Banca -> ACME ; 
-            rimuoviCauzione_req: ACME -> Banca ; rimuoviCauzione_res: Banca -> ACME ; 
-            riconsegna_res: ACME -> App
+            bail_req: ACME -> BANK;
+            bail_res: BANK -> ACME
         )
+        +
+        1
     )
-)*
-
+)
+QR :== (
+    qr_req: APP -> ACME;
+    qr_res: ACME -> APP;
+    unlock_req: ACME -> STATIONS;
+    unlock_res: STATIONS -> ACME;
+    bail_req: ACME -> BANK;
+    bail_res: BANK -> ACME;
+    start_req: ACME -> FLEET;
+    start_res: FLEET -> ACME;
+    (
+        track_req: ACME -> FLEET;
+        track_res: FLEET -> ACME
+    )*;
+    return_req: APP -> ACME;
+    return_res: ACME -> APP;
+    lock_req: ACME -> STATIONS;
+    lock_res: STATIONS -> ACME;
+    stop_req: ACME -> FLEET;
+    stop_res: FLEET -> ACME;
+    charge_req: ACME -> BANK;
+    charge_res: BANK -> ACME;
+    unbail_req: ACME -> BANK;
+    unbail_res: BANK -> ACME
+)
+MOBILITY :== (ONLINE + QR)*
 \end{lstlisting}
-$\\$
-La scelta esterna distingue il ritiro immediato dalla prenotazione. Il ramo di
-annullamento può terminare senza costo oppure con una penale; il timeout
-produce la medesima penale. Nel cammino nominale il monitoraggio di Fleet è
-iterativo, mentre la riconsegna chiude il viaggio soltanto quando il veicolo
-ha raggiunto la destinazione.
 
-Dopo aver scritto la coreografia, l'abbiamo riscritta come sistema proiettato,
-riorganizzando i servizi come ruoli, indicando con $!m@R$ inviare un messaggio $m$ ad $R$ e con $?m@R$ attendere un messaggio $m$ da $R$.
-La proiezione assegna ad ACME tutte le decisioni che coinvolgono più domini. App invia comandi e riceve
-aggiornamenti; Stazione e Banca espongono protocolli conversazionali con stato
-di sessione; Fleet avvia, interroga e arresta la simulazione.
+La coreografia è sequentially connected in semantica sincrona: a ogni
+composizione sequenziale, le interazioni ai due lati condividono almeno un
+ruolo, normalmente ACME. Anche la scelta \code{ONLINE + QR} soddisfa le
+condizioni di point of choice, poiché i rami iniziano entrambi con
+un'interazione tra APP e ACME e coinvolgono gli stessi ruoli.
+
+Restano alcune violazioni formali. In \code{ONLINE}, i rami di ritiro e
+cancellazione non coinvolgono gli stessi ruoli; inoltre la scelta tra
+\code{bail} e \code{1} coinvolge BANK in un solo ramo. Le iterazioni
+\code{track*} e \code{MOBILITY*} presentano la medesima criticità nella
+scelta tra ripetizione e uscita. Queste condizioni sono sufficienti, ma non
+necessarie: manteniamo il modello perché i servizi assenti non hanno attività
+funzionali nell'alternativa, evitando notifiche artificiali.
+
+La proiezione è omomorfa rispetto agli operatori della coreografia: ogni
+interazione diventa un output nel mittente, un input nel destinatario e
+\code{1} negli altri ruoli. Indichiamo con $!m@R$ l'invio di $m$ a $R$ e con
+$m@R$ la ricezione di $m$ da $R$. I rami \code{ONLINE} e \code{QR} sono
+incorporati direttamente nella definizione di ciascun ruolo.
 
 \begin{lstlisting}[mathescape=true]
-S::=ACME|App|Stazione|Banca|Fleet
-Fleet::=( 
-        ?notificaSblocco_req@ACME ; !notificaSblocco_res@ACME ; 
-        ( ?status_req@ACME ; !status_res@ACME)* ; 
-        ?notificaBlocco_req@ACME ; !notificaBlocco_res@ACME
-    )*
-Banca::=( 
-        ( ?addebito_req@ACME ; !addebito_res@ACME)
+APP :== ((
+    !online_req@ACME;
+    online_res@ACME;
+    (
+        !pickup_req@ACME;
+        pickup_res@ACME;
+        !return_req@ACME;
+        return_res@ACME
+    )
+    +
+    (
+        !cancel_req@ACME;
+        cancel_res@ACME
+    )
+)
++
+(
+    !qr_req@ACME;
+    qr_res@ACME;
+    !return_req@ACME;
+    return_res@ACME
+))*
+ACME :== ((
+    online_req@APP;
+    !online_res@APP;
+    (
+        pickup_req@APP;
+        !pickup_res@APP;
+        !unlock_req@STATIONS;
+        unlock_res@STATIONS;
+        !bail_req@BANK;
+        bail_res@BANK;
+        !start_req@FLEET;
+        start_res@FLEET;
+        (
+            !track_req@FLEET;
+            track_res@FLEET
+        )*;
+        return_req@APP;
+        !return_res@APP;
+        !lock_req@STATIONS;
+        lock_res@STATIONS;
+        !stop_req@FLEET;
+        stop_res@FLEET;
+        !charge_req@BANK;
+        charge_res@BANK;
+        !unbail_req@BANK;
+        unbail_res@BANK
+    )
+    +
+    (
+        cancel_req@APP;
+        !cancel_res@APP;
+        (
+            !bail_req@BANK;
+            bail_res@BANK
+        )
         +
-        ( 
-         ?cauzione_req@ACME ; !cauzione_res@ACME ; 
-         ?addebito_req@ACME ; !addebito_res@ACME ; 
-         ?rimuoviCauzione_req@ACME ; !rimuoviCauzione_res@ACME
-        )
-    )*
-Stazione::=( 
-        ?sbloccoVeicolo_req@ACME ; !sbloccoVeicolo_res@ACME ; 
-        ?bloccoVeicolo_req@ACME ; !bloccoVeicolo_res@ACME ; 
-    )*
-App::=( 
-        ( 
-        !mappa_req@ACME ; ?mappa_res@ACME ; 
-        !QR_ritiro@ACME ; ?ris_utente@ACME ; 
-        !Riconsegna@ACME ; ?ris_finale@ACME ; 
+        1
+    )
+)
++
+(
+    qr_req@APP;
+    !qr_res@APP;
+    !unlock_req@STATIONS;
+    unlock_res@STATIONS;
+    !bail_req@BANK;
+    bail_res@BANK;
+    !start_req@FLEET;
+    start_res@FLEET;
+    (
+        !track_req@FLEET;
+        track_res@FLEET
+    )*;
+    return_req@APP;
+    !return_res@APP;
+    !lock_req@STATIONS;
+    lock_res@STATIONS;
+    !stop_req@FLEET;
+    stop_res@FLEET;
+    !charge_req@BANK;
+    charge_res@BANK;
+    !unbail_req@BANK;
+    unbail_res@BANK
+))*
+STATIONS :== ((
+    (
+        unlock_req@ACME;
+        !unlock_res@ACME;
+        lock_req@ACME;
+        !lock_res@ACME
+    )
+    +
+    1
+)
++
+(
+    unlock_req@ACME;
+    !unlock_res@ACME;
+    lock_req@ACME;
+    !lock_res@ACME
+))*
+BANK :== ((
+    (
+        bail_req@ACME;
+        !bail_res@ACME;
+        charge_req@ACME;
+        !charge_res@ACME;
+        unbail_req@ACME;
+        !unbail_res@ACME
+    )
+    +
+    (
+        (
+            bail_req@ACME;
+            !bail_res@ACME
         )
         +
-        ( 
-         !prenotazione@ACME ; ?prenotazione_res@ACME ; 
-         ( !annulla_req@ACME ; ?annulla_res@ACME)
-         +
-         ( !ritiro@ACME ; ?ris_utente@ACME ; !Riconsegna@ACME ; ?ris_finale@ACME ; )
-         +
-         ( 1)
-        )
-    )*
-ACME::=( 
-        ( 
-         ?mappa_req@App ; !mappa_res@App ; 
-         ?QR_ritiro@App ; 
-         !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
-         !cauzione_req@Banca ; ?cauzione_res@Banca ; 
-         !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
-         !ris_utente@App ; 
-         ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
-         ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
-         !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
-         !addebito_req@Banca ; ?addebito_res@Banca ; 
-         !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
-         !ris_finale@App ; 
-        )
-        +
-        ( 
-         ?prenotazione@App ; !ris_pre@App ; 
-         ( 
-          ?annulla_req@App ; !annulla_ris@App ; 
-          ( !addebito_req@Banca ; ?addebito_res@Banca ; )+( 1) ; 
-         )
-         +
-         ( !addebito_req@Banca ; ?addebito_res@Banca ; )
-         +
-         ( 
-          ?ritiro@App ; 
-          !sbloccoVeicolo_req@Stazione ; ?sbloccoVeicolo_res@Stazione ; 
-          !cauzione_req@Banca ; ?cauzione_res@Banca ; 
-          !notificaSblocco_req@Fleet ; ?notificaSblocco_res@Fleet ; 
-          !ris_utente@App ; 
-          ( !status_req@Fleet ; ?status_res@Fleet ; )* ; 
-          ?Riconsegna@App ; !bloccoVeicolo_req@Stazione ; ?bloccoVeicolo_res@Stazione ; 
-          !notificaBlocco_req@Fleet ; ?notificaBlocco_res@Fleet ; 
-          !addebito_req@Banca ; ?addebito_res@Banca ; 
-          !rimuoviCauzione_req@Banca ; ?rimuoviCauzione_res@Banca ; 
-          !ris_finale@App ; 
-         )
-        )
-    )*
-
-
+        1
+    )
+)
++
+(
+    bail_req@ACME;
+    !bail_res@ACME;
+    charge_req@ACME;
+    !charge_res@ACME;
+    unbail_req@ACME;
+    !unbail_res@ACME
+))*
+FLEET :== ((
+    (
+        start_req@ACME;
+        !start_res@ACME;
+        (
+            track_req@ACME;
+            !track_res@ACME
+        )*;
+        stop_req@ACME;
+        !stop_res@ACME
+    )
+    +
+    1
+)
++
+(
+    start_req@ACME;
+    !start_res@ACME;
+    (
+        track_req@ACME;
+        !track_res@ACME
+    )*;
+    stop_req@ACME;
+    !stop_res@ACME
+))*
+SYSTEM :==
+    (APP)_APP
+    |
+    (ACME)_ACME
+    |
+    (STATIONS)_STATIONS
+    |
+    (BANK)_BANK
+    |
+    (FLEET)_FLEET
 \end{lstlisting}
 
 Le interazioni REST sono sincrone quando serve una risposta immediata; Kafka
 disaccoppia produzione e lettura della telemetria; gli eventi SSE aggiornano
-le interfacce senza polling applicativo. Camunda conserva lo stato del
-processo di noleggio e correla messaggi asincroni mediante gli identificativi
-di prenotazione e processo.
+l'applicazione principale e i dati economici del visualizzatore. Quest'ultimo
+interroga inoltre Query ogni due secondi per posizione e batteria. Camunda
+conserva lo stato del processo di noleggio e correla messaggi asincroni
+mediante gli identificativi di prenotazione e processo.
 
 Questa combinazione deriva dai diversi requisiti delle operazioni. La
 consultazione di una stazione o la validazione di un QR code richiedono un
@@ -385,8 +551,8 @@ Elemento & Implementazione Camunda & Motivazione \\
 \midrule
 Banca e Stazione & Connettore SOAP &
 Riutilizzo delle interfacce WSDL dei servizi Jolie. \\
-connesione App e ACME & Connettore REST o client ACMEMobility &
-Invocazione sincrona con esito disponibile nel processo. \\
+Connessione App--ACME & API REST e messaggi Camunda &
+Richieste sincrone all'API e avanzamento asincrono del processo. \\
 Calcolo del costo & Worker \code{calculate-charge} &
 Logica Java testabile, separata dalle espressioni BPMN. \\
 Monitoraggio Fleet & Sottoprocesso con timer di due secondi &
@@ -502,9 +668,13 @@ seguenti operazioni:
   \item \code{holdDeposit}, per bloccare la cauzione e memorizzarla nella
         sessione privata;
   \item \code{releaseDeposit}, per restituire la cauzione;
-  \item \code{recharge}, per aumentare il saldo quando l'utente autorizza
-        una ricarica.
+  \item \code{checkFunds}, per verificare la disponibilità prima
+        dell'addebito.
 \end{itemize}
+
+La ricarica autorizzata dall'utente non appartiene alla sessione SOAP:
+ACMEMobility invoca l'operazione REST \code{rechargeAccount}, esposta dalla
+stessa applicazione Jolie.
 
 Il server rimane in attesa di un login e, dopo l'arrivo della richiesta,
 crea una sessione personale per l'utente. All'interno della sessione rimane
@@ -514,13 +684,17 @@ servizio non effettua autonomamente una ricarica senza autorizzazione, ma
 restituisce l'esito al processo. ACMEMobility notifica l'applicazione e
 Camunda attende un messaggio di ricarica correlato alla prenotazione.
 
+\begin{sloppypar}
 L'interfaccia è descritta nel file \code{BankingService.wsdl}, mentre
-\code{banking-interface.iol} contiene i tipi e le operazioni condivise. Il
-file \code{banking-service.ol} implementa il comportamento conversazionale.
-Nel deployment Kubernetes indirizzo, porte e parametri iniziali sono passati
-al container tramite configurazione, evitando di codificare nel processo gli
-indirizzi del cluster. Il servizio rimane dimostrativo: saldo e credenziali
+\code{banking-\allowbreak interface.iol} contiene i tipi e le operazioni
+condivise. Il file \code{banking-\allowbreak service.ol} implementa il
+comportamento conversazionale.
+Nel deployment Kubernetes, connessione al database e parametri del servizio
+sono passati al container tramite configurazione. Il BPMN usa invece il nome
+DNS stabile \code{banking-service.acme} per i connettori interni. Il servizio
+rimane dimostrativo: saldo e credenziali
 non hanno le garanzie di sicurezza di un vero intermediario finanziario.
+\end{sloppypar}
 
 \section{Servizio stazioni}
 
@@ -601,7 +775,8 @@ e trasformandola in un processo eseguibile. Le coppie di task che comunicano
 con i servizi Jolie sono state sostituite da connettori SOAP; le
 comunicazioni con API HTTP sono state sostituite da connettori REST o da job
 worker. Le variabili del processo contengono identificativi, tempi e risultati
-necessari alla correlazione, mentre indirizzi e credenziali provengono dalla
+necessari alla correlazione. Il BPMN inizializza gli endpoint con i nomi DNS
+stabili dei Service Kubernetes; credenziali e segreti restano invece nella
 configurazione del deployment.
 
 Il ciclo di lettura dello stato del veicolo è stato spostato in un
@@ -614,10 +789,10 @@ il monitoraggio è in corso.
 
 ACMEMobility è inoltre un microservizio Helidon che funge da API pubblica.
 Espone le operazioni di autenticazione, stazioni, prenotazioni, QR, banca e
-Fleet; valida il JWT, ricava l'identità dell'utente e impedisce l'accesso alle
-prenotazioni altrui. I client interni comunicano con i rispettivi
-microservizi, mentre il client Camunda avvia istanze e pubblica messaggi
-correlati.
+inventario dei veicoli; valida il JWT, ricava l'identità dell'utente e
+impedisce l'accesso alle prenotazioni altrui. Fleet è invece invocato dal
+processo e dagli altri servizi interni. Il client Camunda avvia istanze e
+pubblica messaggi correlati.
 
 Per notificare il browser sono stati usati Server-Sent Events. Sono presenti
 flussi distinti per prenotazioni, veicoli e visualizzatore della simulazione.
@@ -636,8 +811,8 @@ al 15\%, il costo viene moltiplicato per $1{,}10$; l'importo finale è
 arrotondato ai centesimi. Il worker valida inoltre che minuti e chilometri
 siano non negativi e che la batteria appartenga all'intervallo $[0,100]$.
 Un secondo worker, \code{stop-and-charge}, gestisce la ricarica di sicurezza:
-quando la batteria raggiunge la soglia critica, richiede a Fleet di ricaricare
-il veicolo al 25\% e di riprendere la simulazione ancora attiva.
+quando la batteria raggiunge la soglia critica del 5\%, richiede a Fleet di
+ricaricare il veicolo al 25\% e di riprendere la simulazione ancora attiva.
 
 La separazione del calcolo in un worker evita di inserire codice complesso
 nelle espressioni BPMN e rende la regola tariffaria verificabile tramite test
@@ -669,9 +844,9 @@ gestiti esternamente in un ambiente produttivo.
 Reservation gestisce la proprietà e il ciclo di vita della prenotazione. I
 dati principali sono identificativo, utente, veicolo, stazioni, orario
 previsto e stato. La persistenza usa PostgreSQL, pool HikariCP e migrazioni
-Flyway. Le transizioni sono esposte sia mediante API REST interne sia
-mediante job worker Camunda, in modo che il processo possa creare, ritirare,
-annullare, far scadere e completare una prenotazione.
+Flyway. Le transizioni sono esposte mediante API REST interne, invocate dai
+connettori Camunda, in modo che il processo possa creare, ritirare, annullare,
+far scadere e completare una prenotazione.
 
 La prenotazione può iniziare nell'intervallo compreso tra l'istante corrente e
 i 30 minuti successivi. L'annullamento è gratuito fino a cinque minuti prima
@@ -687,9 +862,9 @@ disponibilità, batteria, coordinate e QR code. I dati sono memorizzati in
 PostgreSQL e inizializzati tramite migrazioni Flyway. Il servizio consulta il
 catalogo REST di Stations per associare correttamente i mezzi alle stazioni.
 
-Quando viene creata una prenotazione, Logistics pone il veicolo in stato
-riservato; al ritiro lo rende in uso; al termine aggiorna stazione, batteria e
-disponibilità. La separazione da Reservation evita che i dati relativi alla
+Quando il processo conferma una prenotazione, Logistics pone il veicolo in
+stato riservato; al ritiro lo rende in uso; al termine aggiorna stazione,
+batteria e disponibilità. La separazione da Reservation evita che i dati relativi alla
 proprietà del noleggio vengano confusi con quelli dell'inventario. Nel flusso
 QR, ACMEMobility confronta il codice inserito con il valore restituito da
 Logistics prima di avviare il processo.
@@ -737,15 +912,15 @@ Minikube e attendono la readiness dei deployment.
 Kafka usa i topic \code{vehicle-tracking} e \code{vehicle-battery};
 PostgreSQL è distribuito nel namespace applicativo; GraphHopper usa la mappa
 inclusa nel repository. L'API ACMEMobility e il visualizzatore sono esposti
-rispettivamente sulle NodePort 30080 e 30081, mentre i servizi interni
-rimangono raggiungibili soltanto nel cluster. Secret ed environment variable
+sulle NodePort fisse 30080 e 30081. Anche Query è attualmente dichiarato come
+\code{NodePort}, con porta esterna assegnata dal cluster, ma non viene
+contattato direttamente dai due frontend. Secret ed environment variable
 separano credenziali e configurazione dalle immagini.
 
 I servizi applicativi sono raggiunti mediante nomi DNS interni stabili,
-indipendenti dall'indirizzo dei singoli pod. Le due NodePort costituiscono
-deliberatamente l'unico ingresso dall'host: il browser comunica con
-ACMEMobility e con il visualizzatore, mentre database, broker e API interne
-non vengono pubblicati all'esterno. Gli script attendono inoltre il rollout
+indipendenti dall'indirizzo dei singoli pod. Per il normale utilizzo, il
+browser comunica soltanto con ACMEMobility e con il visualizzatore; database
+e broker non vengono pubblicati all'esterno. Gli script attendono inoltre il rollout
 dei deployment prima di avviare le verifiche, evitando che una dipendenza
 ancora in fase di inizializzazione venga interpretata come errore
 applicativo.
